@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Analise, AtributosEstrategia, Estrategia } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
+import { BotaoFigura } from '../../components/BotaoFigura';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA } from '../../components/Pictograma';
@@ -10,7 +11,8 @@ interface TelaCompararProps {
   analise: Analise;
   aoAbrir: (estrategiaId: string) => void;
   aoVoltar: () => void;
-  aoAvancar: () => void;
+  /** A pessoa decidiu: segue para a animação e o acompanhamento. */
+  aoEscolher: (estrategiaId: string) => void;
 }
 
 /** Linhas sempre visíveis; as outras aparecem em "Ver mais pontos". */
@@ -20,7 +22,7 @@ const EXTRAS = (Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[]).f
 /** Nome curto para o topo da coluna: a etapa do meio da rotação (ex.: "Amendoim"). */
 const nomeCurto = (e: Estrategia) => e.etapas_rotacao[1]?.nome ?? e.nome;
 
-export function TelaComparar({ analise, aoAbrir, aoVoltar, aoAvancar }: TelaCompararProps) {
+export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCompararProps) {
   const [verTudo, setVerTudo] = useState(false);
   const estrategias = analise.estrategias;
   const linhas = verTudo ? [...PRINCIPAIS, ...EXTRAS] : PRINCIPAIS;
@@ -99,12 +101,26 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoAvancar }: TelaComp
         {verTudo ? 'Mostrar menos' : `Ver mais ${EXTRAS.length + 1} pontos`}
       </button>
 
-      <div className="navegacao">
+      <fieldset className="grade-escolhas decisao-opcoes">
+        <legend className="titulo-secao">Qual caminho você escolhe?</legend>
+        {estrategias.map(e => {
+          const meio = e.etapas_rotacao[1];
+          return (
+            <BotaoFigura
+              key={e.estrategia_id}
+              pictograma={meio ? PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei' : 'nao_sei'}
+              titulo={nomeCurto(e)}
+              detalhe={e.eh_pratica_atual ? 'O jeito de hoje' : undefined}
+              escolhido={false}
+              aoTocar={() => aoEscolher(e.estrategia_id)}
+            />
+          );
+        })}
+      </fieldset>
+
+      <div className="navegacao navegacao-unica">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
           <Icone nome="voltar" /> Voltar
-        </button>
-        <button type="button" className="botao botao-primario" onClick={aoAvancar}>
-          Ver meu resumo <Icone nome="seguir" />
         </button>
       </div>
     </>

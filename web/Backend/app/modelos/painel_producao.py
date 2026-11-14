@@ -6,8 +6,9 @@ docs/contrato_api.md). Toda regra fica aqui, no backend -- o front so exibe:
     (acima/abaixo se passar de 5%);
   - clima do ultimo ano vs media 1995-2024 (NASA POWER, celula do municipio);
   - previsao dos proximos meses: prognostico OFICIAL INMET/INPE/FUNCEME,
-    transcrito em data/processed/inmet/prognostico_<codigo_ibge>.json (sem
-    arquivo -> previsao None). E previsao, nao observacao (convencao secao 7).
+    transcrito em data/processed/inmet/prognostico_<regiao>.json; vale para os
+    municipios em `codigos_ibge` (a regiao do boletim). Fora deles -> None.
+    E previsao, nao observacao (convencao secao 7).
 
 Enquanto a rota nao existe, o CLI grava uma copia local para o front:
   python painel_producao.py [codigo_ibge=3549805]
@@ -26,6 +27,7 @@ import pandas as pd
 RAIZ = Path(__file__).resolve().parents[4]
 PROCESSADOS = RAIZ / "data" / "processed"
 SAIDA_FRONT = RAIZ / "web" / "Frontend" / "src" / "api" / "mock" / "producaoMunicipio.ts"
+SAIDA_PREVISAO = RAIZ / "web" / "Frontend" / "src" / "api" / "mock" / "previsaoRegiao.ts"
 
 # Celula 0,1 grau do centro de cada municipio com dados (ver pipelines/regioes.py).
 MUNICIPIOS = {
@@ -58,13 +60,14 @@ def _situacao(serie: pd.DataFrame) -> dict:
             "rendimento_kg_ha": float(ultimo["rendimento_medio"]), "rendimento_medio_anterior_kg_ha": round(media)}
 
 
-def _previsao(codigo_ibge: str) -> dict | None:
-    """Prognostico oficial transcrito; os trechos originais ficam no arquivo, nao vao para a tela."""
-    caminho = PROCESSADOS / "inmet" / f"prognostico_{codigo_ibge}.json"
-    if not caminho.exists():
-        return None
-    p = json.loads(caminho.read_text(encoding="utf-8"))
+def _prognosticos() -> list[dict]:
+    return [json.loads(c.read_text(encoding="utf-8")) for c in sorted((PROCESSADOS / "inmet").glob("prognostico_*.json"))]
+
+
+def _formatar_previsao(p: dict) -> dict:
+    """Os trechos originais do boletim ficam no arquivo; nao vao para a tela."""
     return {
+        "abrangencia": p["abrangencia"],
         "periodo": p["periodo"],
         "chuva": p["chuva"],
         "temperatura": p["temperatura"],
@@ -75,6 +78,14 @@ def _previsao(codigo_ibge: str) -> dict | None:
         "publicado_em": p["publicado_em"],
         "tipo_dado": "previsao",
     }
+
+
+def previsao_do_municipio(codigo_ibge: str) -> dict | None:
+    """Prognostico oficial que cobre o municipio (pela regiao do boletim), ou None."""
+    for p in _prognosticos():
+        if codigo_ibge in p["codigos_ibge"]:
+            return _formatar_previsao(p)
+    return None
 
 
 def _clima(anual: pd.DataFrame, ano: int) -> dict:
@@ -124,7 +135,7 @@ def montar_painel(codigo_ibge: str) -> dict:
         "uf": m["uf"],
         "culturas": culturas,
         "clima": _clima(anual, ultimo_ano),
-        "previsao": _previsao(codigo_ibge),
+        "previsao": previsao_do_municipio(codigo_ibge),
         "fontes": ["IBGE – Produção Agrícola Municipal (tabela 5457)", "NASA POWER (MERRA-2)",
                    "INMET, INPE e FUNCEME – prognóstico climático trimestral"],
         "limitacoes": [
@@ -145,6 +156,16 @@ def gravar_copia_front(codigo_ibge: str) -> Path:
         "// Numeros REAIS (IBGE + NASA POWER) e previsao oficial (INMET), congelados em `gerado_em`.\n"
         "import type { PainelProducao } from '../tipos';\n\n"
         f"export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {corpo};\n",
+        encoding="utf-8",
+    )
+    # Previsao por regiao (vale para cidades sem painel de colheita, ex.: Mirassol).
+    regioes = [{"codigos_ibge": p["codigos_ibge"], "previsao": _formatar_previsao(p)} for p in _prognosticos()]
+    SAIDA_PREVISAO.write_text(
+        "// GERADO por web/Backend/app/modelos/painel_producao.py -- nao editar a mao.\n"
+        "// Copia local da rota proposta GET /api/v1/previsao. Previsao OFICIAL INMET/INPE/FUNCEME,\n"
+        "// transcrita do boletim mensal; vale para os municipios da regiao do boletim.\n"
+        "import type { PrevisaoClima } from '../tipos';\n\n"
+        f"export const PREVISOES_POR_REGIAO: {{ codigos_ibge: string[]; previsao: PrevisaoClima }}[] = {json.dumps(regioes, ensure_ascii=False)};\n",
         encoding="utf-8",
     )
     return SAIDA_FRONT

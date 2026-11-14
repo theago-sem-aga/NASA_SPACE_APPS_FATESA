@@ -660,3 +660,43 @@ p { margin: 0; }
 
 /* Coordenada e outros números soltos no texto: algarismos alinhados, sem quebrar a linha. */
 .numero { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- decisão: trator plantando (features/fluxo/TelaDecisao) ----------
+   O trator cruza a terra e deixa a faixa verde para trás. Só transform e
+   clip-path (leve no celular). Com "reduzir movimento", a cena aparece pronta. */
+.decisao { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding-top: 8px; }
+.decisao-escolha { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 1.5rem; }
+.decisao-campo {
+  position: relative; width: 100%; max-width: 520px; height: 150px; overflow: hidden; border-radius: var(--raio);
+  background: linear-gradient(to bottom, var(--cor-ceu-clara) 0 58%, var(--cor-terra) 58% 100%);
+}
+.decisao-plantado {
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 42%;
+  display: flex; justify-content: space-around; align-items: flex-start; padding-top: 6px;
+  background: var(--cor-folha); clip-path: inset(0 100% 0 0);
+  animation: decisao-plantar 2.2s ease-in-out forwards;
+}
+.decisao-broto {
+  width: 7px; height: 16px; border-radius: 4px 4px 0 0; background: var(--cor-folha-clara);
+  transform: scaleY(0); transform-origin: bottom; animation: decisao-brotar 0.35s ease-out forwards;
+}
+.decisao-trator { position: absolute; bottom: 30%; left: 0; transform: translateX(-96px); animation: decisao-dirigir 2.2s ease-in-out forwards; }
+.decisao-trator .pictograma { animation: decisao-trepidar 0.18s ease-in-out infinite alternate; }
+.decisao-seguir { min-width: 160px; }
+/* Os 3 caminhos lado a lado, também no celular: comparar de olho é o ponto desta tela. */
+.decisao-opcoes { margin-top: 4px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.decisao-opcoes .cartao-escolha-titulo { font-size: 1rem; }
+.acompanhamento-caminho { display: flex; align-items: center; gap: 8px; margin: 0; }
+
+@keyframes decisao-plantar { to { clip-path: inset(0 0 0 0); } }
+@keyframes decisao-brotar { to { transform: scaleY(1); } }
+/* 520px = largura máxima do campo; em telas menores o trator sai pela borda (overflow escondido). */
+@keyframes decisao-dirigir { to { transform: translateX(min(100vw, 520px)); } }
+@keyframes decisao-trepidar { to { transform: translateY(-2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .decisao-plantado { animation: none; clip-path: none; }
+  .decisao-broto { animation: none; transform: none; }
+  .decisao-trator { animation: none; transform: none; left: auto; right: 12px; }
+  .decisao-trator .pictograma { animation: none; }
+}

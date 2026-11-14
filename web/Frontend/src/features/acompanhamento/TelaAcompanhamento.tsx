@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { buscarAcompanhamento, FalhaApi } from '../../api/cliente';
-import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelite, Local, Nivel, OrigemLocal } from '../../api/tipos';
+import { buscarAcompanhamento, buscarPrevisao, FalhaApi } from '../../api/cliente';
+import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelite, Local, Nivel, OrigemLocal, PrevisaoClima } from '../../api/tipos';
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
 import { formatarCoordenada } from '../fluxo/estadoFluxo';
+import { SecaoPrevisao } from '../producao/TelaProducao';
 import { NOME_MES, ROTULO_COBERTURA } from '../fluxo/rotulos';
 import { dataPorExtenso, FRASE_ESTADO } from './frases';
 import { roteiroAcompanhamento } from './roteiroAcompanhamento';
@@ -18,6 +19,8 @@ interface TelaAcompanhamentoProps {
   estrategia: Estrategia | null;
   aoMudarRoteiro: (texto: string) => void;
   aoVoltar: () => void;
+  /** Some quando a tela foi aberta pelo próprio resumo. */
+  aoVerResumo?: () => void;
 }
 
 type Situacao =
@@ -62,8 +65,10 @@ function CartaoFoto({ foto, destaque }: { foto: FotoSatelite; destaque: boolean 
 
 // ---------- tela ----------
 
-export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, aoVoltar }: TelaAcompanhamentoProps) {
+export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, aoVoltar, aoVerResumo }: TelaAcompanhamentoProps) {
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
+  /** Chuva prevista dos próximos meses (da região da cidade). null = não temos para essa região. */
+  const [previsao, setPrevisao] = useState<PrevisaoClima | null>(null);
 
   const carregar = useCallback(async () => {
     setEstado({ situacao: 'carregando' });
@@ -79,13 +84,24 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
     void carregar();
   }, [carregar]);
 
+  // A previsão é opcional: se a cidade não tiver, a tela segue só com o satélite.
+  useEffect(() => {
+    let vivo = true;
+    buscarPrevisao(local.codigo_ibge)
+      .then(p => vivo && setPrevisao(p))
+      .catch(() => vivo && setPrevisao(null));
+    return () => {
+      vivo = false;
+    };
+  }, [local.codigo_ibge]);
+
   const mesAtual = new Date().getMonth() + 1;
   const plano = planoDoMes(estrategia, mesAtual);
   const dados = estado.situacao === 'sucesso' ? estado.dados : null;
 
   useEffect(() => {
-    aoMudarRoteiro(dados ? roteiroAcompanhamento(dados, estrategia, plano, mesAtual, local) : 'Buscando as fotos do satélite.');
-  }, [dados, estrategia, plano, mesAtual, local, aoMudarRoteiro]);
+    aoMudarRoteiro(dados ? roteiroAcompanhamento(dados, estrategia, plano, mesAtual, local, previsao) : 'Buscando as fotos do satélite.');
+  }, [dados, estrategia, plano, mesAtual, local, previsao, aoMudarRoteiro]);
 
   if (estado.situacao === 'carregando') {
     return (
@@ -124,6 +140,12 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
     <>
       <div className="producao-topo">
         <h1 tabIndex={-1}>Acompanhar a área</h1>
+        {estrategia && (
+          <p className="acompanhamento-caminho">
+            <span className="texto-apoio">Seu caminho:</span>
+            <span className="etiqueta etiqueta-positiva">{estrategia.etapas_rotacao[1]?.nome ?? estrategia.nome}</span>
+          </p>
+        )}
         <p className="texto-apoio">
           {d.ponto_exemplo ? `Exemplo: uma área perto de ${local.municipio}` : 'A sua área'} · fotos do satélite
         </p>
@@ -203,6 +225,8 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
         </div>
       )}
 
+      {previsao && <SecaoPrevisao previsao={previsao} />}
+
       {anteriores.length > 0 && (
         <section className="producao-bloco" aria-labelledby="t-antes">
           <h2 id="t-antes" className="producao-titulo">Fotos de antes</h2>
@@ -218,10 +242,15 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
         Fotos: {d.fonte}. {d.atribuicao}. O satélite passa a cada 5 dias; foto com nuvem em cima da área fica de fora.
       </p>
 
-      <div className="navegacao navegacao-unica">
+      <div className={`navegacao ${aoVerResumo ? '' : 'navegacao-unica'}`}>
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
           <Icone nome="voltar" /> Voltar
         </button>
+        {aoVerResumo && (
+          <button type="button" className="botao botao-primario" onClick={aoVerResumo}>
+            Ver meu resumo <Icone nome="seguir" />
+          </button>
+        )}
       </div>
     </>
   );

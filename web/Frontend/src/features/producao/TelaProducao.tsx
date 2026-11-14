@@ -76,14 +76,14 @@ function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
 }
 
 /** Previsão oficial dos próximos meses. Selo "Previsão" para não confundir com o que já aconteceu. */
-function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
+export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
   return (
     <section className="producao-bloco" aria-labelledby="t-previsao">
       <div className="producao-titulo-linha">
         <h2 id="t-previsao" className="producao-titulo">Previsão para os próximos meses</h2>
         <span className="etiqueta etiqueta-atencao">Previsão</span>
       </div>
-      <p className="texto-apoio">De {pv.periodo}. Previsão pode mudar.</p>
+      <p className="texto-apoio">De {pv.periodo}, para a {pv.abrangencia.charAt(0).toLowerCase() + pv.abrangencia.slice(1)}. Previsão pode mudar.</p>
 
       <div className="producao-previsao-resumo">
         <div className="producao-cartao">

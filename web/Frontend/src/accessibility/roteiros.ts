@@ -106,6 +106,8 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
       return estrategia ? aviso + roteiroEstrategia(estrategia) : '';
     case 'clima':
       return analise && estrategia ? aviso + roteiroClima(analise, estrategia) : '';
+    case 'decisao':
+      return estrategia ? `Pronto. Você escolheu: ${estrategia.nome}. Agora vamos acompanhar a sua área pelo satélite.` : '';
     case 'producao':
     case 'acompanhamento':
       // O roteiro desta tela vem de features/producao/roteiroProducao.ts (depende dos dados carregados).

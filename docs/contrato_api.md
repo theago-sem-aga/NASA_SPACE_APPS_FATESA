@@ -69,7 +69,7 @@ Recebe uma coordenada e devolve todas as variáveis disponíveis (ao vivo + pré
 Painel "Como foi a colheita" para produtores com pouca leitura. **A resposta já é montada** por `montar_painel(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`; falta só expor a rota. Enquanto isso, o front usa a cópia gerada pelo mesmo script (`web/Frontend/src/api/mock/producaoMunicipio.ts`, números reais congelados em `gerado_em`).
 
 - **Query:** `codigo_ibge` (obrigatório). Hoje só `3549805` (São José do Rio Preto) tem dados.
-- **Sucesso 200:** `PainelProducao` (tipos em `web/Frontend/src/api/tipos.ts`): `culturas[]` com `situacao` (`acima`/`normal`/`abaixo`/`sem_plantio`, último ano vs média dos 5 anteriores, limiar 5%), `clima` (último ano vs média 1995–2024, com `situacao_chuva`, `gotas_em_10`, `situacao_calor`, `graus_de_diferenca`), `previsao` (prognóstico oficial INMET/INPE/FUNCEME dos próximos ~3 meses, transcrito em `data/processed/inmet/prognostico_<codigo_ibge>.json`: `chuva` e `temperatura` em `acima`/`normal`/`abaixo`, `meses[]` com `chuva` `irregular`/`melhora`/`normal`/`excesso`, `dicas[]` com `figura` e `frase`, `fonte`, `url_fonte`, `publicado_em`, `tipo_dado: "previsao"`; `null` se não houver), `fontes`, `limitacoes`, `tipo_dado`, `gerado_em`.
+- **Sucesso 200:** `PainelProducao` (tipos em `web/Frontend/src/api/tipos.ts`): `culturas[]` com `situacao` (`acima`/`normal`/`abaixo`/`sem_plantio`, último ano vs média dos 5 anteriores, limiar 5%), `clima` (último ano vs média 1995–2024, com `situacao_chuva`, `gotas_em_10`, `situacao_calor`, `graus_de_diferenca`), `previsao` (prognóstico oficial INMET/INPE/FUNCEME dos próximos ~3 meses, transcrito em `data/processed/inmet/prognostico_<regiao>.json`, vale para os municípios da região do boletim (`codigos_ibge`, hoje a Região Intermediária 3507 do IBGE = noroeste paulista): `chuva` e `temperatura` em `acima`/`normal`/`abaixo`, `meses[]` com `chuva` `irregular`/`melhora`/`normal`/`excesso`, `dicas[]` com `figura` e `frase`, `fonte`, `url_fonte`, `publicado_em`, `tipo_dado: "previsao"`; `null` se não houver), `fontes`, `limitacoes`, `tipo_dado`, `gerado_em`.
 - **Erro 404:** `{"erro": {"codigo": "dados_insuficientes", ...}}` para município sem dados pré-processados.
 - Toda regra (situação, classificação do clima) fica no backend; o front só desenha. A previsão é transcrita do boletim mensal do INMET e precisa ser atualizada a cada mês.
 
@@ -84,6 +84,14 @@ Fotos do Sentinel-2 do **ponto do GPS** do produtor (mesma latitude/longitude pe
 - **Tempo:** primeira consulta de um ponto ~30 s (processa e grava cache em `data/processed/sentinel2/cache/`, fora do Git); seguintes ~20 ms, por 3 dias.
 - **Exceção à convenção §7** (satélite só pré-processado): o ponto vem do GPS e não dá para pré-processar todos. Processa uma vez por ponto e guarda em cache. **Precisa de aprovação da equipe.**
 - **Front:** usa a rota quando o ponto veio do GPS e o servidor está no ar, mesmo no modo mock. Sem servidor, mostra o talhão de exemplo da cidade (`ponto_exemplo: true`, cópia gerada pelo CLI do pipeline) ou avisa que o servidor precisa estar ligado.
+
+## GET /api/v1/previsao  (PROPOSTA — rota ainda não existe)
+
+Previsão oficial dos próximos meses para a **região** do município (o boletim do INMET fala por região). Usada no acompanhamento, logo depois da escolha do caminho.
+
+- **Query:** `codigo_ibge`.
+- **Sucesso 200:** `PrevisaoClima` (mesmo formato de `PainelProducao.previsao`, com `abrangencia`) ou `null` se não houver previsão transcrita para a região.
+- **Backend pronto:** `previsao_do_municipio(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`. Front usa a cópia `src/api/mock/previsaoRegiao.ts` enquanto a rota não existe.
 
 ## Pendente / não implementado ainda
 

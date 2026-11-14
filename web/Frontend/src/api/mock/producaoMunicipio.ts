@@ -59,6 +59,7 @@ export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {
       "periodo_normal": "1995-2024"
     },
     "previsao": {
+      "abrangencia": "Região de São José do Rio Preto (noroeste paulista)",
       "periodo": "novembro de 2026 a janeiro de 2027",
       "chuva": "acima",
       "temperatura": "acima",

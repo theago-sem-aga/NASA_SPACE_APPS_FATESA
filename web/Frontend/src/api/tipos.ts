@@ -303,6 +303,8 @@ export type ChuvaDoMes = 'irregular' | 'melhora' | 'normal' | 'excesso';
  * do boletim mensal. tipo_dado = 'previsao': a tela mostra o selo "Previsão".
  */
 export interface PrevisaoClima {
+  /** Região do boletim, ex.: 'Região de São José do Rio Preto (noroeste paulista)'. */
+  abrangencia: string;
   /** Ex.: 'novembro de 2026 a janeiro de 2027'. */
   periodo: string;
   chuva: Tendencia;

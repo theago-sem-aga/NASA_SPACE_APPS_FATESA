@@ -9,13 +9,14 @@
 // Situação hoje (ver docs/contrato_api.md):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
 //  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
-//               GET /producao → PainelProducao
+//               GET /producao → PainelProducao, GET /previsao → PrevisaoClima | null
 //  - REAL:      GET /acompanhamento → Acompanhamento (fotos do satélite do ponto do GPS)
 //
 // BACKEND: cada função abaixo documenta a rota que o front chama. Os nomes de
 // rota seguem a proposta da convenção §6 (/api/v1, substantivo no plural).
-import type { Acompanhamento, Analise, AnaliseEntrada, Cultura, ErroApi, Local, OrigemLocal, PainelProducao, RespostaAnalise } from './tipos';
+import type { Acompanhamento, Analise, AnaliseEntrada, Cultura, ErroApi, Local, OrigemLocal, PainelProducao, PrevisaoClima, RespostaAnalise } from './tipos';
 import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
+import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 
@@ -311,4 +312,17 @@ export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | n
     throw new FalhaApi('dados_insuficientes', 'Ainda não temos fotos de satélite dessa área.');
   }
   return { ...copia, ponto_exemplo: true };
+}
+
+/**
+ * GET /api/v1/previsao?codigo_ibge=3530300 → PrevisaoClima | null   (PROPOSTA, ainda não existe)
+ * Previsão oficial dos próximos meses para a região do município (o boletim do INMET
+ * fala por região, ex.: noroeste paulista). null = não temos previsão para essa região.
+ * BACKEND: previsao_do_municipio() em web/Backend/app/modelos/painel_producao.py.
+ */
+export async function buscarPrevisao(codigoIbge: string): Promise<PrevisaoClima | null> {
+  if (await backendTem('GET', '/previsao')) {
+    return requisitar<PrevisaoClima | null>(`/previsao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+  }
+  return PREVISOES_POR_REGIAO.find(r => r.codigos_ibge.includes(codigoIbge))?.previsao ?? null;
 }
