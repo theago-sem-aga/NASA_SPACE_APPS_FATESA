@@ -2,7 +2,7 @@ import type { Analise, CorrecoesTalhao, Local, OrigemLocal, PrioridadeId, Proble
 
 export const ETAPAS = [
   'inicio', 'local', 'cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades',
-  'estrategias', 'comparar', 'estrategia', 'clima', 'proximos', 'producao'
+  'estrategias', 'comparar', 'estrategia', 'clima', 'proximos', 'producao', 'acompanhamento'
 ] as const;
 export type Etapa = (typeof ETAPAS)[number];
 
@@ -23,7 +23,8 @@ export const TITULO_ETAPA: Record<Etapa, string> = {
   estrategia: 'Detalhe',
   clima: 'Chuva',
   proximos: 'Resumo',
-  producao: 'Colheita'
+  producao: 'Colheita',
+  acompanhamento: 'Acompanhar'
 };
 
 /** Para onde o botão Voltar leva em cada tela (o fluxo tem desvios). */
@@ -41,7 +42,8 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   estrategia: 'estrategias',
   clima: 'estrategia',
   proximos: 'estrategias',
-  producao: 'cultura'
+  producao: 'cultura',
+  acompanhamento: 'proximos'
 };
 
 export const MAX_PRIORIDADES = 2;

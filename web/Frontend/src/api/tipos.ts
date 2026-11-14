@@ -331,3 +331,39 @@ export interface PainelProducao {
   /** Data em que os números foram calculados (AAAA-MM-DD). */
   gerado_em: string;
 }
+
+// ---------------------------------------------------------------------------
+// PROPOSTA: acompanhamento da área pelo satélite
+// (GET /api/v1/acompanhamento?latitude=&longitude=). Montado por
+// web/Backend/app/pipelines/acompanhamento_sentinel2.py; regras no backend.
+
+/** Pelo verdor (NDVI) num quadrado de 100 m: < 0,25 / 0,25–0,50 / >= 0,50. */
+export type EstadoArea = 'terra_descoberta' | 'pouca_planta' | 'planta_verde';
+
+export interface FotoSatelite {
+  /** AAAA-MM-DD da passagem do satélite. */
+  data: string;
+  /** Verdor de -1 a 1 (NDVI). Só para referência; a tela mostra `estado`. */
+  ndvi: number;
+  estado: EstadoArea;
+  /** Caminho relativo à raiz do site (ex.: 'imagens/satelite/3549805_2026-11-12.png'). */
+  imagem: string;
+}
+
+export interface Acompanhamento {
+  codigo_ibge: string;
+  latitude: number;
+  longitude: number;
+  /** true = talhão de exemplo da cidade, não o ponto da pessoa (o front avisa). */
+  ponto_exemplo?: boolean;
+  /** Da mais nova para a mais velha; só fotos sem nuvem sobre o talhão. Vazio = sem foto limpa. */
+  fotos: FotoSatelite[];
+  /** A última foto confere com o que o plano previa? null = sem foto. */
+  confere_por_cobertura: Record<CoberturaSolo, boolean | null>;
+  lado_talhao_m: number;
+  fonte: string;
+  /** Texto de atribuição exigido pelo Copernicus. */
+  atribuicao: string;
+  tipo_dado: TipoDado;
+  gerado_em: string;
+}

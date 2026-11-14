@@ -107,6 +107,7 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
     case 'clima':
       return analise && estrategia ? aviso + roteiroClima(analise, estrategia) : '';
     case 'producao':
+    case 'acompanhamento':
       // O roteiro desta tela vem de features/producao/roteiroProducao.ts (depende dos dados carregados).
       return '';
     case 'proximos':

@@ -9,11 +9,12 @@
 // Situação hoje (ver docs/contrato_api.md):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
 //  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
-//               GET /producao → PainelProducao
+//               GET /producao → PainelProducao, GET /acompanhamento → Acompanhamento
 //
 // BACKEND: cada função abaixo documenta a rota que o front chama. Os nomes de
 // rota seguem a proposta da convenção §6 (/api/v1, substantivo no plural).
-import type { Analise, AnaliseEntrada, Cultura, ErroApi, Local, PainelProducao, RespostaAnalise } from './tipos';
+import type { Acompanhamento, Analise, AnaliseEntrada, Cultura, ErroApi, Local, PainelProducao, RespostaAnalise } from './tipos';
+import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 
@@ -272,4 +273,27 @@ export async function buscarPainelProducao(codigoIbge: string): Promise<PainelPr
     throw new FalhaApi('dados_insuficientes', 'Ainda não temos os números da colheita dessa cidade.');
   }
   return painel;
+}
+
+/**
+ * GET /api/v1/acompanhamento?latitude=&longitude= → Acompanhamento   (PROPOSTA, ainda não existe)
+ * BACKEND: a resposta já é montada por web/Backend/app/pipelines/acompanhamento_sentinel2.py
+ * (acompanhar). Pela convenção §7 o satélite é pré-processado: a rota deve servir o
+ * último processamento do ponto, não baixar imagem durante a requisição.
+ *
+ * Enquanto a rota não existe, usa a cópia local: fotos REAIS do Sentinel-2 de um
+ * talhão de EXEMPLO da cidade (ponto_exemplo = true). O centro da cidade mostraria casas.
+ */
+export async function buscarAcompanhamento(local: Local): Promise<Acompanhamento> {
+  if (await backendTem('GET', '/acompanhamento')) {
+    return requisitar<Acompanhamento>(`/acompanhamento?latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`);
+  }
+  const simular = simulacaoPedida();
+  if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  const copia = ACOMPANHAMENTOS[local.codigo_ibge];
+  if (!copia || simular === 'dados_insuficientes') {
+    throw new FalhaApi('dados_insuficientes', 'Ainda não temos fotos de satélite dessa área.');
+  }
+  return { ...copia, ponto_exemplo: true };
 }

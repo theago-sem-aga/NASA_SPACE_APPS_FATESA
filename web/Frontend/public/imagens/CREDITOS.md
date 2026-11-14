@@ -11,3 +11,7 @@ Todas obtidas no Wikimedia Commons em 2026-11-14, versão reduzida (thumbnail) s
 
 **Atenção:** `palha-cana.jpg` é CC BY-SA (compartilha-igual). Se a imagem for alterada (recorte, filtro), a versão alterada deve manter a mesma licença.
 Os créditos também aparecem na interface (componente `Foto`). Ao trocar ou adicionar imagens, atualize este arquivo e `src/components/imagens.ts`.
+
+## Fotos de satélite (`satelite/`)
+
+Contém dados Copernicus Sentinel-2 modificados (2026). Recorte, composição de cor e quadrado amarelo feitos por `web/Backend/app/pipelines/acompanhamento_sentinel2.py`, a partir do catálogo público Earth Search (Element84/AWS). Licença dos dados Sentinel: uso livre com atribuição (Copernicus).

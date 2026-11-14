@@ -23,6 +23,7 @@ import { TelaProximos } from './features/fluxo/TelaProximos';
 import { TelaRecurso } from './features/fluxo/TelaRecurso';
 import { useLocalizacao } from './features/fluxo/useLocalizacao';
 import { TelaProducao } from './features/producao/TelaProducao';
+import { TelaAcompanhamento } from './features/acompanhamento/TelaAcompanhamento';
 
 /** Pausa curta depois de um toque, para a pessoa ver o ✓ antes de trocar de tela. */
 const PAUSA_TOQUE_MS = 250;
@@ -37,10 +38,10 @@ export function App() {
   const principal = useRef<HTMLElement>(null);
   const primeiraRenderizacao = useRef(true);
   const temporizador = useRef<number>();
-  /** Roteiro falado da tela de colheita: depende dos dados que a própria tela carrega. */
-  const roteiroProducao = useRef('');
+  /** Roteiro falado das telas de colheita e acompanhamento: depende dos dados que a própria tela carrega. */
+  const roteiroDaPropriaTela = useRef('');
   const guardarRoteiroProducao = useCallback((texto: string) => {
-    roteiroProducao.current = texto;
+    roteiroDaPropriaTela.current = texto;
   }, []);
 
 
@@ -62,9 +63,9 @@ export function App() {
     [ir]
   );
 
-  // A tela de colheita usa a largura toda no computador (cabeçalho e rodapé juntos, para alinhar).
+  // As telas de colheita e acompanhamento usam a largura toda no computador (cabeçalho e rodapé juntos, para alinhar).
   useEffect(() => {
-    document.body.classList.toggle('pagina-larga', etapa === 'producao');
+    document.body.classList.toggle('pagina-larga', etapa === 'producao' || etapa === 'acompanhamento');
   }, [etapa]);
 
   // A cada troca de tela: volta ao topo e leva o foco ao título, para teclado e leitor de tela.
@@ -278,12 +279,19 @@ export function App() {
         );
       case 'clima':
         return estrategia && <TelaClima analise={a} estrategia={estrategia} aoVoltar={voltar} aoAvancar={() => ir('proximos')} />;
+      case 'acompanhamento':
+        return (
+          dados.local && (
+            <TelaAcompanhamento local={dados.local} estrategia={estrategia} aoMudarRoteiro={guardarRoteiroProducao} aoVoltar={voltar} />
+          )
+        );
       case 'proximos':
         return (
           <TelaProximos
             dados={dados}
             analise={a}
             aoVoltar={voltar}
+            aoAcompanhar={() => ir('acompanhamento')}
             aoRecomecar={() => {
               setDados(DADOS_INICIAIS);
               setAnalise({ situacao: 'ociosa' });
@@ -306,7 +314,9 @@ export function App() {
           suportado: narracao.suportado,
           falando: narracao.falando,
           aoOuvir: () =>
-            narracao.falar(etapa === 'producao' ? roteiroProducao.current : roteiroDaTela(etapa, dados, analisePronta, estrategia)),
+            narracao.falar(
+              etapa === 'producao' || etapa === 'acompanhamento' ? roteiroDaPropriaTela.current : roteiroDaTela(etapa, dados, analisePronta, estrategia)
+            ),
           aoParar: narracao.parar
         }}
       />

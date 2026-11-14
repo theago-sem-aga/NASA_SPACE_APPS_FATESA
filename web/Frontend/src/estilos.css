@@ -623,6 +623,24 @@ p { margin: 0; }
 }
 .producao-fonte { font-size: 0.9rem; }
 
+
+/* ---------- tela "Acompanhar a área" (features/acompanhamento) ---------- */
+.acompanhamento-grade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.satelite-foto { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.satelite-foto img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--raio); border: 2px solid var(--cor-borda); background: var(--cor-borda); }
+.satelite-foto figcaption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; }
+.satelite-foto-grande figcaption { font-size: 1.05rem; }
+.satelite-estado { font-size: 0.85rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.satelite-terra_descoberta { background: var(--cor-terra-clara); color: #6e3f14; }
+.satelite-pouca_planta { background: #faf1d8; color: #6e5410; }
+.satelite-planta_verde { background: var(--cor-folha-clara); color: #1d4a28; }
+.acompanhamento-legenda { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.acompanhamento-quadrado { width: 18px; height: 18px; border: 3px solid #ffd600; border-radius: 2px; flex: none; background: rgba(0, 0, 0, 0.15); }
+.acompanhamento-veredito { align-items: center; font-size: 1.1rem; }
+.satelite-linha { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.satelite-linha .satelite-foto figcaption { flex-direction: column; align-items: flex-start; font-size: 0.9rem; }
+.satelite-linha .satelite-estado { font-size: 0.75rem; padding: 2px 6px; }
+
 @media (max-width: 380px) {
   .producao-cultura { grid-template-columns: 52px minmax(0, 1fr) 44px; gap: 10px; }
   .producao-cultura .pictograma { width: 52px; height: 52px; }
@@ -635,4 +653,7 @@ p { margin: 0; }
   .producao-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .producao-previsao-resumo, .producao-dicas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pagina-larga .navegacao { max-width: 560px; }
+  .pagina-larga .navegacao-unica { max-width: 240px; }
+  .acompanhamento-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .satelite-linha { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 760px; }
 }

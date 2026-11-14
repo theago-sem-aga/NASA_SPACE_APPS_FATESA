@@ -73,6 +73,15 @@ Painel "Como foi a colheita" para produtores com pouca leitura. **A resposta já
 - **Erro 404:** `{"erro": {"codigo": "dados_insuficientes", ...}}` para município sem dados pré-processados.
 - Toda regra (situação, classificação do clima) fica no backend; o front só desenha. A previsão é transcrita do boletim mensal do INMET e precisa ser atualizada a cada mês.
 
+## GET /api/v1/acompanhamento  (PROPOSTA — rota ainda não existe)
+
+Acompanhamento da área pelo satélite, no fim do fluxo (botão no resumo). **A resposta já é montada** por `acompanhar(codigo_ibge, lat, lon)` em `web/Backend/app/pipelines/acompanhamento_sentinel2.py` (Sentinel-2 L2A, catálogo público Earth Search, sem login). Pela convenção §7 é fonte pré-processada: a rota deve servir o último processamento do ponto, não baixar imagem na requisição. Enquanto isso, o front usa a cópia gerada pelo script: **talhão de exemplo** por município (`ponto_exemplo: true`), porque o centro da cidade mostraria casas.
+
+- **Query:** `latitude`, `longitude` (o ponto do GPS ou do cadastro).
+- **Sucesso 200:** `Acompanhamento` (tipos em `web/Frontend/src/api/tipos.ts`): `fotos[]` (mais nova primeiro, só sem nuvem sobre o talhão: `data`, `ndvi`, `estado` = `terra_descoberta` < 0,25 ≤ `pouca_planta` < 0,50 ≤ `planta_verde`, `imagem`), `confere_por_cobertura` (para cada `CoberturaSolo` do calendário das estratégias, se a última foto combina; `null` sem foto), `lado_talhao_m`, `fonte`, `atribuicao` (obrigatória: "Contém dados Copernicus Sentinel-2 modificados"), `tipo_dado`, `gerado_em`.
+- **Erro 404:** `dados_insuficientes` quando não há fotos processadas para o ponto.
+- O front escolhe o mês atual no calendário do caminho escolhido e mostra `confere_por_cobertura[cobertura]`; a regra de conferir é do backend.
+
 ## Pendente / não implementado ainda
 
 - `GET /api/v1/culturas`, `POST /api/v1/analises`, `GET /api/v1/analises/{id}` — ainda apenas propostos (ver convenção seção 6), não implementados.

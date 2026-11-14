@@ -1,0 +1,47 @@
+{
+  "codigo_ibge": "3549805",
+  "latitude": -20.7343,
+  "longitude": -49.4429,
+  "fotos": [
+    {
+      "data": "2026-11-12",
+      "ndvi": 0.12,
+      "estado": "terra_descoberta",
+      "imagem": "imagens/satelite/3549805_2026-11-12.png",
+      "cena_id": "S2B_22KFC_20261112_0_L2A"
+    },
+    {
+      "data": "2026-10-20",
+      "ndvi": 0.12,
+      "estado": "terra_descoberta",
+      "imagem": "imagens/satelite/3549805_2026-10-20.png",
+      "cena_id": "S2A_22KFC_20261020_1_L2A"
+    },
+    {
+      "data": "2026-10-18",
+      "ndvi": 0.12,
+      "estado": "terra_descoberta",
+      "imagem": "imagens/satelite/3549805_2026-10-18.png",
+      "cena_id": "S2C_22KFC_20261018_0_L2A"
+    },
+    {
+      "data": "2026-10-13",
+      "ndvi": 0.12,
+      "estado": "terra_descoberta",
+      "imagem": "imagens/satelite/3549805_2026-10-13.png",
+      "cena_id": "S2B_22KFC_20261013_0_L2A"
+    }
+  ],
+  "confere_por_cobertura": {
+    "solo_descoberto": true,
+    "palhada": true,
+    "cultura_principal": false,
+    "cultura_intermediaria": false,
+    "adubo_verde": false
+  },
+  "lado_talhao_m": 100,
+  "fonte": "Sentinel-2 L2A (ESA/Copernicus), catálogo Earth Search (Element84)",
+  "atribuicao": "Contém dados Copernicus Sentinel-2 modificados (2026)",
+  "tipo_dado": "observacao_historica",
+  "gerado_em": "2026-11-14"
+}
