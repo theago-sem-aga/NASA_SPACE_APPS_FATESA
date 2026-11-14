@@ -13,6 +13,7 @@ Transformar 25+ anos de observações da Terra (NASA) + solo local + caracterís
 
 ## Fontes de dados
 Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.md`](docs/fontes-dados.md).
+**Origem:** das 26 bases oficiais, 10 são da NASA, 2 de agências parceiras (ESA/Copernicus: Sentinel-2, ERA5) e 14 de outras instituições (USDA, USGS, FAO etc.). Lista em `docs/fontes-dados.md`.
 **Atenção Brasil:** várias bases oficiais cobrem só os EUA — priorizar as 🌎 Global (SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, NASA POWER, SRTM, ECOSTRESS, GEDI, GLDAS, FAO GAEZ, Sentinel-2, ERA5). Caminho mais rápido para protótipo: **NASA POWER** (sem login) + **FAO GAEZ**. Para histórico de rotações, água e mercado (sem fonte brasileira na lista oficial) usar fontes nacionais: IBGE SIDRA, Conab, ANA, MapBiomas — detalhe em `docs/fontes-dados.md`.
 
 ## Análises exigidas

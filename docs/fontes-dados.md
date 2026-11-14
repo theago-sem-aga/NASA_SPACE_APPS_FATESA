@@ -6,6 +6,53 @@ Os links marcados como **Link oficial** são os que a página do desafio indica 
 
 **Cobertura geográfica:** muitas bases da lista oficial cobrem **apenas os EUA**. Se o projeto focar no Brasil, as bases marcadas como 🌎 **Global** são as que funcionam aqui.
 
+## Quem fornece cada base: NASA x outras instituições
+
+A página do desafio agrupa 24 bases em "NASA Data & Resources" e 2 em "Space Agency Partner Resources". Mas só **10 das 26 são produzidas pela NASA**; as outras são de outras instituições e foram recomendadas pela NASA como complemento. Na submissão, a seção de dados pede quais bases **NASA** e de **parceiros** foram usadas, então vale saber a diferença.
+
+### Bases da NASA (10)
+
+| Base | Quem produz | Cobertura |
+|---|---|---|
+| SMAP | NASA (JPL) | 🌎 Global |
+| GPM / IMERG | NASA e JAXA (Japão) | 🌎 Global |
+| Landsat | NASA e USGS | 🌎 Global |
+| MODIS | NASA (satélites Terra e Aqua) | 🌎 Global |
+| VIIRS | NASA e NOAA | 🌎 Global |
+| NASA POWER | NASA (Langley) | 🌎 Global |
+| SRTM | NASA e NGA | 🌎 Global |
+| ECOSTRESS | NASA (JPL, na Estação Espacial) | 🌎 Quase global |
+| NLDAS / GLDAS | NASA (Goddard); NLDAS em parceria com NOAA | NLDAS: América do Norte · GLDAS: 🌎 Global |
+| GEDI | NASA e Universidade de Maryland | 🌎 51,6°N–51,6°S |
+
+### Agências espaciais parceiras (2)
+
+| Base | Quem produz | Cobertura |
+|---|---|---|
+| Sentinel-2 | ESA / Programa Copernicus (União Europeia) | 🌎 Global |
+| ERA5 | ECMWF / Copernicus (União Europeia) | 🌎 Global |
+
+### Outras instituições (14)
+
+| Base | Quem produz | Cobertura |
+|---|---|---|
+| USDA Ag Data Commons | USDA (Biblioteca Nacional de Agricultura) | EUA (majoritariamente) |
+| Web Soil Survey | USDA NRCS | EUA |
+| SSURGO / STATSGO2 | USDA NRCS | EUA |
+| Cropland Data Layer | USDA NASS | EUA |
+| NASS QuickStats | USDA NASS | EUA |
+| NAIP | USDA (Farm Production and Conservation) | EUA |
+| AMS Market News | USDA AMS | EUA |
+| NLCD | USGS | EUA |
+| USGS NWIS | USGS | EUA |
+| LANDFIRE | Serviço Florestal dos EUA (USFS) e Departamento do Interior | EUA |
+| PRISM | Oregon State University | EUA |
+| CoCoRaHS | Rede de voluntários (Colorado Climate Center) | América do Norte |
+| OpenET | Consórcio de instituições, com participação da NASA | Oeste dos EUA |
+| FAO GAEZ | FAO (ONU) e IIASA | 🌎 Global |
+
+**Resumo para o Brasil:** todas as 10 bases da NASA e as 2 das parceiras funcionam aqui (no NLDAS/GLDAS, só o GLDAS). Das outras 14, só a **FAO GAEZ** cobre o Brasil.
+
 ## Onde buscar cada tema
 
 Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em mais de um tema. **Só EUA** indica que a base não cobre o Brasil.
