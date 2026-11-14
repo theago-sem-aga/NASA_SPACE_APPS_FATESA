@@ -1,7 +1,11 @@
 // DTOs do contrato front <-> API.
-// PROPOSTA: ainda não existem docs/contrato_api.md nem docs/dicionario_dados.md.
-// Nomes seguem a convenção (snake_case, sem acento, unidade no nome) e precisam
-// ser aprovados com o backend (Ghabriel) antes de virar contrato.
+// Duas partes:
+//  - REAL (fim do arquivo): Variavel / RespostaAnalise, já implementados no backend
+//    e descritos em docs/contrato_api.md e docs/dicionario_dados.md.
+//  - PROPOSTA (o resto): o que o front precisa para as telas e o backend ainda não
+//    tem (culturas, locais, municípios, POST /analises com estratégias). Nomes seguem
+//    a convenção (snake_case, sem acento, unidade no nome) e precisam ser aprovados
+//    com o backend (Ghabriel) antes de virar contrato.
 //
 // Para o back: tudo o que o front espera e ainda não está na convenção está
 // marcado com "BACKEND:" (busque esse texto em src/). As rotas estão em
@@ -206,6 +210,40 @@ export interface Analise {
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Contrato REAL, já implementado: GET /api/v1/analises?latitude=&longitude=
+// Copiado do /openapi.json da API e de docs/contrato_api.md + docs/dicionario_dados.md.
+// Não renomear: estes nomes são os do backend.
+// ---------------------------------------------------------------------------
+
+/** 'ao_vivo' = consultada na hora (NASA POWER, USDA, OpenET); 'pre_processado' = índice PostGIS + Parquet. */
+export type TipoAcesso = 'ao_vivo' | 'pre_processado';
+
+/** Uma medição de uma fonte. `nome` segue docs/dicionario_dados.md (ex.: 'precipitacao_acumulada_mm'). */
+export interface Variavel {
+  nome: string;
+  /** 'nasa_power' | 'usda_soil_data_access' | 'openet' | 'gpm' | 'smap' | 'srtm' | 'ecostress' | 'landsat' */
+  fonte: string;
+  tipo_acesso: TipoAcesso;
+  /** YYYY-MM-DD; null quando a variável não tem data (ex.: solo). */
+  data: string | null;
+  /** null = sem medição. Nunca é zero no lugar de "sem dado". */
+  valor: number | null;
+}
+
+export interface FonteIndisponivel {
+  fonte: string;
+  /** 'fora_da_regiao_pre_processada' | 'fora_da_cobertura' */
+  motivo: string;
+}
+
+export interface RespostaAnalise {
+  latitude: number;
+  longitude: number;
+  variaveis: Variavel[];
+  fontes_indisponiveis: FonteIndisponivel[];
 }
 
 /** Esqueleto de erro sugerido na convenção §6 (pendente de aprovação). */
