@@ -4,7 +4,7 @@ import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelit
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
-import { Pictograma, type NomePictograma } from '../../components/Pictograma';
+import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from '../../components/Pictograma';
 import { formatarCoordenada } from '../fluxo/estadoFluxo';
 import { SecaoPrevisao } from '../producao/TelaProducao';
 import { NOME_MES, ROTULO_COBERTURA } from '../fluxo/rotulos';
@@ -43,6 +43,13 @@ const FIGURA_COBERTURA: Record<CoberturaSolo, NomePictograma> = {
   palhada: 'palhada',
   cultura_principal: 'cana'
 };
+
+/** Na lavoura do meio da rotação, a figura é a da cultura escolhida (soja, milheto...). */
+function figuraDoPlano(plano: CoberturaSolo, estrategia: Estrategia | null): NomePictograma {
+  const meio = estrategia?.etapas_rotacao[1]?.cultura_id;
+  if ((plano === 'cultura_intermediaria' || plano === 'adubo_verde') && meio && PICTOGRAMA_CULTURA[meio]) return PICTOGRAMA_CULTURA[meio];
+  return FIGURA_COBERTURA[plano];
+}
 
 /** O plano do mês atual, lido do calendário do caminho escolhido (não é regra: é o dado da estratégia). */
 export function planoDoMes(estrategia: Estrategia | null, mes: number): CoberturaSolo | null {
@@ -193,7 +200,7 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
             {plano && (
               <div className="producao-cartao">
                 <div className="producao-cartao-cab">
-                  <Pictograma nome={FIGURA_COBERTURA[plano]} tamanho={64} />
+                  <Pictograma nome={figuraDoPlano(plano, estrategia)} tamanho={64} />
                   <span>
                     <span className="texto-apoio">O plano para {NOME_MES[mesAtual - 1]}</span>
                     <strong className="producao-nome">{ROTULO_COBERTURA[plano].nome}</strong>

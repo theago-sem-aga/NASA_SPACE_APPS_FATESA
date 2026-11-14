@@ -93,6 +93,18 @@ Previsão oficial dos próximos meses para a **região** do município (o boleti
 - **Sucesso 200:** `PrevisaoClima` (mesmo formato de `PainelProducao.previsao`, com `abrangencia`) ou `null` se não houver previsão transcrita para a região.
 - **Backend pronto:** `previsao_do_municipio(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`. Front usa a cópia `src/api/mock/previsaoRegiao.ts` enquanto a rota não existe.
 
+## Motor de decisão (pronto no backend, aguardando POST /api/v1/analises)
+
+`web/Backend/app/modelos/motor_decisao.py` → `sugerir(prioridades, recursos_disponiveis, codigo_ibge)` escolhe os **3 caminhos** de `data/processed/estrategias/catalogo_reforma_cana.json` (7 opções: pousio, amendoim, soja, crotalária, milheto, sorgo forrageiro, mucuna):
+
+1. A prática atual (pousio) entra sempre.
+2. Sai quem exige o que o produtor disse **não** ter (`nao_sei` não exclui).
+3. Sai quem o ZARC do município não indica para plantio sequeiro de outubro a dezembro (adubo verde não é zoneado).
+4. Pontos por prioridade = nível do atributo ligado a ela (0–3, "aguentar a seca" invertido) + 1 se o catálogo marca a estratégia como indicada; entram as 2 com mais pontos.
+5. Devolve `sugeridas` (com `prioridades_que_contam` e `zarc_risco_pct`) e `fora` (`sem_maquina`, `sem_comprador`, `sem_irrigacao`, `fora_zarc`).
+
+Novo atributo em `AtributosEstrategia`: `valor_forragem` ("Dá comida pro gado"). **POST /api/v1/analises deve chamar `sugerir`** para preencher `estrategias`. Enquanto isso, `python motor_decisao.py` gera a escolha para todas as 352 combinações em `web/Frontend/src/api/mock/estrategiasMotor.ts`, e o front só consulta (`src/api/mock/montarEstrategias.ts`). Testes: `web/Backend/tests/test_motor_decisao.py`.
+
 ## Pendente / não implementado ainda
 
 - `GET /api/v1/culturas`, `POST /api/v1/analises`, `GET /api/v1/analises/{id}` — ainda apenas propostos (ver convenção seção 6), não implementados.

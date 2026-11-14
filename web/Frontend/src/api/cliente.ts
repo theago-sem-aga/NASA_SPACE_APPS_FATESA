@@ -19,6 +19,7 @@ import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
 import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
+import { montarEstrategias } from './mock/montarEstrategias';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';
@@ -216,7 +217,15 @@ function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
 }
 
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
-  return { ...ANALISE_MOCK, descricao_local: descricaoLocal, talhao: montarTalhaoMock(entrada.correcoes) };
+  // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
+  const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
+  return {
+    ...ANALISE_MOCK,
+    descricao_local: descricaoLocal,
+    talhao: montarTalhaoMock(entrada.correcoes),
+    estrategias,
+    limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
+  };
 }
 
 /**

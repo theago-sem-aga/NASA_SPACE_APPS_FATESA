@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Estrategia } from '../../api/tipos';
 import { Icone } from '../../components/Icone';
 import { Pictograma, PICTOGRAMA_CULTURA } from '../../components/Pictograma';
@@ -20,11 +20,16 @@ export function TelaDecisao({ estrategia, aoSeguir }: TelaDecisaoProps) {
   const meio = estrategia.etapas_rotacao[1];
   const nome = meio?.nome ?? estrategia.nome;
 
+  // O timer roda uma vez só. aoSeguir muda de identidade a cada redesenho do App
+  // (ex.: tocar em "Ouvir" durante a animação); se ele fosse dependência do efeito,
+  // o timer recomeçaria do zero a cada vez. Por isso fica guardado num ref.
+  const seguir = useRef(aoSeguir);
+  seguir.current = aoSeguir;
   useEffect(() => {
     const semMovimento = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const t = window.setTimeout(aoSeguir, semMovimento ? 1500 : DURACAO_MS);
+    const t = window.setTimeout(() => seguir.current(), semMovimento ? 1500 : DURACAO_MS);
     return () => window.clearTimeout(t);
-  }, [aoSeguir]);
+  }, []);
 
   return (
     <div className="decisao">

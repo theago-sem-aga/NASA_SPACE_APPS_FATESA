@@ -79,6 +79,40 @@ const DEFS: Record<string, Def> = {
       </>
     )
   },
+  milheto: {
+    fundo: 'verde',
+    desenho: (
+      <>
+        <path d="M17 44V16M24 44V10M31 44V16" stroke={C.folha} strokeWidth="3" strokeLinecap="round" />
+        <rect x="14" y="5" width="6" height="14" rx="3" fill="#b9a25a" />
+        <rect x="21" y="2" width="6" height="14" rx="3" fill="#b9a25a" />
+        <rect x="28" y="5" width="6" height="14" rx="3" fill="#b9a25a" />
+        <path d="M17 30c-5-2-9-1-12 2M31 28c5-2 9-1 12 2M24 34c-4-1-7 0-9 2" stroke={C.folha} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      </>
+    )
+  },
+  sorgo_forrageiro: {
+    fundo: 'terra',
+    desenho: (
+      <>
+        <path d="M24 44V18" stroke={C.folha} strokeWidth="3.5" strokeLinecap="round" />
+        <ellipse cx="24" cy="12" rx="8" ry="9" fill="#a5452c" />
+        <g fill="#c8614a"><circle cx="20" cy="9" r="2.4" /><circle cx="27" cy="8" r="2.4" /><circle cx="22" cy="15" r="2.4" /><circle cx="28" cy="14" r="2.4" /></g>
+        <path d="M24 28c-6-3-11-2-15 2M24 34c6-3 11-2 15 2" stroke={C.folha} strokeWidth="3" fill="none" strokeLinecap="round" />
+      </>
+    )
+  },
+  mucuna: {
+    fundo: 'verde',
+    desenho: (
+      <>
+        <path d="M8 40c8-4 10-14 18-16s12-10 14-18" stroke={C.folha} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <g fill={C.folha}><ellipse cx="14" cy="34" rx="5" ry="3" transform="rotate(-30 14 34)" /><ellipse cx="28" cy="22" rx="5" ry="3" transform="rotate(-30 28 22)" /><ellipse cx="38" cy="10" rx="5" ry="3" transform="rotate(-30 38 10)" /></g>
+        <path d="M20 26c-2 6-1 11 3 14" stroke="#4b3a5a" strokeWidth="5" strokeLinecap="round" fill="none" />
+        <path d="M33 16c-1 6 1 10 5 12" stroke="#4b3a5a" strokeWidth="5" strokeLinecap="round" fill="none" />
+      </>
+    )
+  },
   trigo: {
     fundo: 'amarelo',
     desenho: (
@@ -421,6 +455,9 @@ export const PICTOGRAMA_CULTURA: Record<string, NomePictograma> = {
   soja: 'soja',
   milho: 'milho',
   mandioca: 'mandioca',
+  milheto: 'milheto',
+  sorgo_forrageiro: 'sorgo_forrageiro',
+  mucuna: 'mucuna',
   trigo: 'trigo',
   pastagem: 'pastagem',
   amendoim: 'amendoim',

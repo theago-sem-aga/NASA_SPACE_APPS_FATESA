@@ -110,6 +110,8 @@ export interface AtributosEstrategia {
   renda_direta: Nivel;
   demanda_agua: Nivel;
   trabalho_custo: Nivel;
+  /** Quanto serve de comida para o gado (pasto, silagem). */
+  valor_forragem: Nivel;
 }
 
 export interface ClimaMensal {
