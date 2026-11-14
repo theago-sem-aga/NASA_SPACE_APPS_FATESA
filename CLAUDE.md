@@ -54,9 +54,9 @@ Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.m
 ## Fluxo Git
 - `main` → **produção**. Só recebe merge via PR vindo de `homolog`.
 - `homolog` → **homologação**. Integra as branches de feature para teste conjunto antes de ir pra produção.
-- `feature/<pessoa>/<descricao-curta>` → uma branch por pessoa/tarefa (ex.: `feature/tiago/ingestao-smap`).
+- `feature/<pessoa>` → **uma única branch por pessoa** (ex.: `feature/tiago`), reaproveitada para tudo que ela fizer. **Não criar uma branch nova por tarefa** — isso fragmenta o trabalho e gera branches demais.
 
-Fluxo padrão: `feature/*` → PR → `homolog` → validação → PR → `main`.
+Fluxo padrão: cada pessoa comita na sua `feature/<pessoa>` → PR para `homolog` → validação → PR → `main`. Sempre que terminar algo relevante, abrir PR de `feature/<pessoa>` para `homolog` em vez de deixar acumulando.
 Nunca commitar direto em `main` ou `homolog`.
 **Proibido `git push --force`** (ou qualquer variante, incluindo `--force-with-lease`) em qualquer branch — sobrescreve trabalho de outra pessoa/agente sem aviso. Se o push for rejeitado (`fetch first`), sempre `git fetch` + `merge` antes de reenviar.
 
