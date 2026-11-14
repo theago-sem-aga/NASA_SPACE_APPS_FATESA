@@ -1,13 +1,13 @@
 import { Icone } from './Icone';
 
 interface CabecalhoProps {
-  passoAtual: number;
-  totalPassos: number;
+  /** Só nas telas de pergunta. null = sem bolinhas (início, local e resultados). */
+  progresso: { atual: number; total: number } | null;
   tituloPasso: string;
   narracao: { suportado: boolean; falando: boolean; aoOuvir: () => void; aoParar: () => void };
 }
 
-export function Cabecalho({ passoAtual, totalPassos, tituloPasso, narracao }: CabecalhoProps) {
+export function Cabecalho({ progresso, tituloPasso, narracao }: CabecalhoProps) {
   return (
     <header className="cabecalho">
       <div className="conteudo cabecalho-topo">
@@ -30,17 +30,20 @@ export function Cabecalho({ passoAtual, totalPassos, tituloPasso, narracao }: Ca
             aria-pressed={narracao.falando}
           >
             <Icone nome={narracao.falando ? 'parar' : 'ouvir'} tamanho={20} />
-            {narracao.falando ? 'Parar' : 'Ouvir esta tela'}
+            {narracao.falando ? 'Parar' : 'Ouvir'}
           </button>
         )}
       </div>
-      {passoAtual > 0 && (
+      {progresso && (
         <div className="conteudo progresso">
-          <div className="progresso-trilho" aria-hidden="true">
-            <span className="progresso-preenchido" style={{ width: `${(passoAtual / totalPassos) * 100}%` }} />
-          </div>
+          <ol className="bolinhas" aria-hidden="true">
+            {Array.from({ length: progresso.total }, (_, i) => (
+              <li key={i} className={i < progresso.atual - 1 ? 'feita' : i === progresso.atual - 1 ? 'atual' : ''} />
+            ))}
+          </ol>
           <p className="progresso-texto">
-            Passo {passoAtual} de {totalPassos} · {tituloPasso}
+            {progresso.atual} de {progresso.total}
+            <span className="visualmente-oculto"> perguntas · {tituloPasso}</span>
           </p>
         </div>
       )}

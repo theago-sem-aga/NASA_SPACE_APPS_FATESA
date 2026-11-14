@@ -16,15 +16,15 @@ interface GraficoClimaProps {
 const CONFIG: Record<Variavel, { titulo: string; unidade: string; explicacao: string; valor: (c: ClimaMensal) => number | null; formatar: (v: number) => string }> = {
   chuva: {
     titulo: 'Chuva',
-    unidade: 'milímetros no mês',
-    explicacao: 'Quanto chove, em média, em cada mês. Para ter uma ideia: 1 mm é 1 litro de água em cada metro quadrado.',
+    unidade: 'mm',
+    explicacao: '1 mm é 1 litro de água em cada metro quadrado.',
     valor: c => c.precipitacao_acumulada_mm,
     formatar: v => `${formatarNumero(v)} mm`
   },
   umidade: {
     titulo: 'Umidade da terra',
-    unidade: 'índice de 0 (seco) a 1 (encharcado)',
-    explicacao: 'Quanta água fica na terra, na altura das raízes. Perto de 0 é terra seca; perto de 1 é terra encharcada.',
+    unidade: 'de 0 a 1',
+    explicacao: 'Água na terra, na altura da raiz: 0 é seca, 1 é encharcada.',
     valor: c => c.umidade_solo,
     formatar: v => formatarNumero(v)
   }
@@ -62,7 +62,7 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
         <div className="barras" role="img" aria-describedby={idDescricao} aria-label={`Gráfico de ${cfg.titulo.toLowerCase()} por mês. A mesma informação está na tabela abaixo.`}>
           {valores.map(({ mes, valor }) => (
             <div key={mes} className="barra-coluna">
-              <span className="barra-valor">{valor === null ? '—' : cfg.formatar(valor)}</span>
+              <span className="barra-valor">{valor === null ? '—' : formatarNumero(valor)}</span>
               <span
                 className={`barra barra-${variavel}`}
                 style={{ height: valor === null ? 0 : `${Math.max(4, (valor / maximo) * 100)}%` }}
@@ -76,7 +76,7 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
 
       {mesesDestacados.size > 0 && (
         <p className="legenda-linha">
-          <span className="amostra-marca" aria-hidden="true" /> Faixa listrada embaixo do mês: {rotuloDestaque}
+          <span className="amostra-marca" aria-hidden="true" /> Listrado embaixo: {rotuloDestaque}
         </p>
       )}
 
