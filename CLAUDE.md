@@ -4,13 +4,18 @@ Arquivo de contexto compartilhado do projeto. O Claude Code carrega este arquivo
 
 ## O desafio: Field Shift: Adapting Farms with NASA Data
 
-- **Página oficial:** https://www.spaceappschallenge.org/2026/challenges/field-shift-adapting-farms-with-nasa-data/
+- **Página oficial:** https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/
 - **Evento:** 14 e 15 de novembro de 2026 (48 horas).
+- **Evento local:** São José do Rio Preto — https://www.spaceappschallenge.org/2026/local-events/sao-jose-do-rio-preto/
+- **Página da equipe:** https://www.spaceappschallenge.org/2026/find-a-team/fatesa/
+- **Outros links úteis:** [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Repositório da NASA (Space Apps Connect)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 - **Objetivo (resumo):** construir uma ferramenta de apoio à decisão que combine observações da Terra da NASA com informações locais de solo, características das culturas e prioridades do agricultor, para ajudar a planejar **rotações de culturas** resilientes ao clima (temperatura, chuva e disponibilidade de água em mudança) e que melhorem a **saúde do solo**.
 
 > O resumo acima foi montado a partir de buscas e de guias de eventos locais. A descrição dos dados abaixo vem da aba *Resources* oficial. Quem tiver o texto oficial dos objetivos deve colá-lo nesta seção.
 
 ## Bases de dados
+
+Os links marcados como **Link oficial** são os que a página do desafio indica para cada base.
 
 **Cobertura geográfica:** muitas bases da lista oficial cobrem **apenas os EUA**. Se o projeto focar no Brasil, as bases marcadas como 🌎 **Global** são as que funcionam aqui.
 
@@ -50,42 +55,50 @@ Arquivo de contexto compartilhado do projeto. O Claude Code carrega este arquivo
 - **O que tem:** umidade do solo na superfície e estado de congelamento/descongelamento, no mundo todo, a cada 2–3 dias. O produto **L4** também estima a umidade na zona das raízes (0–100 cm) numa grade de 9 km.
 - **Para que serve no projeto:** identificar estresse por seca, água disponível, capacidade de infiltração e sinais precoces de estresse da cultura; avaliar culturas de rotação que aumentem a eficiência no uso da água ou a resistência à seca.
 - **Atenção:** a grade de 9 km não mostra diferenças dentro de um mesmo campo.
+- **Link oficial:** https://www.earthdata.nasa.gov/data/platforms/space-based-platforms/smap
 - **Acesso:** NASA Earthdata Search (precisa de login gratuito no Earthdata) ou AppEEARS.
 
 #### GPM e IMERG (Global Precipitation Measurement)
 - **O que tem:** taxa e acumulado de chuva estimados por satélite, para o mundo todo.
 - **Para que serve:** avaliar a regularidade das chuvas, a frequência de tempestades extremas, o risco de erosão, a entrada de água no solo e as tendências de umidade no longo prazo; comparar estratégias de rotação em diferentes cenários de chuva.
+- **Link oficial:** https://gpm.nasa.gov/data
 - **Acesso:** Earthdata Search. As camadas IMERG do **NASA Worldview** podem ser baixadas direto como imagens de alta resolução.
 
 #### Landsat e MODIS/VIIRS (reflectância, NDVI e índices de vegetação)
 - **O que tem:** reflectância corrigida, NDVI, índices de vegetação e indicadores de estresse vegetal, solo exposto e mudanças sazonais. Landsat tem 30 m de resolução; MODIS/VIIRS têm 250–1000 m, mas passam todo dia.
 - **Para que serve:** mapear o vigor da lavoura, acompanhar as transições entre estações, detectar períodos de estresse e comparar opções de rotação visualmente.
-- **Acesso:** Earthdata Search, AppEEARS, Worldview; Landsat também pelo USGS EarthExplorer.
+- **Links oficiais:** Landsat — https://earthexplorer.usgs.gov/ · MODIS — https://lpdaac.usgs.gov/products/ · VIIRS — https://search.earthdata.nasa.gov/search?q=VIIRS
+- **Acesso:** também por AppEEARS e Worldview.
 
 #### NASA POWER (agroclimatologia e meteorologia)
 - **O que tem:** dados solares, meteorológicos e climatológicos voltados à agricultura: temperatura, umidade, radiação e indicadores derivados. Séries históricas de várias décadas.
 - **Para que serve:** estimar o consumo de água da cultura, as condições da safra, o risco de geada e a aptidão climática das culturas candidatas à rotação.
-- **Acesso:** API gratuita, sem login, consultada por latitude e longitude (https://power.larc.nasa.gov). **É a base mais fácil de integrar.**
+- **Link oficial:** https://power.larc.nasa.gov/
+- **Acesso:** API gratuita, sem login, consultada por latitude e longitude. **É a base mais fácil de integrar.**
 
 #### SRTM (Shuttle Radar Topography Mission)
 - **O que tem:** modelo global de elevação do terreno.
 - **Para que serve:** calcular declividade, escoamento, risco de erosão, fluxo de água e estresse ligado ao relevo; indicar culturas de rotação que melhorem a infiltração, reduzam a erosão ou estabilizem o solo em encostas.
+- **Link oficial:** https://www.earthdata.nasa.gov/data/instruments/srtm
 - **Acesso:** Earthdata Search ou USGS EarthExplorer.
 
 #### ECOSTRESS
 - **O que tem:** temperatura da superfície (LST) e evapotranspiração (ET) em alta resolução, medidas a partir da Estação Espacial Internacional.
 - **Para que serve:** detectar focos de estresse vegetal, exposição ao calor, vulnerabilidade de raízes rasas e demanda de água da cultura; identificar quando a cultura atual está ficando mais vulnerável; mapear diferenças de microclima dentro da propriedade.
 - **Atenção:** a órbita da ISS faz as passagens acontecerem em horários e intervalos irregulares.
+- **Link oficial:** https://ecostress.jpl.nasa.gov/data
 - **Acesso:** Earthdata Search ou AppEEARS.
 
 #### NLDAS / GLDAS (Land Data Assimilation Systems)
 - **O que tem:** grades que combinam observações de satélite e de estações para gerar temperatura, chuva, umidade do solo, indicadores de evapotranspiração, radiação e outras variáveis de superfície, com resolução menor que um dia. NLDAS cobre a América do Norte; GLDAS cobre o mundo todo.
 - **Para que serve:** estudar o início de secas, déficits de umidade, transições da safra e condições de estresse; fornecer séries temporais contínuas como entrada para modelos de IA.
+- **Link oficial:** https://www.earthdata.nasa.gov/
 - **Acesso:** Earthdata Search, buscando "NLDAS" ou "GLDAS".
 
 #### GEDI (Global Ecosystem Dynamics Investigation)
 - **O que tem:** medições a laser da estrutura da vegetação: altura do dossel, índice de área foliar e biomassa acima do solo (produtos Level-4).
 - **Para que serve:** entender a densidade da vegetação, o estresse do dossel e as mudanças de longo prazo no entorno das áreas agrícolas. Funciona melhor em vegetação alta, como matas e florestas, e complementa SMAP, Landsat e MODIS.
+- **Link oficial:** https://gedi.umd.edu/data
 - **Acesso:** Earthdata Search.
 
 ### Dados agrícolas e de solo (outras fontes)
@@ -93,90 +106,95 @@ Arquivo de contexto compartilhado do projeto. O Claude Code carrega este arquivo
 #### USDA Ag Data Commons
 - **O que tem:** conjuntos de dados agrícolas abertos sobre solo, culturas, clima, manejo, fenologia, qualidade da água e condições ecológicas.
 - **Para que serve:** trazer contexto de campo para complementar o satélite: informações locais de culturas, medições de solo, práticas de manejo e pesquisas agrícolas, alinhando os indicadores da NASA com as restrições reais da propriedade.
-- **Acesso:** https://agdatacommons.nal.usda.gov
+- **Link oficial:** https://www.nal.usda.gov/services/agdatacommons
 
 #### Web Soil Survey (WSS)
 - **O que tem:** dados oficiais de solo dos EUA, mantidos pelo NRCS: mapas detalhados, propriedades, classes de drenagem, risco de erosão, classificação hidrológica e aptidão para diferentes usos.
 - **Para que serve:** obter características do solo de cada campo (matéria orgânica, textura, infiltração, risco de compactação) para melhorar as recomendações de rotação.
-- **Acesso:** https://websoilsurvey.nrcs.usda.gov
+- **Link oficial:** https://websoilsurvey.nrcs.usda.gov/app/
 
 #### Cropland Data Layer (CDL) / CropScape
 - **O que tem:** classificação anual das lavouras dos EUA em 30 m, identificando a cultura plantada (milho, soja, algodão, trigo, alfafa e outras).
 - **Para que serve:** reconstruir as rotações já praticadas, acompanhar mudanças entre safras, identificar campos sem cobertura e comparar padrões locais com as condições ambientais vistas pela NASA. Também serve como dado rotulado para treinar modelos de IA.
-- **Acesso:** CropScape (https://nassgeodata.gmu.edu/CropScape).
+- **Link oficial:** https://nassgeodata.gmu.edu/CropScape/
 
 #### SSURGO / STATSGO2 (USDA NRCS)
 - **O que tem:** atributos detalhados de solo: textura, matéria orgânica, classe de drenagem, grupo hidrológico, fatores de erosão, camadas restritivas e capacidade de retenção de água. SSURGO é na escala de campo; STATSGO2 é regional.
 - **Para que serve:** avaliar, para cada local, a saúde do solo, o potencial de erosão, a infiltração e a aptidão das culturas, tornando as sugestões de rotação agronomicamente fundamentadas.
-- **Acesso:** Web Soil Survey ou NRCS Geospatial Data Gateway.
+- **Link oficial:** https://www.nrcs.usda.gov/resources/data-and-reports/soils
+- **Acesso:** também pelo Web Soil Survey.
 
 #### FAO GAEZ (Global Agro-Ecological Zones)
 - **O que tem:** camadas globais de aptidão agroclimática para dezenas de culturas, restrições de solo, indicadores de disponibilidade de água, potencial de produtividade e avaliações de produtividade da terra.
 - **Para que serve:** verificar se as culturas de rotação propostas combinam com o clima e o solo do local; comparar cenários de rotação de forma global. **É uma das principais fontes de aptidão agrícola que funciona para o Brasil.**
-- **Acesso:** https://gaez.fao.org
+- **Link oficial:** https://gaez.fao.org/
 
 #### OpenET
 - **O que tem:** evapotranspiração por campo, estimada com modelos baseados em satélite, para estados do oeste dos EUA.
 - **Para que serve:** avaliar a demanda de água da cultura, o momento da irrigação, a eficiência no uso da água e campos sob estresse térmico ou hídrico; serve como referência para comparar com ECOSTRESS e NASA POWER.
-- **Acesso:** https://openetdata.org
+- **Link oficial:** https://openetdata.org/
 
 ### Clima e água (outras fontes)
 
 #### PRISM (Oregon State University)
 - **O que tem:** clima dos EUA em escala diária, mensal e normais de 30 anos: chuva, temperatura, ponto de orvalho, datas de geada e mais. Leva em conta o efeito do relevo.
 - **Para que serve:** avaliar tendências climáticas de longo prazo, alinhar a rotação ao histórico local de temperatura e chuva e validar indicadores de estresse derivados de satélite.
-- **Acesso:** https://prism.oregonstate.edu
+- **Link oficial:** https://prism.oregonstate.edu/
 
 #### CoCoRaHS (Community Collaborative Rain, Hail & Snow Network)
 - **O que tem:** medições diárias de chuva e neve feitas por voluntários na América do Norte.
 - **Para que serve:** validar estimativas de chuva por satélite (como o IMERG), detectar chuvas extremas muito localizadas e refinar previsões de estresse hídrico ou de momento de irrigação.
-- **Acesso:** https://www.cocorahs.org
+- **Link oficial:** https://www.cocorahs.org/Maps
 
 #### USGS NWIS (National Water Information System)
 - **O que tem:** séries longas de nível de aquíferos, vazão e nível de rios e qualidade da água.
 - **Para que serve:** avaliar a água disponível para irrigação, identificar estresse hidrológico, entender riscos de erosão rio abaixo e comparar a umidade vista pela NASA com medições em campo.
-- **Acesso:** https://waterdata.usgs.gov
+- **Link oficial:** https://waterdata.usgs.gov/nwis
 
 ### Paisagem e imagens (outras fontes)
 
 #### NAIP (National Agriculture Imagery Program)
 - **O que tem:** fotos aéreas dos EUA com cerca de 1 m de resolução, tiradas durante a safra.
 - **Para que serve:** delimitar talhões, detectar períodos de solo exposto, acompanhar o desenvolvimento da lavoura, monitorar mudanças de manejo e avaliar a cobertura vegetal em detalhe; treinar modelos de IA que precisam de mais detalhe que o satélite ou validar padrões vistos pela NASA.
-- **Acesso:** USGS EarthExplorer.
+- **Link oficial:** https://naip-usdaonline.hub.arcgis.com/
+- **Acesso:** também pelo USGS EarthExplorer.
 
 #### USGS NLCD (National Land Cover Database)
 - **O que tem:** classificação de uso e cobertura da terra em 30 m, para várias décadas.
 - **Para que serve:** identificar lavouras, pastagens, florestas, corpos d'água, áreas úmidas e zonas urbanas perto das propriedades; entender como a paisagem influencia microclima, água, erosão e pragas; analisar mudanças de cobertura ao longo do tempo.
-- **Acesso:** https://www.mrlc.gov
+- **Link oficial:** https://www.usgs.gov/centers/eros/science/national-land-cover-database
+- **Acesso:** os arquivos também ficam em https://www.mrlc.gov
 
 #### USFS LANDFIRE
 - **O que tem:** tipo e condição da vegetação, modelos de combustível e características da paisagem nos EUA.
 - **Para que serve:** entender ecossistemas locais, cobertura perene, interações entre árvores e lavouras e feições da paisagem que afetam microclima, fluxo de água, erosão e biodiversidade.
-- **Acesso:** https://landfire.gov
+- **Link oficial:** https://www.landfire.gov/
 
 ### Mercado e estatísticas agrícolas
 
 #### USDA AMS Market News
 - **O que tem:** preços de commodities, tendências de demanda e condições de mercado de culturas e pecuária.
 - **Para que serve:** verificar se as culturas de rotação propostas têm mercado local ou regional, uma restrição importante para o agricultor.
-- **Acesso:** https://www.ams.usda.gov/market-news
+- **Link oficial:** https://www.ams.usda.gov/market-news
 
 #### USDA NASS QuickStats
 - **O que tem:** estatísticas agrícolas por condado e por estado: produtividade, área plantada, histórico de produção e frequência de culturas.
 - **Para que serve:** calibrar modelos com o desempenho histórico, comparar possibilidades de rotação e explorar tendências agrícolas de longo prazo.
-- **Acesso:** https://quickstats.nass.usda.gov (tem API com chave gratuita).
+- **Link oficial:** https://quickstats.nass.usda.gov/
+- **Acesso:** tem API com chave gratuita.
 
 ### Agências espaciais parceiras
 
 #### Copernicus Sentinel-2 (ESA)
 - **O que tem:** imagens multiespectrais gratuitas de 10–20 m, com revisita frequente, e bandas feitas para análise de vegetação (red-edge, infravermelho próximo e SWIR).
 - **Para que serve:** calcular NDVI/EVI, mapear solo exposto, detectar estresse da lavoura e acompanhar a safra em detalhe. Tem resolução melhor que Landsat e MODIS, bom para análise por talhão.
-- **Acesso:** Copernicus Data Space Ecosystem (https://dataspace.copernicus.eu).
+- **Link oficial:** https://dataspace.copernicus.eu/ (Copernicus Data Space Ecosystem)
 
 #### ERA5 (reanálise do ECMWF)
 - **O que tem:** reanálise climática global com variáveis horárias: temperatura, chuva, vento, umidade, temperatura do solo e radiação, desde 1940.
 - **Para que serve:** preencher lacunas onde há poucas estações meteorológicas, analisar tendências climáticas de longo prazo, criar variáveis temporais para modelos de IA e dar contexto contínuo às observações da NASA.
-- **Acesso:** Copernicus Climate Data Store (https://cds.climate.copernicus.eu), com login gratuito.
+- **Link oficial:** https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=overview
+- **Acesso:** Copernicus Climate Data Store, com login gratuito.
 
 ## Observações práticas
 
