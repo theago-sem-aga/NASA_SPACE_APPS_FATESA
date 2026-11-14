@@ -31,7 +31,7 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   inicio: 'inicio',
   local: 'inicio',
   cultura: 'local',
-  maquinas_graos: 'cultura',
+  maquinas_graos: 'producao',
   comprador_graos: 'maquinas_graos',
   irrigacao: 'comprador_graos',
   problemas: 'irrigacao',
@@ -41,7 +41,7 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   estrategia: 'estrategias',
   clima: 'estrategia',
   proximos: 'estrategias',
-  producao: 'inicio'
+  producao: 'cultura'
 };
 
 export const MAX_PRIORIDADES = 2;

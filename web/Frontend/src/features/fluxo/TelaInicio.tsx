@@ -10,11 +10,10 @@ interface TelaInicioProps {
   mostrarDica: boolean;
   aoUsarLocalizacao: () => void;
   aoDigitarCidade: () => void;
-  aoVerColheita: () => void;
 }
 
 /** Primeira tela: já é a entrada pela localização. Um botão grande e uma saída discreta. */
-export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigitarCidade, aoVerColheita }: TelaInicioProps) {
+export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigitarCidade }: TelaInicioProps) {
   const ocupado = situacaoGps !== 'parado';
   return (
     <>
@@ -39,15 +38,6 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
         </button>
       </div>
 
-
-      <button type="button" className="atalho-colheita" onClick={aoVerColheita}>
-        <Pictograma nome="saco" tamanho={48} />
-        <span>
-          <strong>Como foi a colheita na cidade</strong>
-          <span className="texto-apoio">Chuva, calor e o que esperar do próximo ano</span>
-        </span>
-        <Icone nome="seguir" />
-      </button>
 
       <Foto imagem={IMAGENS.orbita} classe="foto-destaque" legenda="Plantações no Brasil vistas da Estação Espacial Internacional." />
     </>

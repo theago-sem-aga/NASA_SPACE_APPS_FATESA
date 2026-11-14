@@ -42,12 +42,7 @@ export function App() {
   const guardarRoteiroProducao = useCallback((texto: string) => {
     roteiroProducao.current = texto;
   }, []);
-  /** De onde a pessoa abriu a tela de colheita (o Voltar volta para lá). */
-  const [voltarDaProducao, setVoltarDaProducao] = useState<Etapa>('inicio');
-  const abrirProducao = (de: Etapa) => {
-    setVoltarDaProducao(de);
-    ir('producao');
-  };
+
 
   const mudar = useCallback((parcial: Partial<DadosFluxo>) => setDados(d => ({ ...d, ...parcial })), []);
 
@@ -140,7 +135,7 @@ export function App() {
 
   const analisePronta = analise.situacao === 'sucesso' ? analise.analise : null;
   const estrategia = analisePronta?.estrategias.find(e => e.estrategia_id === dados.estrategia_id) ?? analisePronta?.estrategias[0] ?? null;
-  const voltar = () => ir(etapa === 'producao' ? voltarDaProducao : VOLTAR_PARA[etapa]);
+  const voltar = () => ir(VOLTAR_PARA[etapa]);
   const proximaPergunta = (atual: Etapa): Etapa => PERGUNTAS[PERGUNTAS.indexOf(atual) + 1] ?? 'estrategias';
   const abrirEstrategia = (id: string) => {
     mudar({ estrategia_id: id });
@@ -174,16 +169,16 @@ export function App() {
             mostrarDica={gps.mostrarDica}
             aoUsarLocalizacao={() => void gps.pedir()}
             aoDigitarCidade={irParaBusca}
-            aoVerColheita={() => abrirProducao('inicio')}
           />
         );
       case 'producao':
         return (
           <TelaProducao
             local={dados.local}
+            culturaAtualId={dados.cultura_atual_id}
             aoMudarRoteiro={guardarRoteiroProducao}
             aoVoltar={voltar}
-            aoVerCaminhos={() => ir(analisePronta ? 'estrategias' : dados.local ? 'cultura' : 'inicio')}
+            aoContinuar={() => ir(proximaPergunta('cultura'))}
           />
         );
       case 'local':
@@ -208,7 +203,8 @@ export function App() {
             dados={dados}
             aoEscolher={c => {
               mudar({ cultura_atual_id: c.cultura_id, nomeCultura: c.nome });
-              irDepoisDoToque(proximaPergunta('cultura'));
+              // Depois da cultura, mostra como foi a colheita na cidade antes das perguntas.
+              irDepoisDoToque('producao');
             }}
             aoVoltar={voltar}
           />
@@ -288,7 +284,6 @@ export function App() {
             dados={dados}
             analise={a}
             aoVoltar={voltar}
-            aoVerColheita={() => abrirProducao('proximos')}
             aoRecomecar={() => {
               setDados(DADOS_INICIAIS);
               setAnalise({ situacao: 'ociosa' });

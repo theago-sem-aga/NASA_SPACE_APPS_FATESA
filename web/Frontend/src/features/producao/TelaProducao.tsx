@@ -10,10 +10,13 @@ import { roteiroProducao } from './roteiroProducao';
 interface TelaProducaoProps {
   /** Local escolhido no fluxo. null = abre com a cidade de exemplo. */
   local: Local | null;
+  /** Cultura que a pessoa disse ter plantado: aparece primeiro, marcada. */
+  culturaAtualId: string | null;
   /** Texto do botão "Ouvir" desta tela (o cabeçalho é quem fala). */
   aoMudarRoteiro: (texto: string) => void;
   aoVoltar: () => void;
-  aoVerCaminhos: () => void;
+  /** Segue para a próxima pergunta do fluxo. */
+  aoContinuar: () => void;
 }
 
 type Situacao =
@@ -83,7 +86,7 @@ function Sacos({ sacos }: { sacos: number }) {
   );
 }
 
-function LinhaCultura({ c }: { c: ColheitaCultura }) {
+function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
   const frase = FRASE_COLHEITA[c.situacao];
   return (
     <li className={`producao-cultura producao-${c.situacao}`}>
@@ -91,6 +94,7 @@ function LinhaCultura({ c }: { c: ColheitaCultura }) {
       <span className="producao-cultura-texto">
         <strong className="producao-nome">{c.nome}</strong>
         <span>{frase}</span>
+        {sua && <span className="etiqueta etiqueta-positiva">Sua lavoura</span>}
       </span>
       <Seta rumo={rumoDaColheita(c.situacao)} />
     </li>
@@ -99,7 +103,7 @@ function LinhaCultura({ c }: { c: ColheitaCultura }) {
 
 // ---------- tela ----------
 
-export function TelaProducao({ local, aoMudarRoteiro, aoVoltar, aoVerCaminhos }: TelaProducaoProps) {
+export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, aoContinuar }: TelaProducaoProps) {
   const codigo = local?.codigo_ibge || CODIGO_IBGE_EXEMPLO;
   const ehExemplo = !local?.codigo_ibge;
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
@@ -140,8 +144,8 @@ export function TelaProducao({ local, aoMudarRoteiro, aoVoltar, aoVerCaminhos }:
         <EstadoFalha
           titulo={semDados ? 'Sem números dessa cidade' : 'Deu um problema'}
           mensagem={estado.mensagem}
-          acaoRotulo={semDados ? 'Voltar' : 'Tentar de novo'}
-          aoAgir={semDados ? aoVoltar : () => void carregar()}
+          acaoRotulo={semDados ? 'Continuar' : 'Tentar de novo'}
+          aoAgir={semDados ? aoContinuar : () => void carregar()}
         />
       </>
     );
@@ -152,6 +156,8 @@ export function TelaProducao({ local, aoMudarRoteiro, aoVoltar, aoVerCaminhos }:
   const calor = fraseCalor(p.clima);
   const escolhido = p.cenarios.find(c => c.cenario_id === cenario) ?? p.cenarios[0];
   const pouca = p.clima.situacao_chuva === 'pouca';
+  // A cultura da pessoa vem primeiro (o resto mantém a ordem da API).
+  const culturas = [...p.culturas].sort((a, b) => Number(b.cultura_id === culturaAtualId) - Number(a.cultura_id === culturaAtualId));
 
   return (
     <>
@@ -167,7 +173,7 @@ export function TelaProducao({ local, aoMudarRoteiro, aoVoltar, aoVerCaminhos }:
         <section className="producao-bloco" aria-labelledby="t-colheita">
           <h2 id="t-colheita" className="producao-titulo">A colheita de {ano}</h2>
           <ul className="producao-culturas">
-            {p.culturas.map(c => <LinhaCultura key={c.cultura_id} c={c} />)}
+            {culturas.map(c => <LinhaCultura key={c.cultura_id} c={c} sua={c.cultura_id === culturaAtualId} />)}
           </ul>
         </section>
 
@@ -255,8 +261,8 @@ export function TelaProducao({ local, aoMudarRoteiro, aoVoltar, aoVerCaminhos }:
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
           <Icone nome="voltar" /> Voltar
         </button>
-        <button type="button" className="botao botao-primario" onClick={aoVerCaminhos}>
-          Ver caminhos para a terra <Icone nome="seguir" />
+        <button type="button" className="botao botao-primario" onClick={aoContinuar}>
+          Continuar <Icone nome="seguir" />
         </button>
       </div>
     </>

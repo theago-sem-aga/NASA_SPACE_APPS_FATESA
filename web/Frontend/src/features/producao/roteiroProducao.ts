@@ -19,6 +19,6 @@ export function roteiroProducao(p: PainelProducao, cenario: CenarioId, ehExemplo
       partes.push(`${nome}, ${fraseCenario(r.sacos_em_100).toLowerCase()}.`);
     });
   }
-  partes.push('Para ver outro tipo de ano, toque em seco, normal ou chuvoso. Antes de decidir, converse com o técnico.');
+  partes.push('Para ver outro tipo de ano, toque em seco, normal ou chuvoso. Quando quiser seguir, toque em continuar.');
   return partes.join(' ');
 }
