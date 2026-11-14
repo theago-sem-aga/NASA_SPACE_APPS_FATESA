@@ -1,3 +1,10 @@
 .env
 .env.*
 !.env.example
+
+# Dados brutos de satelite: grandes, regeneraveis via pipeline, nunca no Git.
+data/raw/
+
+# Python
+__pycache__/
+*.pyc

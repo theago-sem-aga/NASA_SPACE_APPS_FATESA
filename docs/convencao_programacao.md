@@ -31,6 +31,8 @@
 |---|---|---|
 | **Ghabriel** | Backend, API, integração/modelagem de dados e coordenação dos contratos; também define princípios de experiência do usuário em conjunto com Julya | **Codex** |
 | **Julya** | Implementação do frontend, componentes, responsividade, acessibilidade e integração com a API; decisões visuais/fluxos em conjunto com Ghabriel | **Claude** |
+| **Thiago** | Implementação do frontend, junto com Julya | **Claude** |
+| **Tiago** | Protótipo de ingestão e indexação espacial dos dados de satélite (recorte por região, lookup por coordenada) em `web/Backend`; coordenado com Ghabriel para não conflitar com o contrato de API | **Claude** |
 
 Outros integrantes e atribuições podem existir; **não assumir nomes, papéis ou aprovações não informados**. Codex e Claude são assistentes de desenvolvimento, não responsáveis humanos finais.
 
@@ -227,6 +229,25 @@ Princípios obrigatórios:
 - Nunca colocar segredos/credenciais NASA ou bancos no Git; usar `.env` fora do versionamento e `.env.example` sem segredos.
 - Evitar Git para arquivos brutos grandes; dados de teste pequenos, legalmente reutilizáveis e com proveniência podem entrar em `tests/fixtures`.
 
+### Estratégia de acesso aos dados: API ao vivo x arquivo pré-indexado
+
+Toda fonte usada no produto se encaixa em **exatamente uma** destas duas categorias — o backend não deve tratar nenhuma fonte de um jeito ambíguo ou híbrido:
+
+1. **API ao vivo.** Hoje só a **NASA POWER** se qualifica: endpoint HTTP público, sem login, cobertura global. É chamada diretamente a cada requisição do usuário, com a coordenada recebida no momento.
+2. **Arquivo pré-indexado.** Todas as fontes de arquivo de satélite (SMAP, GPM, ECOSTRESS, Landsat, MODIS, SRTM e qualquer outra que exija login Earthdata ou arquivo bruto grande). **Nunca** são buscadas ao vivo durante o uso do produto — o backend não faz requisição de rede pra NASA/USGS/etc. no caminho de uma resposta ao usuário. Em vez disso:
+   - Um pipeline de ingestão (offline, executado antes do deploy/demo, fora do fluxo de requisição do usuário) baixa o arquivo bruto, recorta pra região piloto e agrega por célula.
+   - Célula = grade fixa de **0,1° × 0,1°** (ver seção 10). Cada célula gera um **Parquet** por fonte/variável, referenciado por uma linha no **PostGIS** com a geometria da célula.
+   - Na requisição do usuário, o backend resolve a coordenada recebida pra célula (`ST_Intersects` -- não `ST_Contains`, porque coordenadas em número redondo caem exatamente na borda da célula) e lê o Parquet referenciado.
+   - Se a coordenada cair fora de qualquer célula pré-processada, a resposta da API deve dizer isso explicitamente (campo de disponibilidade/metadado), **nunca** tentar buscar ao vivo ou inventar valor.
+
+**Contrato entre ingestão e API** (o que o backend pode assumir sem reimplementar a ingestão):
+- Existe uma tabela/índice no PostGIS com, no mínimo, `fonte`, geometria da célula e caminho do Parquet correspondente.
+- Os arquivos Parquet ficam em um caminho previsível em disco (ex.: `data/processed/<fonte>/<celula_id>.parquet`), nunca no Git.
+- O esquema de colunas dentro de cada Parquet (nomes de variável, unidades) segue as convenções de nomenclatura da seção 5 e deve ser formalizado em `docs/dicionario_dados.md` conforme a ingestão for implementada.
+- Cada resposta da API deve rotular, por fonte, se o valor veio **ao vivo** ou do **índice pré-processado** — rastreabilidade já exigida pelos princípios desta seção.
+
+**Responsabilidade:** o pipeline de ingestão/indexação (download, recorte, Parquet, carga no PostGIS) é de **Tiago/Claude**; o endpoint que consome esse índice e a chamada ao vivo da NASA POWER são de **Ghabriel/Codex**, dentro do contrato de `docs/contrato_api.md`. Mudança em qualquer lado desse contrato (nome de tabela, caminho de arquivo, esquema do Parquet) precisa ser coordenada entre os dois antes de implementar.
+
 ### Os 26 links encontrados na aba Resources (referência, não fontes integradas)
 
 1. SMAP — https://www.earthdata.nasa.gov/data/platforms/space-based-platforms/smap
@@ -323,16 +344,23 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 - Separação entre interfaces, API, motor de decisão, ingestão e armazenamento.
 - Preocupação central com acessibilidade e experiência de agricultores com variados níveis de familiaridade digital.
 - Suporte arquitetural futuro a desktop sem internet e Android, mas sem implementá-los agora.
+- **Região piloto do protótipo:** Condado de Fresno, Califórnia, EUA (Vale de San Joaquin) — coordenada de referência `36.6, -119.7`. Escolhida por concentrar sinal forte em quase todas as fontes oficiais (estresse hídrico/aquífero documentado por GRACE/GRACE-FO, OpenET, diversidade de culturas via CDL, relevo variado próximo à Sierra Nevada) e por estar nos EUA, onde a maioria das 14 fontes "de outras instituições" tem cobertura.
+- **Localização do usuário:** capturada via `navigator.geolocation` do navegador (não é mapa clicável livre). Fora da região piloto pré-processada, o app assume a limitação explicitamente (sem dados detalhados de satélite) em vez de buscar ao vivo.
+- **Indexação espacial dos arquivos grandes:** recorte na ingestão (uma vez, offline) por região/célula, armazenado com índice espacial em PostGIS (`ST_Intersects`); a requisição busca pela coordenada, nunca varre o arquivo bruto. NASA POWER é a única fonte consultada ao vivo (API pública, sem login, cobertura global); as demais fontes de arquivo grande (SMAP, GPM, ECOSTRESS, Landsat, MODIS, SRTM) só respondem para a região já pré-processada.
+- **PostgreSQL + PostGIS 3.6 rodando de verdade** (local, Windows), banco `fatesa`, tabela `indice_espacial` (`fonte`, `celula_id`, `geom` poligono 4326, `caminho_parquet`), com índice GIST. Esquema em `web/Backend/app/pipelines/schema_postgis.sql`. Credencial de conexão fica em `web/.env` (`DATABASE_URL`), nunca no Git.
+- **Tamanho de cada célula do índice:** grade fixa de **0,1° × 0,1°** (~11 km × 11 km nesta latitude) — casa com a resolução nativa das fontes mais grosseiras que ainda assim são úteis ao vivo (GPM ~10 km, SMAP ~9–36 km), sem desperdiçar granularidade que essas fontes não têm. O Condado de Fresno (~180 km × 100 km) cobre, nessa grade, algo em torno de 230 células. Fontes de resolução mais fina (Landsat/SRTM 30 m, ECOSTRESS ~70 m) são agregadas (média/mín/máx) dentro da célula, não guardadas pixel a pixel — a UI não desenha mapa de pixel neste MVP.
+- **Tipo de arquivo do dado processado:** **Parquet** por célula (uma linha por combinação fonte/variável/data), referenciado pelo PostGIS — não BLOB no banco. Parquet porque o conteúdo final é tabular/série temporal (não imagem), é colunar (leitura rápida de poucas variáveis), comprime bem e tem suporte nativo em Python (pandas/pyarrow), que é a stack escolhida para os pipelines. Se algum dia for necessário servir um recorte visual (ex.: mapa de NDVI), aí sim o formato seria GeoTIFF (preferencialmente Cloud-Optimized GeoTIFF) em vez de Parquet — não é o caso do MVP atual.
+- Protótipo de ingestão/indexação sob responsabilidade de **Tiago/Claude**, em `web/Backend`, coordenado com Ghabriel/Codex para não colidir com o contrato de API.
 
 ### NÃO definidos / dependem de decisão humana e evidência
 
 - Nome comercial do produto, logo, identidade visual, repositório definitivo, hospedagem e autenticação.
-- Região(ões) de cobertura e de demonstração, coordenadas, mapa ou talhões.
+- Cobertura/região de **produção** final (a região piloto acima vale só para o protótipo do hackathon).
 - Culturas suportadas, safras e calendário agrícola.
 - Quais dos 26 recursos serão efetivamente integrados e quais estão disponíveis no ambiente atual.
 - Regras científicas de comparação, pesos, limites agronômicos, validação e interpretação de resultados.
 - Tabelas, payloads e endpoints exatos de produção além das convenções e propostas deste arquivo.
-- Se os recursos F2, narração e mapa estarão no MVP ou numa etapa seguinte (mapa está explicitamente fora do escopo inicial até definição geográfica).
+- Se os recursos F2 e narração estarão no MVP ou numa etapa seguinte.
 - Empacotamento, mapa offline, sincronização e armazenamento do desktop e Android.
 
 **Regra para decisões novas:** acrescentar uma entrada datada em `docs/decisoes_arquitetura.md` com decisão, motivo, alternativas, impacto em backend/frontend e responsáveis que aprovaram. Atualizar este arquivo quando a decisão tornar-se permanente.

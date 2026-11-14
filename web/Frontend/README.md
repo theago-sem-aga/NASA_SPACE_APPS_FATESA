@@ -1,12 +1,12 @@
 # Frontend — protótipo visual
 
-React + TypeScript + Vite, conforme [docs/convencao_programacao.md](../docs/convencao_programacao.md).
+React + TypeScript + Vite, conforme [docs/convencao_programacao.md](../../docs/convencao_programacao.md).
 Adaptado do protótipo HTML "Rotação Viva", com tom mais sóbrio, fotos reais com licença livre e acessibilidade revisada.
 
 ## Rodar
 
 ```bash
-cd front
+cd web/Frontend
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # verifica tipos e gera dist/

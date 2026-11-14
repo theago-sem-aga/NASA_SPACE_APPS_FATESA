@@ -54,9 +54,9 @@ Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.m
 ## Fluxo Git
 - `main` → **produção**. Só recebe merge via PR vindo de `homolog`.
 - `homolog` → **homologação**. Integra as branches de feature para teste conjunto antes de ir pra produção.
-- `feature/<pessoa>/<descricao-curta>` → uma branch por pessoa/tarefa (ex.: `feature/tiago/ingestao-smap`).
+- `feature/<pessoa>` → **uma única branch por pessoa** (ex.: `feature/tiago`), reaproveitada para tudo que ela fizer. **Não criar uma branch nova por tarefa** — isso fragmenta o trabalho e gera branches demais.
 
-Fluxo padrão: `feature/*` → PR → `homolog` → validação → PR → `main`.
+Fluxo padrão: cada pessoa comita na sua `feature/<pessoa>` → PR para `homolog` → validação → PR → `main`. Sempre que terminar algo relevante, abrir PR de `feature/<pessoa>` para `homolog` em vez de deixar acumulando.
 Nunca commitar direto em `main` ou `homolog`.
 **Proibido `git push --force`** (ou qualquer variante, incluindo `--force-with-lease`) em qualquer branch — sobrescreve trabalho de outra pessoa/agente sem aviso. Se o push for rejeitado (`fetch first`), sempre `git fetch` + `merge` antes de reenviar.
 
@@ -71,7 +71,7 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 
 ## Convenção de programação
-**Estrutura inicial:** `front/` tem o protótipo visual (React + TS + Vite, só dados mock; ver `front/README.md`). `web/` e `back/` ainda são placeholders. Os nomes `frontend/` e `backend/` na convenção são sugestões, não diretórios implementados.
+**Estrutura inicial:** `web/Frontend/` tem o protótipo visual (React + TS + Vite, só dados mock; ver `web/Frontend/README.md`). `web/Backend/` tem os pipelines de ingestão (NASA POWER, GPM, SMAP, PostGIS). `web/API/` ainda é placeholder. A árvore na convenção é uma sugestão; usar os caminhos existentes antes de criar diretórios.
 Convenções de código e direção de arquitetura: [`docs/convencao_programacao.md`](docs/convencao_programacao.md). Ler antes de criar, alterar ou refatorar código; respeitar a distinção entre decisões e propostas futuras.
 
 ## Histórico sumário
