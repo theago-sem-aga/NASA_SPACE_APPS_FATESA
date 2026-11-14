@@ -10,7 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 
-import requests
+from app.integrations.http import requisitar
 
 OPENET_URL = "https://openet-api.org/raster/timeseries/point"
 
@@ -27,6 +27,10 @@ def buscar_et_ponto(
     Retorna ``disponivel=False`` quando a API nao tem dado pro ponto
     (fora da cobertura do oeste dos EUA) -- nunca inventa valor.
     """
+    if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        raise ValueError("Coordenada fora do intervalo válido")
+    if data_inicio > data_fim or data_inicio.day != 1:
+        raise ValueError("Consulta mensal deve começar no dia 1 e ter período válido")
     chave = os.environ.get("OPENET_API_KEY")
     if not chave:
         raise RuntimeError("OPENET_API_KEY nao configurada em web/.env")
@@ -41,17 +45,10 @@ def buscar_et_ponto(
         "units": "mm",
         "file_format": "JSON",
     }
-    resposta = requests.post(
-        OPENET_URL, json=corpo, headers={"Authorization": chave}, timeout=timeout_s
+    resposta = requisitar(
+        "POST", OPENET_URL, json=corpo, headers={"Authorization": chave}, timeout=timeout_s
     )
-    if resposta.status_code != 200:
-        return {
-            "fonte": "openet",
-            "tipo_acesso": "ao_vivo",
-            "latitude": latitude,
-            "longitude": longitude,
-            "disponivel": False,
-        }
+    resposta.raise_for_status()
 
     linhas = resposta.json()
     serie = [
@@ -72,7 +69,9 @@ def buscar_et_ponto(
 
 if __name__ == "__main__":
     from pathlib import Path
+
     from dotenv import load_dotenv
+
     load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
     print(buscar_et_ponto(36.6, -119.7, dt.date(2022, 6, 1), dt.date(2022, 6, 30)))
