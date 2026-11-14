@@ -25,6 +25,12 @@ Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.m
 - Apontar janelas vazias no campo e estações de maior vulnerabilidade da cultura atual.
 - **≥3 estratégias de rotação** (incluindo a atual existente), cada uma com: objetivo, evidência, benefícios, riscos que exigem validação local (agricultor/especialista).
 
+## Macro-visão do planejamento
+- **Objetivo principal:** motor de decisão que ranqueia ≥3 estratégias de rotação explicáveis para a fazenda piloto, apontando janelas vazias e vulnerabilidade sazonal.
+- **Objetivos opcionais:** dashboard/mapa interativo · múltiplas fazendas/regiões · explicação em linguagem natural via IA generativa · projeção de tendências futuras (2040/2050) · cruzamento com fontes nacionais (MapBiomas, Conab, IBGE SIDRA, ANA) · relatório exportável para o agricultor.
+- **Requisitos:** fazenda piloto com coordenadas reais · prioridades do agricultor definidas · pipeline de ingestão ativo (NASA POWER é o mais rápido) · scoring explicável (sem caixa-preta) · UI mostrando objetivo/evidência/benefício/risco por estratégia · conformidade com a submissão Space Apps · fluxo Git funcionando sem conflito entre os cinco.
+- **Obstáculos:** bases oficiais majoritariamente só EUA · login Earthdata exigido por SMAP/GPM/ECOSTRESS/GEDI/GLDAS · equipe com Claude e Codex em paralelo (risco de conflito de merge, já ocorrido) · equilíbrio explicabilidade x complexidade do modelo · validação agronômica dos riscos depende de revisão humana especializada que o time pode não ter.
+
 ## Submissão Space Apps
 - **High-Level Summary:** nome do projeto, o que foi feito, abordagem, por que importa.
 - **Project Details:** o que faz, como funciona, benefícios, impacto esperado, stack usado.
