@@ -19,3 +19,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Ghabriel (Codex)_: adiciona placeholders documentados em `web/`, `front/` e `back/` para compartilhar a estrutura inicial com a equipe, sem aplicação implementada.
 - **2026-11-14** _Ghabriel (Codex)_: corrige os placeholders para as pastas existentes `web/Frontend/` e `web/Backend/` e inclui `web/API/`.
 - **2026-11-14** _Tiago (Claude)_: define regiao piloto do prototipo (Condado de Fresno, CA) e a estrategia de indexacao espacial (recorte na ingestao + PostGIS), registradas em docs/convencao_programacao.md.
+- **2026-11-14** _Tiago (Claude)_: documenta em docs/convencao_programacao.md a estrategia de acesso a dados (API ao vivo x arquivo pre-indexado), o contrato entre ingestao e API, e atualiza a tabela de responsaveis (Thiago no frontend).

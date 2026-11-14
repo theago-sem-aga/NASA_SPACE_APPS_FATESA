@@ -31,6 +31,7 @@
 |---|---|---|
 | **Ghabriel** | Backend, API, integração/modelagem de dados e coordenação dos contratos; também define princípios de experiência do usuário em conjunto com Julya | **Codex** |
 | **Julya** | Implementação do frontend, componentes, responsividade, acessibilidade e integração com a API; decisões visuais/fluxos em conjunto com Ghabriel | **Claude** |
+| **Thiago** | Implementação do frontend, junto com Julya | **Claude** |
 | **Tiago** | Protótipo de ingestão e indexação espacial dos dados de satélite (recorte por região, lookup por coordenada) em `web/Backend`; coordenado com Ghabriel para não conflitar com o contrato de API | **Claude** |
 
 Outros integrantes e atribuições podem existir; **não assumir nomes, papéis ou aprovações não informados**. Codex e Claude são assistentes de desenvolvimento, não responsáveis humanos finais.
@@ -227,6 +228,25 @@ Princípios obrigatórios:
 - Ter um caminho que funcione sem consulta ao vivo de fontes externas (amostras reais previamente baixadas e atribuídas).
 - Nunca colocar segredos/credenciais NASA ou bancos no Git; usar `.env` fora do versionamento e `.env.example` sem segredos.
 - Evitar Git para arquivos brutos grandes; dados de teste pequenos, legalmente reutilizáveis e com proveniência podem entrar em `tests/fixtures`.
+
+### Estratégia de acesso aos dados: API ao vivo x arquivo pré-indexado
+
+Toda fonte usada no produto se encaixa em **exatamente uma** destas duas categorias — o backend não deve tratar nenhuma fonte de um jeito ambíguo ou híbrido:
+
+1. **API ao vivo.** Hoje só a **NASA POWER** se qualifica: endpoint HTTP público, sem login, cobertura global. É chamada diretamente a cada requisição do usuário, com a coordenada recebida no momento.
+2. **Arquivo pré-indexado.** Todas as fontes de arquivo de satélite (SMAP, GPM, ECOSTRESS, Landsat, MODIS, SRTM e qualquer outra que exija login Earthdata ou arquivo bruto grande). **Nunca** são buscadas ao vivo durante o uso do produto — o backend não faz requisição de rede pra NASA/USGS/etc. no caminho de uma resposta ao usuário. Em vez disso:
+   - Um pipeline de ingestão (offline, executado antes do deploy/demo, fora do fluxo de requisição do usuário) baixa o arquivo bruto, recorta pra região piloto e agrega por célula.
+   - Célula = grade fixa de **0,1° × 0,1°** (ver seção 10). Cada célula gera um **Parquet** por fonte/variável, referenciado por uma linha no **PostGIS** com a geometria da célula.
+   - Na requisição do usuário, o backend resolve a coordenada recebida pra célula (`ST_Contains`), busca a linha correspondente no PostGIS e lê o Parquet referenciado.
+   - Se a coordenada cair fora de qualquer célula pré-processada, a resposta da API deve dizer isso explicitamente (campo de disponibilidade/metadado), **nunca** tentar buscar ao vivo ou inventar valor.
+
+**Contrato entre ingestão e API** (o que o backend pode assumir sem reimplementar a ingestão):
+- Existe uma tabela/índice no PostGIS com, no mínimo, `fonte`, geometria da célula e caminho do Parquet correspondente.
+- Os arquivos Parquet ficam em um caminho previsível em disco (ex.: `data/processed/<fonte>/<celula_id>.parquet`), nunca no Git.
+- O esquema de colunas dentro de cada Parquet (nomes de variável, unidades) segue as convenções de nomenclatura da seção 5 e deve ser formalizado em `docs/dicionario_dados.md` conforme a ingestão for implementada.
+- Cada resposta da API deve rotular, por fonte, se o valor veio **ao vivo** ou do **índice pré-processado** — rastreabilidade já exigida pelos princípios desta seção.
+
+**Responsabilidade:** o pipeline de ingestão/indexação (download, recorte, Parquet, carga no PostGIS) é de **Tiago/Claude**; o endpoint que consome esse índice e a chamada ao vivo da NASA POWER são de **Ghabriel/Codex**, dentro do contrato de `docs/contrato_api.md`. Mudança em qualquer lado desse contrato (nome de tabela, caminho de arquivo, esquema do Parquet) precisa ser coordenada entre os dois antes de implementar.
 
 ### Os 26 links encontrados na aba Resources (referência, não fontes integradas)
 
