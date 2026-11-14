@@ -16,3 +16,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Tiago (Claude)_: cria este histórico sumário e a regra de registro de ações relevantes para todos os agentes.
 - **2026-11-14** _Ghabriel (Codex)_: organiza o contexto de convenções de programação e arquitetura em `docs/convencao_programacao.md` e adiciona referência no `CLAUDE.md`.
 - **2026-11-14** _Tiago (Claude)_: proíbe `git push --force` (inclusive `--force-with-lease`) no fluxo Git; push rejeitado deve ser resolvido com `fetch` + `merge`.
+- **2026-11-14** _Ghabriel (Codex)_: adiciona placeholders documentados em `web/`, `front/` e `back/` para compartilhar a estrutura inicial com a equipe, sem aplicação implementada.
