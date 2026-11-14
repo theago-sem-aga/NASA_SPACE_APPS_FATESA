@@ -31,6 +31,7 @@
 |---|---|---|
 | **Ghabriel** | Backend, API, integração/modelagem de dados e coordenação dos contratos; também define princípios de experiência do usuário em conjunto com Julya | **Codex** |
 | **Julya** | Implementação do frontend, componentes, responsividade, acessibilidade e integração com a API; decisões visuais/fluxos em conjunto com Ghabriel | **Claude** |
+| **Tiago** | Protótipo de ingestão e indexação espacial dos dados de satélite (recorte por região, lookup por coordenada) em `web/Backend`; coordenado com Ghabriel para não conflitar com o contrato de API | **Claude** |
 
 Outros integrantes e atribuições podem existir; **não assumir nomes, papéis ou aprovações não informados**. Codex e Claude são assistentes de desenvolvimento, não responsáveis humanos finais.
 
@@ -323,16 +324,22 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 - Separação entre interfaces, API, motor de decisão, ingestão e armazenamento.
 - Preocupação central com acessibilidade e experiência de agricultores com variados níveis de familiaridade digital.
 - Suporte arquitetural futuro a desktop sem internet e Android, mas sem implementá-los agora.
+- **Região piloto do protótipo:** Condado de Fresno, Califórnia, EUA (Vale de San Joaquin) — coordenada de referência `36.6, -119.7`. Escolhida por concentrar sinal forte em quase todas as fontes oficiais (estresse hídrico/aquífero documentado por GRACE/GRACE-FO, OpenET, diversidade de culturas via CDL, relevo variado próximo à Sierra Nevada) e por estar nos EUA, onde a maioria das 14 fontes "de outras instituições" tem cobertura.
+- **Localização do usuário:** capturada via `navigator.geolocation` do navegador (não é mapa clicável livre). Fora da região piloto pré-processada, o app assume a limitação explicitamente (sem dados detalhados de satélite) em vez de buscar ao vivo.
+- **Indexação espacial dos arquivos grandes:** recorte na ingestão (uma vez, offline) por região/célula, armazenado com índice espacial em PostGIS (`ST_Contains`); a requisição busca pela coordenada, nunca varre o arquivo bruto. NASA POWER é a única fonte consultada ao vivo (API pública, sem login, cobertura global); as demais fontes de arquivo grande (SMAP, GPM, ECOSTRESS, Landsat, MODIS, SRTM) só respondem para a região já pré-processada.
+- **Tamanho de cada célula do índice:** grade fixa de **0,1° × 0,1°** (~11 km × 11 km nesta latitude) — casa com a resolução nativa das fontes mais grosseiras que ainda assim são úteis ao vivo (GPM ~10 km, SMAP ~9–36 km), sem desperdiçar granularidade que essas fontes não têm. O Condado de Fresno (~180 km × 100 km) cobre, nessa grade, algo em torno de 230 células. Fontes de resolução mais fina (Landsat/SRTM 30 m, ECOSTRESS ~70 m) são agregadas (média/mín/máx) dentro da célula, não guardadas pixel a pixel — a UI não desenha mapa de pixel neste MVP.
+- **Tipo de arquivo do dado processado:** **Parquet** por célula (uma linha por combinação fonte/variável/data), referenciado pelo PostGIS — não BLOB no banco. Parquet porque o conteúdo final é tabular/série temporal (não imagem), é colunar (leitura rápida de poucas variáveis), comprime bem e tem suporte nativo em Python (pandas/pyarrow), que é a stack escolhida para os pipelines. Se algum dia for necessário servir um recorte visual (ex.: mapa de NDVI), aí sim o formato seria GeoTIFF (preferencialmente Cloud-Optimized GeoTIFF) em vez de Parquet — não é o caso do MVP atual.
+- Protótipo de ingestão/indexação sob responsabilidade de **Tiago/Claude**, em `web/Backend`, coordenado com Ghabriel/Codex para não colidir com o contrato de API.
 
 ### NÃO definidos / dependem de decisão humana e evidência
 
 - Nome comercial do produto, logo, identidade visual, repositório definitivo, hospedagem e autenticação.
-- Região(ões) de cobertura e de demonstração, coordenadas, mapa ou talhões.
+- Cobertura/região de **produção** final (a região piloto acima vale só para o protótipo do hackathon).
 - Culturas suportadas, safras e calendário agrícola.
 - Quais dos 26 recursos serão efetivamente integrados e quais estão disponíveis no ambiente atual.
 - Regras científicas de comparação, pesos, limites agronômicos, validação e interpretação de resultados.
 - Tabelas, payloads e endpoints exatos de produção além das convenções e propostas deste arquivo.
-- Se os recursos F2, narração e mapa estarão no MVP ou numa etapa seguinte (mapa está explicitamente fora do escopo inicial até definição geográfica).
+- Se os recursos F2 e narração estarão no MVP ou numa etapa seguinte.
 - Empacotamento, mapa offline, sincronização e armazenamento do desktop e Android.
 
 **Regra para decisões novas:** acrescentar uma entrada datada em `docs/decisoes_arquitetura.md` com decisão, motivo, alternativas, impacto em backend/frontend e responsáveis que aprovaram. Atualizar este arquivo quando a decisão tornar-se permanente.

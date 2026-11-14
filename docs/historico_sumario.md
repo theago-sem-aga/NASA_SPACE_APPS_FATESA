@@ -18,3 +18,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Tiago (Claude)_: proíbe `git push --force` (inclusive `--force-with-lease`) no fluxo Git; push rejeitado deve ser resolvido com `fetch` + `merge`.
 - **2026-11-14** _Ghabriel (Codex)_: adiciona placeholders documentados em `web/`, `front/` e `back/` para compartilhar a estrutura inicial com a equipe, sem aplicação implementada.
 - **2026-11-14** _Ghabriel (Codex)_: corrige os placeholders para as pastas existentes `web/Frontend/` e `web/Backend/` e inclui `web/API/`.
+- **2026-11-14** _Tiago (Claude)_: define regiao piloto do prototipo (Condado de Fresno, CA) e a estrategia de indexacao espacial (recorte na ingestao + PostGIS), registradas em docs/convencao_programacao.md.
