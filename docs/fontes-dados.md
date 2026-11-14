@@ -1,5 +1,27 @@
 # Fontes de dados — detalhe completo
 
+## Verificação da entrega backend — 14/11/2026
+
+- NASA POWER mensal: consulta real do ponto piloto 36.6,-119.7 para 1991–2020;
+  30 valores anuais válidos para cada um dos 12 meses. Unidade original de
+  PRECTOTCORR: mm/day; acumulados mensais calculados antes da média interanual.
+  Resposta original, parâmetros, extração e hash são preservados localmente e
+  no snapshot da análise. Método em `app/integrations/clima_historico.py`.
+- Documentação da API temporal: https://power.larc.nasa.gov/docs/services/api/temporal/
+- Dados pré-processados: 16 células GPM, 1 SMAP, 20 SRTM, 16 ECOSTRESS, 7 Landsat.
+  São os arquivos já presentes; não implicam histórico longo ou cobertura total.
+  A leitura preserva hash SHA256 do Parquet e identificador da célula no snapshot.
+- OpenET não foi verificado com chave neste computador. NASS não está integrado
+  ao fluxo por coordenada. Não declarar essas integrações como concluídas.
+- Referências verificadas como contexto dos cenários EXPLORATÓRIOS, não validação
+  do calendário ou dos níveis simulados: UC Cooperative Extension, Fact Sheets
+  21 e 22 (2024), disponíveis em:
+  https://agric.ucdavis.edu/sites/g/files/dgvnsk12316/files/inline-files/Fact%20Sheet_21%20Selecting%20Cover%20Crops.pdf
+  e https://agric.ucdavis.edu/sites/g/files/dgvnsk12316/files/inline-files/Fact%20Sheet_22%20Cover%20Cropping%20Considerations.pdf
+
+Os detalhes abaixo são pesquisa anterior; requisitos e cobertura ainda devem ser
+verificados por produto/versão antes de usá-los como fundamento de recomendações.
+
 > Referência expandida do `CLAUDE.md`. Pesquisa original: Julya.
 
 Os links marcados como **Link oficial** são os que a página do desafio indica para cada base.

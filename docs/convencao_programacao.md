@@ -338,6 +338,16 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 
 ### Decisões já tomadas
 
+- **2026-11-14 — entrega backend 0.2:** Ghabriel confirma Califórnia como primeira
+  entrega e Brasil depois; autoriza avançar o beta e preparar o ambiente local.
+  Implementação agora inclui catálogos do piloto, POST/recuperação de análises,
+  persistência e migrações, histórico mensal POWER e cenários opt-in simulados.
+  Isso não aprova culturas nem regras agronômicas para produção. Estado atual,
+  diferenças dos exemplos antigos e schemas estão em `docs/contrato_api.md` e
+  `docs/openapi.json`; pendências em `docs/pendencias_backend.md`. Neste dispositivo
+  Ghabriel/Codex validou PostgreSQL 17 com PostGIS 3.7 (o ambiente anterior do
+  Tiago usava PostGIS 3.6). Não expor credenciais nem prometer cobertura fora do recorte.
+
 - Desafio: **Field Shift** (e não Earth System Trend Detective).
 - Primeiro produto: **web**, com backend de **Ghabriel/Codex** e frontend de **Julya/Claude**.
 - Direção de stack: **Python/FastAPI + React/TypeScript + PostgreSQL**.

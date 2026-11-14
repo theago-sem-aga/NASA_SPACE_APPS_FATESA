@@ -1,0 +1,1608 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Field Shift API",
+    "description": "Piloto Fresno. Cenários beta são explicitamente simulados.",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/api/v1/analises": {
+      "get": {
+        "tags": [
+          "analises"
+        ],
+        "summary": "Obter Analise",
+        "operationId": "obter_analise_api_v1_analises_get",
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 90,
+              "minimum": -90,
+              "title": "Latitude"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 180,
+              "minimum": -180,
+              "title": "Longitude"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaAnalise"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "analises"
+        ],
+        "summary": "Analisar",
+        "operationId": "analisar_api_v1_analises_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnaliseEntrada"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Analise"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/analises/{analise_id}": {
+      "get": {
+        "tags": [
+          "analises"
+        ],
+        "summary": "Recuperar",
+        "operationId": "recuperar_api_v1_analises__analise_id__get",
+        "parameters": [
+          {
+            "name": "analise_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analise Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Analise"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/culturas": {
+      "get": {
+        "tags": [
+          "catalogos"
+        ],
+        "summary": "Culturas",
+        "operationId": "culturas_api_v1_culturas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Cultura"
+                  },
+                  "type": "array",
+                  "title": "Response Culturas Api V1 Culturas Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locais": {
+      "get": {
+        "tags": [
+          "catalogos"
+        ],
+        "summary": "Local",
+        "operationId": "local_api_v1_locais_get",
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 90,
+              "minimum": -90,
+              "title": "Latitude"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 180,
+              "minimum": -180,
+              "title": "Longitude"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Local"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/municipios": {
+      "get": {
+        "tags": [
+          "catalogos"
+        ],
+        "summary": "Municipios",
+        "operationId": "municipios_api_v1_municipios_get",
+        "parameters": [
+          {
+            "name": "busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": "",
+              "title": "Busca"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Local"
+                  },
+                  "title": "Response Municipios Api V1 Municipios Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "operacao"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/prontidao": {
+      "get": {
+        "tags": [
+          "operacao"
+        ],
+        "summary": "Prontidao",
+        "operationId": "prontidao_api_v1_prontidao_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroApi"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Analise": {
+        "properties": {
+          "analise_id": {
+            "type": "string",
+            "title": "Analise Id"
+          },
+          "eh_mock": {
+            "type": "boolean",
+            "title": "Eh Mock"
+          },
+          "descricao_local": {
+            "type": "string",
+            "title": "Descricao Local"
+          },
+          "talhao": {
+            "$ref": "#/components/schemas/CaracteristicasTalhao"
+          },
+          "fonte_clima": {
+            "$ref": "#/components/schemas/FonteClima"
+          },
+          "clima_mensal": {
+            "items": {
+              "$ref": "#/components/schemas/ClimaMensal"
+            },
+            "type": "array",
+            "title": "Clima Mensal"
+          },
+          "estrategias": {
+            "items": {
+              "$ref": "#/components/schemas/Estrategia"
+            },
+            "type": "array",
+            "title": "Estrategias"
+          },
+          "limitacoes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitacoes"
+          },
+          "versao_motor": {
+            "type": "string",
+            "title": "Versao Motor"
+          },
+          "criada_em_utc": {
+            "type": "string",
+            "title": "Criada Em Utc"
+          },
+          "fontes_indisponiveis": {
+            "items": {
+              "$ref": "#/components/schemas/FonteIndisponivel"
+            },
+            "type": "array",
+            "title": "Fontes Indisponiveis"
+          },
+          "estado_recomendacoes": {
+            "type": "string",
+            "enum": [
+              "simulacao_beta",
+              "dados_insuficientes"
+            ],
+            "title": "Estado Recomendacoes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analise_id",
+          "eh_mock",
+          "descricao_local",
+          "talhao",
+          "fonte_clima",
+          "clima_mensal",
+          "estrategias",
+          "limitacoes",
+          "versao_motor",
+          "criada_em_utc",
+          "fontes_indisponiveis",
+          "estado_recomendacoes"
+        ],
+        "title": "Analise"
+      },
+      "AnaliseEntrada": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "origem_local": {
+            "type": "string",
+            "enum": [
+              "gps",
+              "municipio"
+            ],
+            "title": "Origem Local"
+          },
+          "codigo_ibge": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{7}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codigo Ibge"
+          },
+          "cultura_atual_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Cultura Atual Id"
+          },
+          "problemas": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "solo_cansado",
+                "nematoides_pragas",
+                "preco_baixo"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Problemas"
+          },
+          "recursos_disponiveis": {
+            "$ref": "#/components/schemas/Recursos"
+          },
+          "prioridades": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "uso_agua",
+                "valor_forragem",
+                "fixacao_nitrogenio",
+                "reducao_erosao",
+                "materia_organica",
+                "adequacao_mercado"
+              ]
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Prioridades"
+          },
+          "correcoes": {
+            "$ref": "#/components/schemas/Correcoes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "origem_local",
+          "cultura_atual_id",
+          "recursos_disponiveis",
+          "prioridades"
+        ],
+        "title": "AnaliseEntrada"
+      },
+      "AtributosEstrategia": {
+        "properties": {
+          "protecao_solo": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Protecao Solo"
+          },
+          "materia_organica": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Materia Organica"
+          },
+          "fixacao_nitrogenio": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Fixacao Nitrogenio"
+          },
+          "quebra_pragas": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Quebra Pragas"
+          },
+          "renda_direta": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Renda Direta"
+          },
+          "demanda_agua": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Demanda Agua"
+          },
+          "trabalho_custo": {
+            "type": "string",
+            "enum": [
+              "nenhum",
+              "baixo",
+              "medio",
+              "alto"
+            ],
+            "title": "Trabalho Custo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "protecao_solo",
+          "materia_organica",
+          "fixacao_nitrogenio",
+          "quebra_pragas",
+          "renda_direta",
+          "demanda_agua",
+          "trabalho_custo"
+        ],
+        "title": "AtributosEstrategia"
+      },
+      "CaracteristicasTalhao": {
+        "properties": {
+          "textura_solo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "arenosa",
+                  "media",
+                  "argilosa"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Textura Solo"
+          },
+          "fonte_textura": {
+            "type": "string",
+            "enum": [
+              "mapas",
+              "informado_produtor"
+            ],
+            "title": "Fonte Textura",
+            "default": "mapas"
+          },
+          "relevo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "plano",
+                  "suave_ondulado",
+                  "ondulado"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevo"
+          },
+          "fonte_relevo": {
+            "type": "string",
+            "enum": [
+              "mapas",
+              "informado_produtor"
+            ],
+            "title": "Fonte Relevo",
+            "default": "mapas"
+          },
+          "declividade_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declividade Pct"
+          },
+          "risco_erosao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "nenhum",
+                  "baixo",
+                  "medio",
+                  "alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risco Erosao"
+          },
+          "risco_seca": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "nenhum",
+                  "baixo",
+                  "medio",
+                  "alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risco Seca"
+          },
+          "bases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bases"
+          }
+        },
+        "type": "object",
+        "title": "CaracteristicasTalhao"
+      },
+      "ClimaMensal": {
+        "properties": {
+          "mes": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Mes"
+          },
+          "precipitacao_acumulada_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precipitacao Acumulada Mm"
+          },
+          "umidade_solo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Umidade Solo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mes"
+        ],
+        "title": "ClimaMensal"
+      },
+      "CorpoErro": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "mensagem": {
+            "type": "string",
+            "title": "Mensagem"
+          },
+          "detalhes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Detalhes"
+          },
+          "requisicao_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requisicao Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "mensagem"
+        ],
+        "title": "CorpoErro"
+      },
+      "Correcoes": {
+        "properties": {
+          "textura_solo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "arenosa",
+                  "media",
+                  "argilosa"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Textura Solo"
+          },
+          "relevo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "plano",
+                  "suave_ondulado",
+                  "ondulado"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Correcoes"
+      },
+      "Cultura": {
+        "properties": {
+          "cultura_id": {
+            "type": "string",
+            "title": "Cultura Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "tem_demonstracao": {
+            "type": "boolean",
+            "title": "Tem Demonstracao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cultura_id",
+          "nome",
+          "tem_demonstracao"
+        ],
+        "title": "Cultura"
+      },
+      "ErroApi": {
+        "properties": {
+          "erro": {
+            "$ref": "#/components/schemas/CorpoErro"
+          }
+        },
+        "type": "object",
+        "required": [
+          "erro"
+        ],
+        "title": "ErroApi"
+      },
+      "Estrategia": {
+        "properties": {
+          "estrategia_id": {
+            "type": "string",
+            "title": "Estrategia Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "resumo": {
+            "type": "string",
+            "title": "Resumo"
+          },
+          "eh_pratica_atual": {
+            "type": "boolean",
+            "title": "Eh Pratica Atual"
+          },
+          "objetivo": {
+            "type": "string",
+            "title": "Objetivo"
+          },
+          "motivos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Motivos"
+          },
+          "evidencias": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidencias"
+          },
+          "beneficios": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Beneficios"
+          },
+          "riscos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Riscos"
+          },
+          "lacunas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lacunas"
+          },
+          "confianca": {
+            "type": "string",
+            "enum": [
+              "baixa",
+              "media",
+              "alta"
+            ],
+            "title": "Confianca"
+          },
+          "explicacao_confianca": {
+            "type": "string",
+            "title": "Explicacao Confianca"
+          },
+          "pergunta_especialista": {
+            "type": "string",
+            "title": "Pergunta Especialista"
+          },
+          "prioridades_atendidas": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "uso_agua",
+                "valor_forragem",
+                "fixacao_nitrogenio",
+                "reducao_erosao",
+                "materia_organica",
+                "adequacao_mercado"
+              ]
+            },
+            "type": "array",
+            "title": "Prioridades Atendidas"
+          },
+          "requisitos": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "maquinas_graos",
+                "comprador_graos",
+                "irrigacao"
+              ]
+            },
+            "type": "array",
+            "title": "Requisitos"
+          },
+          "atributos": {
+            "$ref": "#/components/schemas/AtributosEstrategia"
+          },
+          "etapas_rotacao": {
+            "items": {
+              "$ref": "#/components/schemas/EtapaRotacao"
+            },
+            "type": "array",
+            "title": "Etapas Rotacao"
+          },
+          "referencias": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Referencias"
+          },
+          "calendario": {
+            "items": {
+              "$ref": "#/components/schemas/MesCalendario"
+            },
+            "type": "array",
+            "title": "Calendario"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estrategia_id",
+          "nome",
+          "resumo",
+          "eh_pratica_atual",
+          "objetivo",
+          "motivos",
+          "evidencias",
+          "beneficios",
+          "riscos",
+          "lacunas",
+          "confianca",
+          "explicacao_confianca",
+          "pergunta_especialista",
+          "prioridades_atendidas",
+          "requisitos",
+          "atributos",
+          "etapas_rotacao",
+          "referencias",
+          "calendario"
+        ],
+        "title": "Estrategia"
+      },
+      "EtapaRotacao": {
+        "properties": {
+          "cultura_id": {
+            "type": "string",
+            "title": "Cultura Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "duracao_meses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duracao Meses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cultura_id",
+          "nome"
+        ],
+        "title": "EtapaRotacao"
+      },
+      "FonteClima": {
+        "properties": {
+          "fonte_id": {
+            "type": "string",
+            "title": "Fonte Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "tipo_dado": {
+            "type": "string",
+            "enum": [
+              "observacao_historica",
+              "previsao",
+              "simulacao"
+            ],
+            "title": "Tipo Dado"
+          },
+          "periodo_inicio": {
+            "type": "string",
+            "title": "Periodo Inicio"
+          },
+          "periodo_fim": {
+            "type": "string",
+            "title": "Periodo Fim"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fonte_id",
+          "nome",
+          "tipo_dado",
+          "periodo_inicio",
+          "periodo_fim"
+        ],
+        "title": "FonteClima"
+      },
+      "FonteIndisponivel": {
+        "properties": {
+          "fonte": {
+            "type": "string",
+            "title": "Fonte"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fonte",
+          "motivo"
+        ],
+        "title": "FonteIndisponivel"
+      },
+      "Local": {
+        "properties": {
+          "codigo_ibge": {
+            "type": "string",
+            "title": "Codigo Ibge"
+          },
+          "municipio": {
+            "type": "string",
+            "title": "Municipio"
+          },
+          "uf": {
+            "type": "string",
+            "title": "Uf"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo_ibge",
+          "municipio",
+          "uf",
+          "latitude",
+          "longitude"
+        ],
+        "title": "Local"
+      },
+      "MesCalendario": {
+        "properties": {
+          "mes": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Mes"
+          },
+          "cobertura": {
+            "type": "string",
+            "enum": [
+              "solo_descoberto",
+              "cultura_principal",
+              "cultura_intermediaria",
+              "adubo_verde",
+              "palhada"
+            ],
+            "title": "Cobertura"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mes",
+          "cobertura"
+        ],
+        "title": "MesCalendario"
+      },
+      "Recursos": {
+        "properties": {
+          "maquinas_graos": {
+            "type": "string",
+            "enum": [
+              "sim",
+              "nao",
+              "nao_sei"
+            ],
+            "title": "Maquinas Graos"
+          },
+          "comprador_graos": {
+            "type": "string",
+            "enum": [
+              "sim",
+              "nao",
+              "nao_sei"
+            ],
+            "title": "Comprador Graos"
+          },
+          "irrigacao": {
+            "type": "string",
+            "enum": [
+              "sim",
+              "nao",
+              "nao_sei"
+            ],
+            "title": "Irrigacao"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "maquinas_graos",
+          "comprador_graos",
+          "irrigacao"
+        ],
+        "title": "Recursos"
+      },
+      "RespostaAnalise": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "variaveis": {
+            "items": {
+              "$ref": "#/components/schemas/Variavel"
+            },
+            "type": "array",
+            "title": "Variaveis"
+          },
+          "fontes_indisponiveis": {
+            "items": {
+              "$ref": "#/components/schemas/FonteIndisponivel"
+            },
+            "type": "array",
+            "title": "Fontes Indisponiveis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "variaveis",
+          "fontes_indisponiveis"
+        ],
+        "title": "RespostaAnalise"
+      },
+      "Variavel": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "fonte": {
+            "type": "string",
+            "title": "Fonte"
+          },
+          "tipo_acesso": {
+            "type": "string",
+            "enum": [
+              "ao_vivo",
+              "pre_processado"
+            ],
+            "title": "Tipo Acesso"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "fonte",
+          "tipo_acesso"
+        ],
+        "title": "Variavel"
+      }
+    }
+  }
+}

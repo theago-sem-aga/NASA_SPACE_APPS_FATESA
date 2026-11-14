@@ -9,9 +9,9 @@ requisicao do usuario -- as demais (SMAP, GPM, etc.) sao pre-indexadas.
 from __future__ import annotations
 
 import datetime as dt
-from typing import Iterable
+from collections.abc import Iterable
 
-import requests
+from app.integrations.http import requisitar
 
 POWER_BASE_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
 
@@ -71,7 +71,7 @@ def buscar_power_ponto(
         "format": "JSON",
     }
 
-    resposta = requests.get(POWER_BASE_URL, params=params, timeout=timeout_s)
+    resposta = requisitar("GET", POWER_BASE_URL, params=params, timeout=timeout_s)
     resposta.raise_for_status()
     corpo = resposta.json()
 
@@ -94,7 +94,7 @@ def buscar_power_ponto(
         "longitude": longitude,
         "periodo_inicio": data_inicio.isoformat(),
         "periodo_fim": data_fim.isoformat(),
-        "data_coleta_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "data_coleta_utc": dt.datetime.now(dt.UTC).isoformat(),
         "serie": serie,
     }
 

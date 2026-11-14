@@ -12,3 +12,7 @@ __pycache__/
 
 # Cache das fotos de satelite pedidas pela API (por ponto do GPS): regeneravel.
 data/processed/sentinel2/cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+web/Backend/.cache/

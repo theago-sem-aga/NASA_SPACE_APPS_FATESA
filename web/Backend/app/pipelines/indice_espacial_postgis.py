@@ -23,8 +23,10 @@ from indice_espacial import (
 
 
 def _conexao():
-    url = os.environ.get("DATABASE_URL", "postgresql://postgres:Fatesa2026Dev@localhost:5432/fatesa")
-    return psycopg2.connect(url)
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        raise RuntimeError("DATABASE_URL não configurada")
+    return psycopg2.connect(url, connect_timeout=5)
 
 
 def registrar_celula_pg(fonte: str, latitude: float, longitude: float) -> dict:
@@ -62,7 +64,7 @@ def buscar_por_coordenada_pg(fonte: str, latitude: float, longitude: float) -> d
             SELECT celula_id, caminho_parquet
             FROM indice_espacial
             WHERE fonte = %s AND ST_Intersects(geom, ST_SetSRID(ST_MakePoint(%s, %s), 4326))
-            LIMIT 1
+            ORDER BY celula_id LIMIT 1
             """,
             (fonte, longitude, latitude),
         )
