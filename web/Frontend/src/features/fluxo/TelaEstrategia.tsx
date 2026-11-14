@@ -1,120 +1,143 @@
-import type { Estrategia, RequisitoId, Resposta } from '../../api/tipos';
+import type { AtributosEstrategia, Estrategia, RequisitoId, Resposta } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { CalendarioCobertura } from '../../components/CalendarioCobertura';
-import { Foto } from '../../components/Foto';
-import { Icone, type NomeIcone } from '../../components/Icone';
-import { IMAGEM_ESTRATEGIA } from '../../components/imagens';
-import { Navegacao } from '../../components/Navegacao';
-import { Termo } from '../../components/Termo';
-import type { AtributosEstrategia } from '../../api/tipos';
 import { FaixaRotacao } from '../../components/FaixaRotacao';
+import { Foto } from '../../components/Foto';
+import { Icone } from '../../components/Icone';
+import { IMAGEM_ESTRATEGIA } from '../../components/imagens';
 import { Medidor } from '../../components/Medidor';
+import { Navegacao } from '../../components/Navegacao';
 import { Pictograma } from '../../components/Pictograma';
+import { Sanfona } from '../../components/Sanfona';
+import { Termo } from '../../components/Termo';
 import { PICTO_ATRIBUTO, PICTO_REQUISITO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA, ROTULO_REQUISITO } from './rotulos';
 
-const ATRIBUTOS = Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[];
+/** Os quatro pontos mostrados de cara. Os outros ficam em "Todos os pontos". */
+const PRINCIPAIS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
+const TODOS = Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[];
+const NIVEIS_CONFIANCA = ['baixa', 'media', 'alta'] as const;
+
+const SITUACAO_RECURSO: Record<Resposta, { simbolo: string; texto: string; classe: string }> = {
+  sim: { simbolo: '✓', texto: 'você tem', classe: 'requisito-ok' },
+  nao: { simbolo: '✕', texto: 'você não tem', classe: 'requisito-falta' },
+  nao_sei: { simbolo: '?', texto: 'você não sabe', classe: 'requisito-duvida' }
+};
 
 interface TelaEstrategiaProps {
   estrategia: Estrategia;
   ehMock: boolean;
-  recursos: Record<RequisitoId, Resposta>;
+  recursos: Record<RequisitoId, Resposta | null>;
   aoVoltar: () => void;
   aoAvancar: () => void;
 }
 
-function Bloco({ icone, titulo, classe, itens }: { icone: NomeIcone; titulo: string; classe: string; itens: string[] }) {
-  return (
-    <section className={`bloco-info ${classe}`}>
-      <h2 className="bloco-info-titulo"><Icone nome={icone} /> {titulo}</h2>
-      {itens.length === 1 ? (
-        <p>{itens[0]}</p>
-      ) : (
-        <ul>
-          {itens.map(t => <li key={t}>{t}</li>)}
-        </ul>
-      )}
-    </section>
-  );
+function Lista({ itens }: { itens: string[] }) {
+  return itens.length === 1 ? <p>{itens[0]}</p> : <ul>{itens.map(t => <li key={t}>{t}</li>)}</ul>;
 }
 
-const TEXTO_RECURSO: Record<Resposta, { texto: string; classe: string }> = {
-  sim: { texto: 'você disse que tem', classe: 'requisito-ok' },
-  nao: { texto: 'você disse que não tem', classe: 'requisito-falta' },
-  nao_sei: { texto: 'você não informou', classe: 'requisito-duvida' }
-};
-
+/**
+ * Detalhe de um caminho. De cara: faixa da rotação, para que serve, 4 pontos,
+ * o bom, o cuidado e a pergunta ao agrônomo. O resto fica em sanfonas fechadas.
+ */
 export function TelaEstrategia({ estrategia: e, ehMock, recursos, aoVoltar, aoAvancar }: TelaEstrategiaProps) {
   const imagem = IMAGEM_ESTRATEGIA[e.estrategia_id];
+  const nivelConfianca = NIVEIS_CONFIANCA.indexOf(e.confianca);
   return (
     <>
       <AvisoDemonstracao ehMock={ehMock} />
-      {e.eh_pratica_atual && <p className="sobretitulo">O que você faz hoje</p>}
+      {e.eh_pratica_atual && <p className="sobretitulo">O jeito mais comum hoje</p>}
       <h1 tabIndex={-1}>{e.nome}</h1>
-      <p className="texto-grande">{e.resumo}</p>
-      {imagem && <Foto imagem={imagem} classe="foto-faixa" />}
+      <FaixaRotacao etapas={e.etapas_rotacao} />
+      <p className="texto-grande"><strong>Para quê:</strong> {e.objetivo}</p>
 
-      <section className="cartao" aria-labelledby="titulo-num-olhar">
-        <h2 id="titulo-num-olhar" className="titulo-secao">Num olhar</h2>
-        <FaixaRotacao etapas={e.etapas_rotacao} />
-        <ul className="painel-atributos">
-          {ATRIBUTOS.map(a => (
-            <li key={a} className="painel-atributo">
-              <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={44} />
-              <span className="painel-atributo-rotulo">{ROTULO_ATRIBUTO[a].nome}</span>
-              <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} grande />
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <div className={`confianca confianca-${e.confianca}`}>
-        <span className="confianca-medidor" aria-hidden="true">
-          {(['baixa', 'media', 'alta'] as const).map(n => (
-            <span key={n} className={['baixa', 'media', 'alta'].indexOf(n) <= ['baixa', 'media', 'alta'].indexOf(e.confianca) ? 'cheio' : ''} />
-          ))}
-        </span>
-        <span>
-          <strong>{ROTULO_CONFIANCA[e.confianca]}.</strong> {e.explicacao_confianca} <Termo id="confianca">Entenda</Termo>
-        </span>
-      </div>
-
-      <Bloco icone="pergunta" titulo="Por que apareceu aqui" classe="bloco-motivo" itens={e.motivos} />
-      <Bloco icone="alvo" titulo="Para que serve" classe="bloco-objetivo" itens={[e.objetivo]} />
-      <CalendarioCobertura calendario={e.calendario} />
+      <ul className="quatro-pontos" aria-label="Num olhar">
+        {PRINCIPAIS.map(a => (
+          <li key={a}>
+            <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={36} />
+            <span className="quatro-pontos-texto">
+              <span className="quatro-pontos-rotulo">{ROTULO_ATRIBUTO[a].nome}</span>
+              <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
+            </span>
+          </li>
+        ))}
+      </ul>
 
       {e.requisitos.length > 0 && (
-        <section className="bloco-info bloco-requisito">
-          <h2 className="bloco-info-titulo"><Icone nome="info" /> O que precisa ter</h2>
-          <ul className="lista-requisitos">
-            {e.requisitos.map(r => {
-              const situacao = TEXTO_RECURSO[recursos[r]];
-              return (
-                <li key={r} className={situacao.classe}>
-                  <Pictograma nome={PICTO_REQUISITO[r]} tamanho={36} />
-                  <span><strong>{ROTULO_REQUISITO[r].nome}</strong>: {situacao.texto}.</span>
-                </li>
-              );
-            })}
-          </ul>
+        <ul className="lista-requisitos" aria-label="O que precisa ter">
+          {e.requisitos.map(r => {
+            const s = SITUACAO_RECURSO[recursos[r] ?? 'nao_sei'];
+            return (
+              <li key={r} className={s.classe}>
+                <Pictograma nome={PICTO_REQUISITO[r]} tamanho={32} />
+                <span>Precisa de <strong>{ROTULO_REQUISITO[r].nome.toLowerCase()}</strong>: {s.texto}</span>
+                <span className="requisito-simbolo" aria-hidden="true">{s.simbolo}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <div className="bom-e-cuidado">
+        <section className="bloco-info bloco-beneficio">
+          <h2 className="bloco-info-titulo"><Icone nome="ok" /> O que você ganha</h2>
+          <Lista itens={e.beneficios} />
         </section>
-      )}
+        <section className="bloco-info bloco-risco">
+          <h2 className="bloco-info-titulo"><Icone nome="alerta" /> Cuidado com</h2>
+          <Lista itens={e.riscos} />
+        </section>
+      </div>
 
-      <Bloco icone="dados" titulo="Em que se baseia" classe="bloco-evidencia" itens={e.evidencias} />
-      <Bloco icone="ok" titulo="O que pode ganhar" classe="bloco-beneficio" itens={e.beneficios} />
-      <Bloco icone="alerta" titulo="O que pode dar errado" classe="bloco-risco" itens={e.riscos} />
-      <Bloco icone="info" titulo="O que a ferramenta ainda não sabe" classe="bloco-lacuna" itens={e.lacunas} />
-      <Bloco icone="pessoa" titulo="Leve esta pergunta ao agrônomo" classe="bloco-pergunta" itens={[e.pergunta_especialista]} />
+      <p className="pergunta-agronomo">
+        <Icone nome="pessoa" tamanho={24} />
+        <span><strong>Pergunte ao agrônomo:</strong> {e.pergunta_especialista}</span>
+      </p>
 
-      {e.referencias.length > 0 && (
-        <details className="detalhes cartao">
-          <summary>Onde conferir (referências)</summary>
-          <ul>
-            {e.referencias.map(r => <li key={r}>{r}</li>)}
+      <p className={`confianca-linha confianca-${e.confianca}`}>
+        <span className="confianca-medidor" aria-hidden="true">
+          {NIVEIS_CONFIANCA.map((n, i) => <span key={n} className={i <= nivelConfianca ? 'cheio' : ''} />)}
+        </span>
+        <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
+        <Termo id="confianca">O que isso quer dizer</Termo>
+      </p>
+
+      <div className="sanfonas">
+        <Sanfona icone="pergunta" titulo="Como funciona">
+          <p>{e.resumo}</p>
+          <Lista itens={e.motivos} />
+          {imagem && <Foto imagem={imagem} classe="foto-faixa" />}
+        </Sanfona>
+        <Sanfona icone="calendario" titulo="Mês a mês">
+          <CalendarioCobertura calendario={e.calendario} />
+        </Sanfona>
+        <Sanfona icone="alvo" titulo="Todos os pontos" contagem={TODOS.length}>
+          <ul className="quatro-pontos">
+            {TODOS.map(a => (
+              <li key={a}>
+                <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={36} />
+                <span className="quatro-pontos-texto">
+                  <span className="quatro-pontos-rotulo">{ROTULO_ATRIBUTO[a].nome}</span>
+                  <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
+                </span>
+              </li>
+            ))}
           </ul>
-        </details>
-      )}
+        </Sanfona>
+        <Sanfona icone="dados" titulo="Por que a gente diz isso" contagem={e.evidencias.length}>
+          <Lista itens={e.evidencias} />
+          <p className="texto-apoio">{e.explicacao_confianca}</p>
+        </Sanfona>
+        <Sanfona icone="info" titulo="O que a gente ainda não sabe" contagem={e.lacunas.length}>
+          <Lista itens={e.lacunas} />
+        </Sanfona>
+        {e.referencias.length > 0 && (
+          <Sanfona icone="tubo" titulo="Onde conferir" contagem={e.referencias.length}>
+            <Lista itens={e.referencias} />
+          </Sanfona>
+        )}
+      </div>
 
-      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar="Ver a chuva do local" />
+      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar="Ver a chuva" />
     </>
   );
 }

@@ -34,7 +34,10 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
       <AvisoDemonstracao ehMock={analise.eh_mock} />
       <h1 tabIndex={-1}>Como costuma chover aí</h1>
       <p className="texto-apoio">
-        Média de cada mês de {anoDe(fonte.periodo_inicio)} a {anoDe(fonte.periodo_fim)}, segundo o {fonte.nome}, da NASA. É o que costuma acontecer, não a previsão deste ano ({ROTULO_TIPO_DADO[fonte.tipo_dado].toLowerCase()}). <Termo id="satelite_estacao">Como a NASA mede isso?</Termo>
+        {fonte.tipo_dado === 'observacao_historica'
+          ? `Média de ${anoDe(fonte.periodo_inicio)} a ${anoDe(fonte.periodo_fim)}, medida pela NASA. Não é previsão.`
+          : `Atenção: isto é ${ROTULO_TIPO_DADO[fonte.tipo_dado].toLowerCase()}, não o que já aconteceu.`}{' '}
+        <Termo id="satelite_estacao">Como a NASA mede</Termo>
       </p>
 
       {descobertos.size > 0 && percentual !== null ? (
@@ -44,14 +47,14 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
             <Pictograma nome="terra_descoberta" tamanho={40} />
           </span>
           <span>
-            Em <strong>{estrategia.nome.toLowerCase()}</strong>, a terra fica descoberta em {juntar(nomesDescobertos)}. Nesse tempo caem, em média,{' '}
-            <strong>{formatarNumero(noDescoberto)} mm</strong> de chuva: <strong>{percentual}% de toda a chuva do ano</strong> batendo direto no chão.
+            <strong>{percentual}% da chuva do ano</strong> cai com a terra descoberta, de {nomesDescobertos[0]} a {nomesDescobertos[nomesDescobertos.length - 1]}
+            <span className="visualmente-oculto"> ({juntar(nomesDescobertos)}, {formatarNumero(noDescoberto)} mm)</span>.
           </span>
         </p>
       ) : (
         <p className="destaque destaque-positivo">
           <Pictograma nome="palhada" tamanho={48} />
-          <span>Em <strong>{estrategia.nome.toLowerCase()}</strong>, a terra fica coberta o ano todo, inclusive nos meses de chuva forte.</span>
+          <span>Nesse caminho a terra fica <strong>coberta o ano todo</strong>, mesmo na chuva forte.</span>
         </p>
       )}
 

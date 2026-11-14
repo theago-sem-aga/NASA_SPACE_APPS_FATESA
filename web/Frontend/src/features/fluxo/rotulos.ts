@@ -26,51 +26,63 @@ export const ORDEM_PRIORIDADES: PrioridadeId[] = [
 ];
 
 export const ROTULO_PROBLEMA: Record<ProblemaId, string> = {
-  erosao: 'Chuva leva a terra',
-  falta_agua: 'Seca forte',
-  solo_cansado: 'Produção caindo',
-  nematoides_pragas: 'Praga ou nematoide',
-  preco_baixo: 'Preço ruim'
+  solo_cansado: 'A cana está produzindo menos',
+  nematoides_pragas: 'Tem praga ou nematoide',
+  preco_baixo: 'O preço está ruim'
 };
 
+/** Nome curto para o que os mapas mostram, com uma frase de como a pessoa reconhece no chão. */
 export const ROTULO_TEXTURA: Record<TexturaSolo, { nome: string; dica: string }> = {
-  arenosa: { nome: 'Arenoso', dica: 'Terra solta, que esfarela na mão e seca rápido.' },
-  media: { nome: 'Misto', dica: 'Nem muito solto nem muito grudento.' },
-  argilosa: { nome: 'Argiloso', dica: 'Terra vermelha ou roxa que gruda na bota quando molha.' },
-  nao_sei: { nome: 'Não sei', dica: 'Sem problema. A análise de solo responde isso.' }
+  arenosa: { nome: 'Arenosa', dica: 'Solta, esfarela na mão e seca rápido.' },
+  media: { nome: 'Mista', dica: 'Nem muito solta nem muito grudenta.' },
+  argilosa: { nome: 'Argilosa', dica: 'Vermelha ou roxa, gruda na bota quando molha.' }
 };
 
 export const ROTULO_RELEVO: Record<Relevo, { nome: string; dica: string }> = {
   plano: { nome: 'Plano', dica: 'A água da chuva quase não corre.' },
   suave_ondulado: { nome: 'Pouco inclinado', dica: 'Tem caimento, mas a máquina trabalha bem.' },
-  ondulado: { nome: 'Bem inclinado', dica: 'A enxurrada corre forte e precisa de terraço.' },
-  nao_sei: { nome: 'Não sei', dica: '' }
+  ondulado: { nome: 'Bem inclinado', dica: 'A enxurrada corre forte.' }
 };
 
-export const ROTULO_REQUISITO: Record<RequisitoId, { pergunta: string; nome: string }> = {
-  maquinas_graos: { pergunta: 'Tem máquina para plantar e colher grãos? (sua ou de parceiro)', nome: 'Máquina para grãos' },
-  comprador_graos: { pergunta: 'Tem para quem vender grãos aqui perto?', nome: 'Comprador de grãos' },
-  irrigacao: { pergunta: 'Tem irrigação ou vinhaça nesse talhão?', nome: 'Irrigação' }
+/** Uma pergunta por tela. `porque` aparece pequeno embaixo, para quem quiser saber. */
+export const ROTULO_REQUISITO: Record<RequisitoId, { pergunta: string; porque: string; nome: string }> = {
+  maquinas_graos: {
+    pergunta: 'Você tem máquina para plantar e colher grão?',
+    porque: 'Pode ser sua, alugada ou de um vizinho. Amendoim e soja precisam disso.',
+    nome: 'Máquina para grão'
+  },
+  comprador_graos: {
+    pergunta: 'Tem para quem vender grão aqui perto?',
+    porque: 'Uma cerealista, cooperativa ou indústria que compre a safra.',
+    nome: 'Para quem vender'
+  },
+  irrigacao: {
+    pergunta: 'Esse talhão tem irrigação ou recebe vinhaça?',
+    porque: 'Com água garantida, dá para plantar mais cedo sem esperar a chuva.',
+    nome: 'Irrigação'
+  }
 };
 
 export const ROTULO_RESPOSTA: Record<Resposta, string> = { sim: 'Sim', nao: 'Não', nao_sei: 'Não sei' };
 
-export const ROTULO_NIVEL: Record<Nivel, string> = { nenhum: 'Nenhum', baixo: 'Pouco', medio: 'Médio', alto: 'Muito' };
+export const ROTULO_NIVEL: Record<Nivel, string> = { nenhum: 'Nada', baixo: 'Pouco', medio: 'Médio', alto: 'Muito' };
+/** Para riscos do talhão ("Risco de erosão: alto"). */
+export const ROTULO_RISCO: Record<Nivel, string> = { nenhum: 'Quase nenhum', baixo: 'Baixo', medio: 'Médio', alto: 'Alto' };
 
 export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; maiorEhMelhor: boolean }> = {
-  protecao_solo: { nome: 'Protege o solo da chuva', maiorEhMelhor: true },
-  materia_organica: { nome: 'Deixa matéria orgânica', maiorEhMelhor: true },
-  fixacao_nitrogenio: { nome: 'Deixa nitrogênio', maiorEhMelhor: true },
-  quebra_pragas: { nome: 'Quebra ciclo de pragas', maiorEhMelhor: true },
+  protecao_solo: { nome: 'Segura a terra na chuva', maiorEhMelhor: true },
+  materia_organica: { nome: 'Deixa a terra mais forte', maiorEhMelhor: true },
+  fixacao_nitrogenio: { nome: 'Economiza adubo', maiorEhMelhor: true },
+  quebra_pragas: { nome: 'Ajuda contra praga', maiorEhMelhor: true },
   renda_direta: { nome: 'Dá dinheiro na reforma', maiorEhMelhor: true },
-  demanda_agua: { nome: 'Precisa de água', maiorEhMelhor: false },
-  trabalho_custo: { nome: 'Trabalho e custo', maiorEhMelhor: false }
+  demanda_agua: { nome: 'Gasta água', maiorEhMelhor: false },
+  trabalho_custo: { nome: 'Dá trabalho e gasto', maiorEhMelhor: false }
 };
 
 export const ROTULO_CONFIANCA: Record<Confianca, string> = {
-  alta: 'Confiança alta',
-  media: 'Confiança média',
-  baixa: 'Confiança baixa'
+  alta: 'Bastante certeza',
+  media: 'Alguma certeza',
+  baixa: 'Pouca certeza'
 };
 
 export const ROTULO_COBERTURA: Record<CoberturaSolo, { nome: string; classe: string }> = {
@@ -97,8 +109,6 @@ export const PICTO_PRIORIDADE: Record<PrioridadeId, NomePictograma> = {
   valor_forragem: 'gado'
 };
 export const PICTO_PROBLEMA: Record<ProblemaId, NomePictograma> = {
-  erosao: 'erosao',
-  falta_agua: 'falta_agua',
   solo_cansado: 'solo_cansado',
   nematoides_pragas: 'pragas',
   preco_baixo: 'preco_baixo'
@@ -118,8 +128,8 @@ export const PICTO_ATRIBUTO: Record<keyof AtributosEstrategia, NomePictograma> =
   trabalho_custo: 'trabalho'
 };
 /** Textura e relevo usam o próprio id como nome do pictograma. */
-export const PICTO_TEXTURA: Record<TexturaSolo, NomePictograma> = { arenosa: 'arenosa', media: 'media', argilosa: 'argilosa', nao_sei: 'nao_sei' };
-export const PICTO_RELEVO: Record<Relevo, NomePictograma> = { plano: 'plano', suave_ondulado: 'suave_ondulado', ondulado: 'ondulado', nao_sei: 'nao_sei' };
+export const PICTO_TEXTURA: Record<TexturaSolo, NomePictograma> = { arenosa: 'arenosa', media: 'media', argilosa: 'argilosa' };
+export const PICTO_RELEVO: Record<Relevo, NomePictograma> = { plano: 'plano', suave_ondulado: 'suave_ondulado', ondulado: 'ondulado' };
 
 const formatoNumero =new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 export const formatarNumero = (valor: number) => formatoNumero.format(valor);

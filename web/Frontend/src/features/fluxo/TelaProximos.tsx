@@ -13,18 +13,18 @@ interface TelaProximosProps {
 const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
   {
     icone: 'pessoa',
-    titulo: 'Converse com quem conhece a área',
-    texto: 'Mostre este resumo ao agrônomo da usina, da cooperativa ou da Casa da Agricultura (CATI).'
+    titulo: 'Mostre ao agrônomo',
+    texto: 'Da usina, da cooperativa ou da Casa da Agricultura.'
   },
   {
     icone: 'tubo',
     titulo: 'Faça a análise de solo',
-    texto: 'De 0 a 20 e de 20 a 40 cm. Se desconfia de nematoide, peça essa análise também.'
+    texto: 'Se desconfia de nematoide, peça essa também.'
   },
   {
     icone: 'calendario',
-    titulo: 'Confira a época de plantar',
-    texto: 'O Zoneamento Agrícola (ZARC) mostra a melhor época no seu município, pelo app Plantio Certo.'
+    titulo: 'Veja a época de plantar',
+    texto: 'No aplicativo Plantio Certo.'
   }
 ];
 
@@ -32,10 +32,10 @@ export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProx
   return (
     <>
       <h1 tabIndex={-1}>Seu resumo</h1>
-      <ResumoVisual dados={dados} analise={analise} />
+      <ResumoVisual dados={dados} analise={analise} compacto />
 
       <button type="button" className="botao botao-primario botao-largo" onClick={() => window.print()}>
-        <Icone nome="imprimir" /> Imprimir ou salvar em PDF
+        <Icone nome="imprimir" /> Imprimir ou salvar
       </button>
 
       <h2 className="titulo-secao">Antes de bater o martelo</h2>
@@ -53,12 +53,12 @@ export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProx
       </ol>
 
       <p className="destaque destaque-neutro">
-        Quem conhece o talhão é você. A ferramenta junta informação e levanta perguntas. A decisão é sua, com quem acompanha a sua área.
+        A decisão é sua. A ferramenta só ajuda a pensar.
       </p>
 
       {analise.limitacoes.length > 0 && (
         <details className="detalhes cartao">
-          <summary>O que esta análise não leva em conta</summary>
+          <summary>O que a ferramenta não vê</summary>
           <ul>
             {analise.limitacoes.map(l => <li key={l}>{l}</li>)}
           </ul>

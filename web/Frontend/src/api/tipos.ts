@@ -1,7 +1,15 @@
 // DTOs do contrato front <-> API.
-// PROPOSTA: ainda não existem docs/contrato_api.md nem docs/dicionario_dados.md.
-// Nomes seguem a convenção (snake_case, sem acento, unidade no nome) e precisam
-// ser aprovados com o backend (Ghabriel) antes de virar contrato.
+// Duas partes:
+//  - REAL (fim do arquivo): Variavel / RespostaAnalise, já implementados no backend
+//    e descritos em docs/contrato_api.md e docs/dicionario_dados.md.
+//  - PROPOSTA (o resto): o que o front precisa para as telas e o backend ainda não
+//    tem (culturas, locais, municípios, POST /analises com estratégias). Nomes seguem
+//    a convenção (snake_case, sem acento, unidade no nome) e precisam ser aprovados
+//    com o backend (Ghabriel) antes de virar contrato.
+//
+// Para o back: tudo o que o front espera e ainda não está na convenção está
+// marcado com "BACKEND:" (busque esse texto em src/). As rotas estão em
+// src/api/cliente.ts; exemplos de resposta completos, em src/api/mock/dadosMock.ts.
 
 /** Situação da cobertura do solo em um mês do calendário de uma estratégia. */
 export type CoberturaSolo =
@@ -26,34 +34,72 @@ export type TipoDado = 'observacao_historica' | 'previsao' | 'simulacao';
 export interface Cultura {
   cultura_id: string;
   nome: string;
-  /** Protótipo: indica se já existe cenário de demonstração para a cultura. */
+  /**
+   * false = a cultura aparece com o selo "Em breve" e não pode ser escolhida.
+   * BACKEND: true só para culturas que o motor de recomendação já sabe tratar.
+   */
   tem_demonstracao: boolean;
-}
-
-export type TexturaSolo = 'arenosa' | 'media' | 'argilosa' | 'nao_sei';
-export type Relevo = 'plano' | 'suave_ondulado' | 'ondulado' | 'nao_sei';
-export type Resposta = 'sim' | 'nao' | 'nao_sei';
-
-/** Problemas que o produtor já percebe no talhão (problemas-alvo do CLAUDE.md). */
-export type ProblemaId = 'erosao' | 'falta_agua' | 'solo_cansado' | 'nematoides_pragas' | 'preco_baixo';
-
-/** Recursos que uma estratégia exige e que o produtor informa se tem. */
-export type RequisitoId = 'irrigacao' | 'maquinas_graos' | 'comprador_graos';
-
-export interface AnaliseEntrada {
-  descricao_local: string;
-  latitude: number | null;
-  longitude: number | null;
-  cultura_atual_id: string;
-  textura_solo: TexturaSolo;
-  relevo: Relevo;
-  problemas: ProblemaId[];
-  recursos_disponiveis: Record<RequisitoId, Resposta>;
-  prioridades: PrioridadeId[];
 }
 
 export type Nivel = 'nenhum' | 'baixo' | 'medio' | 'alto';
 export type Confianca = 'baixa' | 'media' | 'alta';
+
+/** BACKEND: textura vem dos dados de solo (ex.: SoilGrids/FAO); o usuário não informa mais. */
+export type TexturaSolo = 'arenosa' | 'media' | 'argilosa';
+/** BACKEND: relevo vem da declividade do SRTM. Sugestão de faixas: plano < 3%, suave_ondulado 3–8%, ondulado > 8%. */
+export type Relevo = 'plano' | 'suave_ondulado' | 'ondulado';
+export type Resposta = 'sim' | 'nao' | 'nao_sei';
+
+/**
+ * Problemas que só o produtor sabe dizer. Erosão e seca saíram da pergunta:
+ * BACKEND: estimar a partir dos dados e devolver em `talhao.risco_erosao` e `talhao.risco_seca`.
+ */
+export type ProblemaId = 'solo_cansado' | 'nematoides_pragas' | 'preco_baixo';
+
+/** Recursos que uma estratégia exige e que o produtor informa se tem (uma pergunta por tela). */
+export type RequisitoId = 'maquinas_graos' | 'comprador_graos' | 'irrigacao';
+
+/** Como o local foi obtido. 'municipio' = centro do município, precisão de dezenas de km. */
+export type OrigemLocal = 'gps' | 'municipio';
+
+/**
+ * Local já identificado. Resposta de GET /locais (coordenada → município) e
+ * item de GET /municipios (busca por nome).
+ * BACKEND: usar a malha municipal do IBGE no PostGIS (ST_Intersects), sem mandar
+ * a coordenada do usuário para serviço de terceiros.
+ */
+export interface Local {
+  /** Código IBGE do município, 7 dígitos. */
+  codigo_ibge: string;
+  municipio: string;
+  /** Sigla da UF, ex.: 'SP'. */
+  uf: string;
+  /** Em GET /locais: a coordenada recebida. Em GET /municipios: o centro do município. */
+  latitude: number;
+  longitude: number;
+}
+
+/** O usuário discorda do que os mapas mostraram ("Não é bem assim"). */
+export interface CorrecoesTalhao {
+  textura_solo?: TexturaSolo;
+  relevo?: Relevo;
+}
+
+export interface AnaliseEntrada {
+  latitude: number;
+  longitude: number;
+  /** BACKEND: com 'municipio', a análise é mais grosseira; refletir isso na `confianca` e nas `limitacoes`. */
+  origem_local: OrigemLocal;
+  codigo_ibge: string | null;
+  cultura_atual_id: string;
+  /** Pode vir vazio ("Nenhum desses"). */
+  problemas: ProblemaId[];
+  recursos_disponiveis: Record<RequisitoId, Resposta>;
+  /** 1 ou 2 itens. */
+  prioridades: PrioridadeId[];
+  /** BACKEND: quando vier preenchido, usar no lugar do valor dos mapas e devolver a fonte como 'informado_produtor'. */
+  correcoes: CorrecoesTalhao;
+}
 
 /** Atributos usados na comparação lado a lado. */
 export interface AtributosEstrategia {
@@ -91,12 +137,18 @@ export interface MesCalendario {
 }
 
 export interface EtapaRotacao {
-  /** id de cultura, ou 'pousio' para área parada */
+  /** id de cultura, ou 'pousio' para área parada, ou 'palhada' */
   cultura_id: string;
   nome: string;
   duracao_meses: number | null;
 }
 
+/**
+ * BACKEND: os campos de texto (resumo, motivos, evidencias, beneficios, riscos, lacunas,
+ * explicacao_confianca, pergunta_especialista) aparecem na tela e são lidos em voz alta.
+ * Escrever como um técnico falaria com o produtor: frases curtas, sem sigla solta, sem
+ * "atributo", "critério" ou "score". Ver os exemplos em mock/dadosMock.ts.
+ */
 export interface Estrategia {
   estrategia_id: string;
   nome: string;
@@ -118,22 +170,80 @@ export interface Estrategia {
   atributos: AtributosEstrategia;
   /** Sequência da rotação, para a faixa visual (ex.: cana → amendoim → cana). */
   etapas_rotacao: EtapaRotacao[];
-  /** Referências a consultar (protótipo: indicação, não citação verificada). */
+  /** Onde conferir. BACKEND: só referências verificadas (título + instituição, idealmente com link). */
   referencias: string[];
   /** 12 meses, na ordem em que acontecem a partir do início da reforma. */
   calendario: MesCalendario[];
+}
+
+/** De onde veio cada característica do talhão. */
+export type FonteTalhao = 'mapas' | 'informado_produtor';
+
+/**
+ * O que os dados dizem sobre o talhão, mostrado para o usuário confirmar ou corrigir.
+ * BACKEND: tudo calculado no servidor a partir da coordenada. null = sem dado para o ponto.
+ */
+export interface CaracteristicasTalhao {
+  textura_solo: TexturaSolo | null;
+  fonte_textura: FonteTalhao;
+  relevo: Relevo | null;
+  fonte_relevo: FonteTalhao;
+  /** Declividade média do entorno, em %. */
+  declividade_pct: number | null;
+  /** BACKEND: combinar declividade, textura e chuva forte do histórico (regra explicável, sem caixa-preta). */
+  risco_erosao: Nivel | null;
+  /** BACKEND: a partir da tendência de chuva e da umidade do solo (POWER/SMAP). */
+  risco_seca: Nivel | null;
+  /** Nomes curtos das bases usadas, para a linha "De onde vem", ex.: ['SRTM', 'SoilGrids']. */
+  bases: string[];
 }
 
 export interface Analise {
   analise_id: string;
   /** true = dados fictícios de demonstração. A UI deve deixar isso visível. */
   eh_mock: boolean;
+  /** Texto pronto para exibir, ex.: 'Olímpia (SP)'. */
   descricao_local: string;
+  talhao: CaracteristicasTalhao;
   fonte_clima: FonteClima;
   clima_mensal: ClimaMensal[];
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Contrato REAL, já implementado: GET /api/v1/analises?latitude=&longitude=
+// Copiado do /openapi.json da API e de docs/contrato_api.md + docs/dicionario_dados.md.
+// Não renomear: estes nomes são os do backend.
+// ---------------------------------------------------------------------------
+
+/** 'ao_vivo' = consultada na hora (NASA POWER, USDA, OpenET); 'pre_processado' = índice PostGIS + Parquet. */
+export type TipoAcesso = 'ao_vivo' | 'pre_processado';
+
+/** Uma medição de uma fonte. `nome` segue docs/dicionario_dados.md (ex.: 'precipitacao_acumulada_mm'). */
+export interface Variavel {
+  nome: string;
+  /** 'nasa_power' | 'usda_soil_data_access' | 'openet' | 'gpm' | 'smap' | 'srtm' | 'ecostress' | 'landsat' */
+  fonte: string;
+  tipo_acesso: TipoAcesso;
+  /** YYYY-MM-DD; null quando a variável não tem data (ex.: solo). */
+  data: string | null;
+  /** null = sem medição. Nunca é zero no lugar de "sem dado". */
+  valor: number | null;
+}
+
+export interface FonteIndisponivel {
+  fonte: string;
+  /** 'fora_da_regiao_pre_processada' | 'fora_da_cobertura' */
+  motivo: string;
+}
+
+export interface RespostaAnalise {
+  latitude: number;
+  longitude: number;
+  variaveis: Variavel[];
+  fontes_indisponiveis: FonteIndisponivel[];
 }
 
 /** Esqueleto de erro sugerido na convenção §6 (pendente de aprovação). */

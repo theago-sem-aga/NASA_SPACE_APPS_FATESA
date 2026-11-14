@@ -1,20 +1,27 @@
-import type { Analise, PrioridadeId, ProblemaId, Relevo, RequisitoId, Resposta, TexturaSolo } from '../../api/tipos';
+import type { Analise, CorrecoesTalhao, Local, OrigemLocal, PrioridadeId, ProblemaId, RequisitoId, Resposta } from '../../api/tipos';
 
 export const ETAPAS = [
-  'inicio', 'local', 'cultura', 'talhao', 'prioridades', 'estrategias', 'comparar', 'estrategia', 'clima', 'proximos'
+  'inicio', 'local', 'cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades',
+  'estrategias', 'comparar', 'estrategia', 'clima', 'proximos'
 ] as const;
 export type Etapa = (typeof ETAPAS)[number];
+
+/** Telas de pergunta (uma por tela), na ordem. As bolinhas de progresso contam só estas. */
+export const PERGUNTAS: Etapa[] = ['cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades'];
 
 export const TITULO_ETAPA: Record<Etapa, string> = {
   inicio: 'Início',
   local: 'Onde fica',
   cultura: 'O que está plantado',
-  talhao: 'Como é o talhão',
+  maquinas_graos: 'Máquina',
+  comprador_graos: 'Para quem vender',
+  irrigacao: 'Irrigação',
+  problemas: 'O que incomoda',
   prioridades: 'O que importa',
-  estrategias: 'Caminhos possíveis',
+  estrategias: 'Caminhos',
   comparar: 'Comparar',
   estrategia: 'Detalhe',
-  clima: 'Chuva e umidade',
+  clima: 'Chuva',
   proximos: 'Resumo'
 };
 
@@ -23,8 +30,11 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   inicio: 'inicio',
   local: 'inicio',
   cultura: 'local',
-  talhao: 'cultura',
-  prioridades: 'talhao',
+  maquinas_graos: 'cultura',
+  comprador_graos: 'maquinas_graos',
+  irrigacao: 'comprador_graos',
+  problemas: 'irrigacao',
+  prioridades: 'problemas',
   estrategias: 'prioridades',
   comparar: 'estrategias',
   estrategia: 'estrategias',
@@ -34,34 +44,44 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
 
 export const MAX_PRIORIDADES = 2;
 
+/** Como a tela de local deve abrir: confirmando o que o GPS achou ou já na busca por cidade. */
+export type ModoLocal = 'confirmar' | 'buscar';
+
 export interface DadosFluxo {
-  descricao_local: string;
-  latitude: number | null;
-  longitude: number | null;
+  local: Local | null;
+  origem_local: OrigemLocal | null;
+  /** Só para a UI: por que caiu na busca (GPS negado, sem sinal…). Não vai para a API. */
+  motivoBusca: string | null;
+  modoLocal: ModoLocal;
   cultura_atual_id: string | null;
   /** Só para exibição (resumo impresso); não vai para a API. */
   nomeCultura: string | null;
-  textura_solo: TexturaSolo | null;
-  relevo: Relevo | null;
+  recursos_disponiveis: Record<RequisitoId, Resposta | null>;
   problemas: ProblemaId[];
-  recursos_disponiveis: Record<RequisitoId, Resposta>;
+  /** true depois que a pessoa respondeu a tela de problemas (mesmo com "Nenhum desses"). */
+  problemasRespondidos: boolean;
   prioridades: PrioridadeId[];
+  correcoes: CorrecoesTalhao;
   estrategia_id: string | null;
 }
 
 export const DADOS_INICIAIS: DadosFluxo = {
-  descricao_local: '',
-  latitude: null,
-  longitude: null,
+  local: null,
+  origem_local: null,
+  motivoBusca: null,
+  modoLocal: 'buscar',
   cultura_atual_id: null,
   nomeCultura: null,
-  textura_solo: null,
-  relevo: null,
+  recursos_disponiveis: { maquinas_graos: null, comprador_graos: null, irrigacao: null },
   problemas: [],
-  recursos_disponiveis: { maquinas_graos: 'nao_sei', comprador_graos: 'nao_sei', irrigacao: 'nao_sei' },
+  problemasRespondidos: false,
   prioridades: [],
+  correcoes: {},
   estrategia_id: null
 };
+
+/** 'Olímpia (SP)'. Sem UF (ponto do GPS sem município identificado), só o texto do local. */
+export const descreverLocal = (local: Local | null) => (local ? (local.uf ? `${local.municipio} (${local.uf})` : local.municipio) : '');
 
 export type SituacaoAnalise =
   | { situacao: 'ociosa' }

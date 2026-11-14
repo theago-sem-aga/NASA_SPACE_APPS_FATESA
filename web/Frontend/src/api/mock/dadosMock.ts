@@ -3,7 +3,9 @@
 // com o técnico de campo e citam práticas reais da reforma de canavial em SP,
 // mas TODOS precisam ser conferidos nas referências antes de ir para o produto.
 // As referências listadas NÃO foram verificadas: são indicações de onde buscar.
-import type { Analise, CoberturaSolo, Cultura, MesCalendario } from '../tipos';
+import type {
+  Analise, CaracteristicasTalhao, CoberturaSolo, CorrecoesTalhao, Cultura, Local, MesCalendario
+} from '../tipos';
 
 export const CULTURAS_MOCK: Cultura[] = [
   { cultura_id: 'cana_de_acucar', nome: 'Cana-de-açúcar', tem_demonstracao: true },
@@ -13,6 +15,41 @@ export const CULTURAS_MOCK: Cultura[] = [
   { cultura_id: 'pastagem', nome: 'Pasto', tem_demonstracao: false }
 ];
 
+// Municípios para a busca e para o "Você está perto de…" no mock. Coordenadas
+// aproximadas do centro e códigos IBGE só ilustrativos: o back usa a malha oficial.
+export const MUNICIPIOS_MOCK: Local[] = [
+  { codigo_ibge: '3549805', municipio: 'São José do Rio Preto', uf: 'SP', latitude: -20.82, longitude: -49.38 },
+  { codigo_ibge: '3533908', municipio: 'Olímpia', uf: 'SP', latitude: -20.74, longitude: -48.91 },
+  { codigo_ibge: '3530300', municipio: 'Mirassol', uf: 'SP', latitude: -20.82, longitude: -49.52 },
+  { codigo_ibge: '3511102', municipio: 'Catanduva', uf: 'SP', latitude: -21.14, longitude: -48.97 },
+  { codigo_ibge: '3505500', municipio: 'Barretos', uf: 'SP', latitude: -20.56, longitude: -48.57 },
+  { codigo_ibge: '3506102', municipio: 'Bebedouro', uf: 'SP', latitude: -20.95, longitude: -48.48 },
+  { codigo_ibge: '3517406', municipio: 'Guaíra', uf: 'SP', latitude: -20.32, longitude: -48.31 },
+  { codigo_ibge: '3524303', municipio: 'Jaboticabal', uf: 'SP', latitude: -21.25, longitude: -48.32 },
+  { codigo_ibge: '3551702', municipio: 'Sertãozinho', uf: 'SP', latitude: -21.14, longitude: -47.99 },
+  { codigo_ibge: '3543402', municipio: 'Ribeirão Preto', uf: 'SP', latitude: -21.18, longitude: -47.81 },
+  { codigo_ibge: '3503208', municipio: 'Araraquara', uf: 'SP', latitude: -21.79, longitude: -48.18 },
+  { codigo_ibge: '3502804', municipio: 'Araçatuba', uf: 'SP', latitude: -21.21, longitude: -50.43 },
+  { codigo_ibge: '3527108', municipio: 'Lins', uf: 'SP', latitude: -21.67, longitude: -49.74 },
+  { codigo_ibge: '3541406', municipio: 'Presidente Prudente', uf: 'SP', latitude: -22.13, longitude: -51.39 },
+  { codigo_ibge: '3538709', municipio: 'Piracicaba', uf: 'SP', latitude: -22.73, longitude: -47.65 },
+  { codigo_ibge: '3509502', municipio: 'Campinas', uf: 'SP', latitude: -22.91, longitude: -47.06 }
+];
+
+/** O que "os mapas" dizem do talhão no mock, já aplicando a correção do produtor. */
+export function montarTalhaoMock(correcoes: CorrecoesTalhao): CaracteristicasTalhao {
+  return {
+    textura_solo: correcoes.textura_solo ?? 'arenosa',
+    fonte_textura: correcoes.textura_solo ? 'informado_produtor' : 'mapas',
+    relevo: correcoes.relevo ?? 'suave_ondulado',
+    fonte_relevo: correcoes.relevo ? 'informado_produtor' : 'mapas',
+    declividade_pct: correcoes.relevo ? null : 5,
+    risco_erosao: 'alto',
+    risco_seca: 'medio',
+    bases: ['SRTM', 'SoilGrids', 'NASA POWER']
+  };
+}
+
 // Reforma começando depois do último corte, em outubro; cana de ano e meio plantada em março.
 const ORDEM_MESES = [10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -21,7 +58,7 @@ function calendario(trechos: [CoberturaSolo, number][]): MesCalendario[] {
   return ORDEM_MESES.map((mes, i) => ({ mes, cobertura: coberturas[i] }));
 }
 
-export const ANALISE_MOCK: Omit<Analise, 'descricao_local'> = {
+export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   analise_id: 'mock-0001',
   eh_mock: true,
   fonte_clima: {
@@ -53,7 +90,7 @@ export const ANALISE_MOCK: Omit<Analise, 'descricao_local'> = {
       eh_pratica_atual: true,
       objetivo: 'Gastar o mínimo na reforma e ter a área livre na hora de plantar.',
       motivos: [
-        'Entra na comparação porque é o que você faz hoje. Serve de base para comparar as outras.'
+        'Está aqui porque é o jeito mais comum de fazer a reforma hoje. Serve de base para comparar os outros dois.'
       ],
       evidencias: [
         'No histórico da região, a área fica sem nada de outubro a fevereiro, justamente quando cai a maior parte da chuva do ano.',

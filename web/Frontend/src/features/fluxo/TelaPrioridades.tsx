@@ -26,7 +26,7 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
 
   function avancar() {
     if (dados.prioridades.length === 0) {
-      setErro('Escolha pelo menos uma figura para continuar.');
+      setErro('Toque em pelo menos uma figura.');
       return;
     }
     aoAvancar();
@@ -34,10 +34,10 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
 
   return (
     <>
-      <h1 tabIndex={-1}>Nesta reforma, o que pesa mais para você?</h1>
+      <h1 tabIndex={-1}>Nesta reforma, o que é mais importante para você?</h1>
       <fieldset className="grade-escolhas">
         <legend className="texto-apoio">
-          Escolha {MAX_PRIORIDADES}.{' '}
+          Escolha até {MAX_PRIORIDADES}.{' '}
           <span className="contador" aria-live="polite">
             {Array.from({ length: MAX_PRIORIDADES }, (_, i) => (
               <span key={i} className={i < dados.prioridades.length ? 'contador-cheio' : ''} aria-hidden="true" />
@@ -53,7 +53,6 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
             desabilitado={!dados.prioridades.includes(id) && cheio}
             pictograma={PICTO_PRIORIDADE[id]}
             titulo={ROTULO_PRIORIDADE[id].nome}
-            detalhe={ROTULO_PRIORIDADE[id].explicacao}
             aoMudar={() => alternar(id)}
           />
         ))}
