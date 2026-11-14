@@ -9,3 +9,6 @@ data/raw/
 __pycache__/
 *.pyc
 .venv/
+
+# Cache das fotos de satelite pedidas pela API (por ponto do GPS): regeneravel.
+data/processed/sentinel2/cache/

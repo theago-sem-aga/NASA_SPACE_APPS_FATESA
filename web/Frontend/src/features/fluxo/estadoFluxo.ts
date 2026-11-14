@@ -85,6 +85,9 @@ export const DADOS_INICIAIS: DadosFluxo = {
 };
 
 /** 'Olímpia (SP)'. Sem UF (ponto do GPS sem município identificado), só o texto do local. */
+/** '-20.73430, -49.44290': a mesma coordenada do GPS em todas as telas. */
+export const formatarCoordenada = (latitude: number, longitude: number) => `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
 export const descreverLocal = (local: Local | null) => (local ? (local.uf ? `${local.municipio} (${local.uf})` : local.municipio) : '');
 
 export type SituacaoAnalise =

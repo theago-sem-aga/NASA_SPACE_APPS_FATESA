@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { buscarAcompanhamento, FalhaApi } from '../../api/cliente';
-import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelite, Local, Nivel } from '../../api/tipos';
+import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelite, Local, Nivel, OrigemLocal } from '../../api/tipos';
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
+import { formatarCoordenada } from '../fluxo/estadoFluxo';
 import { NOME_MES, ROTULO_COBERTURA } from '../fluxo/rotulos';
 import { dataPorExtenso, FRASE_ESTADO } from './frases';
 import { roteiroAcompanhamento } from './roteiroAcompanhamento';
 
 interface TelaAcompanhamentoProps {
   local: Local;
+  /** 'gps' = o ponto exato do celular; as fotos são desse ponto. */
+  origem: OrigemLocal | null;
   /** Caminho escolhido: o calendário dele diz como a terra deveria estar agora. */
   estrategia: Estrategia | null;
   aoMudarRoteiro: (texto: string) => void;
@@ -48,7 +51,7 @@ export function planoDoMes(estrategia: Estrategia | null, mes: number): Cobertur
 function CartaoFoto({ foto, destaque }: { foto: FotoSatelite; destaque: boolean }) {
   return (
     <figure className={`satelite-foto ${destaque ? 'satelite-foto-grande' : ''}`}>
-      <img src={`${import.meta.env.BASE_URL}${foto.imagem}`} alt={`Foto do satélite da área em ${dataPorExtenso(foto.data)}: ${FRASE_ESTADO[foto.estado].toLowerCase()}.`} loading="lazy" />
+      <img src={/^https?:/.test(foto.imagem) ? foto.imagem : `${import.meta.env.BASE_URL}${foto.imagem}`} alt={`Foto do satélite da área em ${dataPorExtenso(foto.data)}: ${FRASE_ESTADO[foto.estado].toLowerCase()}.`} loading="lazy" />
       <figcaption>
         <strong>{destaque ? dataPorExtenso(foto.data) : foto.data.split('-').reverse().slice(0, 2).join('/')}</strong>
         <span className={`satelite-estado satelite-${foto.estado}`}>{FRASE_ESTADO[foto.estado]}</span>
@@ -59,18 +62,18 @@ function CartaoFoto({ foto, destaque }: { foto: FotoSatelite; destaque: boolean 
 
 // ---------- tela ----------
 
-export function TelaAcompanhamento({ local, estrategia, aoMudarRoteiro, aoVoltar }: TelaAcompanhamentoProps) {
+export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, aoVoltar }: TelaAcompanhamentoProps) {
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
 
   const carregar = useCallback(async () => {
     setEstado({ situacao: 'carregando' });
     try {
-      setEstado({ situacao: 'sucesso', dados: await buscarAcompanhamento(local) });
+      setEstado({ situacao: 'sucesso', dados: await buscarAcompanhamento(local, origem) });
     } catch (e) {
       const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
       setEstado({ situacao: 'falha', codigo: f.codigo, mensagem: f.message });
     }
-  }, [local]);
+  }, [local, origem]);
 
   useEffect(() => {
     void carregar();
@@ -88,7 +91,13 @@ export function TelaAcompanhamento({ local, estrategia, aoMudarRoteiro, aoVoltar
     return (
       <>
         <h1 tabIndex={-1}>Acompanhar a área</h1>
-        <EstadoCarregando mensagem="Buscando as fotos do satélite…" />
+        <EstadoCarregando
+          mensagem={
+            origem === 'gps'
+              ? 'Buscando as fotos do satélite do seu ponto… Na primeira vez pode levar até 1 minuto.'
+              : 'Buscando as fotos do satélite…'
+          }
+        />
       </>
     );
   }
@@ -118,6 +127,16 @@ export function TelaAcompanhamento({ local, estrategia, aoMudarRoteiro, aoVoltar
         <p className="texto-apoio">
           {d.ponto_exemplo ? `Exemplo: uma área perto de ${local.municipio}` : 'A sua área'} · fotos do satélite
         </p>
+        <p className="texto-apoio">
+          {d.ponto_exemplo ? 'Ponto do exemplo' : 'Seu ponto'}: <span className="numero">{formatarCoordenada(d.latitude, d.longitude)}</span>
+          {!d.ponto_exemplo && origem === 'gps' && ' (o mesmo que o celular pegou no início)'}
+        </p>
+        {d.ponto_exemplo && origem === 'gps' && (
+          <p className="destaque destaque-neutro">
+            <Icone nome="info" tamanho={24} />
+            Para ver as fotos do seu ponto ({formatarCoordenada(local.latitude, local.longitude)}), o servidor precisa estar ligado.
+          </p>
+        )}
       </div>
 
       {!ultima ? (

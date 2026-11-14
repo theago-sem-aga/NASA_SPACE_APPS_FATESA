@@ -657,3 +657,6 @@ p { margin: 0; }
   .acompanhamento-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .satelite-linha { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 760px; }
 }
+
+/* Coordenada e outros números soltos no texto: algarismos alinhados, sem quebrar a linha. */
+.numero { font-variant-numeric: tabular-nums; white-space: nowrap; }

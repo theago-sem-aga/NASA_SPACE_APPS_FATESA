@@ -25,6 +25,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from api.v1.acompanhamento import roteador as roteador_acompanhamento
 from api.v1.analises import roteador as roteador_analises
 
 app = FastAPI(
@@ -35,12 +36,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    # 5173 = npm run dev; 4173 = npm run preview (build de teste).
+    allow_origins=["http://localhost:5173", "http://localhost:4173"],
     allow_methods=["GET"],
     allow_headers=["*"],
 )
 
 app.include_router(roteador_analises, prefix="/api/v1")
+app.include_router(roteador_acompanhamento, prefix="/api/v1")
 
 
 @app.exception_handler(HTTPException)

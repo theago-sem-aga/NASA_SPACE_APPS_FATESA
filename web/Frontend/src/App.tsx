@@ -282,7 +282,7 @@ export function App() {
       case 'acompanhamento':
         return (
           dados.local && (
-            <TelaAcompanhamento local={dados.local} estrategia={estrategia} aoMudarRoteiro={guardarRoteiroProducao} aoVoltar={voltar} />
+            <TelaAcompanhamento local={dados.local} origem={dados.origem_local} estrategia={estrategia} aoMudarRoteiro={guardarRoteiroProducao} aoVoltar={voltar} />
           )
         );
       case 'proximos':

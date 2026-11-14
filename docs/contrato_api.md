@@ -73,14 +73,17 @@ Painel "Como foi a colheita" para produtores com pouca leitura. **A resposta já
 - **Erro 404:** `{"erro": {"codigo": "dados_insuficientes", ...}}` para município sem dados pré-processados.
 - Toda regra (situação, classificação do clima) fica no backend; o front só desenha. A previsão é transcrita do boletim mensal do INMET e precisa ser atualizada a cada mês.
 
-## GET /api/v1/acompanhamento  (PROPOSTA — rota ainda não existe)
+## GET /api/v1/acompanhamento  (REAL — `web/Backend/app/api/v1/acompanhamento.py`)
 
-Acompanhamento da área pelo satélite, no fim do fluxo (botão no resumo). **A resposta já é montada** por `acompanhar(codigo_ibge, lat, lon)` em `web/Backend/app/pipelines/acompanhamento_sentinel2.py` (Sentinel-2 L2A, catálogo público Earth Search, sem login). Pela convenção §7 é fonte pré-processada: a rota deve servir o último processamento do ponto, não baixar imagem na requisição. Enquanto isso, o front usa a cópia gerada pelo script: **talhão de exemplo** por município (`ponto_exemplo: true`), porque o centro da cidade mostraria casas.
+Fotos do Sentinel-2 do **ponto do GPS** do produtor (mesma latitude/longitude pega na tela inicial). Lógica em `pipelines/acompanhamento_sentinel2.py` (catálogo público Earth Search, sem login).
 
-- **Query:** `latitude`, `longitude` (o ponto do GPS ou do cadastro).
-- **Sucesso 200:** `Acompanhamento` (tipos em `web/Frontend/src/api/tipos.ts`): `fotos[]` (mais nova primeiro, só sem nuvem sobre o talhão: `data`, `ndvi`, `estado` = `terra_descoberta` < 0,25 ≤ `pouca_planta` < 0,50 ≤ `planta_verde`, `imagem`), `confere_por_cobertura` (para cada `CoberturaSolo` do calendário das estratégias, se a última foto combina; `null` sem foto), `lado_talhao_m`, `fonte`, `atribuicao` (obrigatória: "Contém dados Copernicus Sentinel-2 modificados"), `tipo_dado`, `gerado_em`.
-- **Erro 404:** `dados_insuficientes` quando não há fotos processadas para o ponto.
-- O front escolhe o mês atual no calendário do caminho escolhido e mostra `confere_por_cobertura[cobertura]`; a regra de conferir é do backend.
+- **Query:** `latitude`, `longitude`.
+- **Sucesso 200:** `Acompanhamento` (tipos em `web/Frontend/src/api/tipos.ts`): `latitude`/`longitude` (arredondadas a 4 casas, ~11 m), `ponto_exemplo: false`, `fotos[]` (mais nova primeiro, só sem nuvem sobre o talhão: `data`, `ndvi`, `estado` = `terra_descoberta` < 0,25 ≤ `pouca_planta` < 0,50 ≤ `planta_verde`, `imagem` = URL absoluta da foto), `confere_por_cobertura` (para cada `CoberturaSolo`, se a última foto combina; `null` sem foto), `lado_talhao_m`, `fonte`, `atribuicao` (obrigatória: "Contém dados Copernicus Sentinel-2 modificados"), `tipo_dado`, `gerado_em`.
+- **GET /api/v1/acompanhamento/fotos/{nome}:** devolve a foto PNG (nome validado por regex; nada fora da pasta de cache).
+- **Erros:** `422 coordenada_invalida`; `503 satelite_indisponivel` se o catálogo/AWS não responder.
+- **Tempo:** primeira consulta de um ponto ~30 s (processa e grava cache em `data/processed/sentinel2/cache/`, fora do Git); seguintes ~20 ms, por 3 dias.
+- **Exceção à convenção §7** (satélite só pré-processado): o ponto vem do GPS e não dá para pré-processar todos. Processa uma vez por ponto e guarda em cache. **Precisa de aprovação da equipe.**
+- **Front:** usa a rota quando o ponto veio do GPS e o servidor está no ar, mesmo no modo mock. Sem servidor, mostra o talhão de exemplo da cidade (`ponto_exemplo: true`, cópia gerada pelo CLI do pipeline) ou avisa que o servidor precisa estar ligado.
 
 ## Pendente / não implementado ainda
 

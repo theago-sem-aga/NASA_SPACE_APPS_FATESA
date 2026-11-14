@@ -28,7 +28,9 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +41,14 @@ from rasterio.warp import transform as warp_transform
 from rasterio.windows import Window
 
 from indice_espacial import RAIZ_DADOS_PROCESSADOS
+
+# Leitura remota de COG mais rapida: nao listar a pasta do S3 a cada arquivo
+# aberto e reaproveitar conexoes. Medido em 2026-11-14, junto com as leituras
+# em paralelo: ponto novo caiu de ~2 min 12 s para ~32 s.
+for _k, _v in {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
+               "GDAL_HTTP_MULTIPLEX": "YES", "GDAL_HTTP_VERSION": "2", "VSI_CACHE": "TRUE"}.items():
+    os.environ.setdefault(_k, _v)
+LEITURAS_EM_PARALELO = 8
 
 STAC = "https://earth-search.aws.element84.com/v1/search"
 RAIZ = RAIZ_DADOS_PROCESSADOS.parents[1]
@@ -105,37 +115,50 @@ def _foto(cena: dict, lat: float, lon: float, caminho: Path) -> None:
     img.save(caminho, optimize=True)
 
 
-def acompanhar(codigo_ibge: str, lat: float, lon: float, dias: int = 120) -> dict:
-    PASTA_IMAGENS.mkdir(parents=True, exist_ok=True)
-    fotos, vistas = [], set()
-    for cena in _cenas(lat, lon, dias):
+def _avaliar(cena: dict, lat: float, lon: float) -> dict | None:
+    """Verdor da cena no talhao, ou None se houver nuvem/sem dado sobre ele."""
+    data = cena["properties"]["datetime"][:10]
+    scl = _ler(cena["assets"]["scl"]["href"], lat, lon, TALHAO_M)
+    ruim = np.isin(scl, list(SCL_RUIM)).mean() if scl.size else 1.0
+    if ruim > NUVEM_MAX:
+        print(f"  {data}: nuvem/sem dado sobre o talhao ({ruim:.0%}), pulando")
+        return None
+    vermelho = _ler(cena["assets"]["red"]["href"], lat, lon, TALHAO_M)
+    nir = _ler(cena["assets"]["nir"]["href"], lat, lon, TALHAO_M)
+    # Sem aplicar o offset -0,1 do metadado: nesta colecao (sentinel-2-l2a) os
+    # valores ja vem sem os +1000. Verificado em 2026-11-14: vermelho chega a
+    # 172 (impossivel com +1000) e o NDVI sem offset (p5 0,11 / p50 0,55 /
+    # p99 0,91) bate com a colecao sentinel-2-c1-l2a corrigida.
+    ndvi = float(np.nanmean((nir - vermelho) / np.where(nir + vermelho == 0, np.nan, nir + vermelho)))
+    print(f"  {data}: ok, ndvi={ndvi:.2f} ({estado_pelo_ndvi(ndvi)})")
+    return {"data": data, "ndvi": round(ndvi, 2), "estado": estado_pelo_ndvi(ndvi), "cena": cena}
+
+
+def acompanhar(chave: str, lat: float, lon: float, dias: int = 120,
+               pasta_imagens: Path = PASTA_IMAGENS, prefixo_url: str = "imagens/satelite/",
+               max_cenas: int = 15) -> dict:
+    """chave = nome base das fotos (codigo IBGE no CLI, coordenada na API).
+    max_cenas limita quantas passagens olhar (cada uma custa leituras na rede)."""
+    pasta_imagens.mkdir(parents=True, exist_ok=True)
+    cenas, vistas = [], set()
+    for cena in _cenas(lat, lon, dias):  # mais nova primeiro
         data = cena["properties"]["datetime"][:10]
-        if data in vistas:  # mesma passagem em dois tiles: fica a primeira
-            continue
-        scl = _ler(cena["assets"]["scl"]["href"], lat, lon, TALHAO_M)
-        ruim = np.isin(scl, list(SCL_RUIM)).mean() if scl.size else 1.0
-        if ruim > NUVEM_MAX:
-            print(f"  {data}: nuvem/sem dado sobre o talhao ({ruim:.0%}), pulando")
-            continue
-        vermelho = _ler(cena["assets"]["red"]["href"], lat, lon, TALHAO_M)
-        nir = _ler(cena["assets"]["nir"]["href"], lat, lon, TALHAO_M)
-        # Sem aplicar o offset -0,1 do metadado: nesta colecao (sentinel-2-l2a) os
-        # valores ja vem sem os +1000. Verificado em 2026-11-14: vermelho chega a
-        # 172 (impossivel com +1000) e o NDVI sem offset (p5 0,11 / p50 0,55 /
-        # p99 0,91) bate com a colecao sentinel-2-c1-l2a corrigida.
-        ndvi = float(np.nanmean((nir - vermelho) / np.where(nir + vermelho == 0, np.nan, nir + vermelho)))
-        nome = f"{codigo_ibge}_{data}.png"
-        _foto(cena, lat, lon, PASTA_IMAGENS / nome)
-        fotos.append({"data": data, "ndvi": round(ndvi, 2), "estado": estado_pelo_ndvi(ndvi),
-                      "imagem": f"imagens/satelite/{nome}", "cena_id": cena["id"]})
-        vistas.add(data)
-        print(f"  {data}: ok, ndvi={ndvi:.2f} ({fotos[-1]['estado']})")
-        if len(fotos) >= MAX_FOTOS:
-            break
+        if data not in vistas:  # mesma passagem em dois tiles: fica a primeira
+            vistas.add(data)
+            cenas.append(cena)
+    cenas = cenas[:max_cenas]
+
+    with ThreadPoolExecutor(LEITURAS_EM_PARALELO) as pool:
+        avaliadas = list(pool.map(lambda c: _avaliar(c, lat, lon), cenas))
+        escolhidas = [a for a in avaliadas if a][:MAX_FOTOS]
+        nomes = [f"{chave}_{a['data']}.png" for a in escolhidas]
+        list(pool.map(lambda a_n: _foto(a_n[0]["cena"], lat, lon, pasta_imagens / a_n[1]), zip(escolhidas, nomes)))
+    fotos = [{"data": a["data"], "ndvi": a["ndvi"], "estado": a["estado"], "imagem": f"{prefixo_url}{n}",
+              "cena_id": a["cena"]["id"]} for a, n in zip(escolhidas, nomes)]
 
     ultima = fotos[0] if fotos else None
     return {
-        "codigo_ibge": codigo_ibge,
+        "codigo_ibge": chave,
         "latitude": lat,
         "longitude": lon,
         "fotos": fotos,
