@@ -8,12 +8,18 @@
 //
 // Situação hoje (ver docs/contrato_api.md):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
-//  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise
+//  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
+//               GET /producao → PainelProducao, GET /previsao → PrevisaoClima | null
+//  - REAL:      GET /acompanhamento → Acompanhamento (fotos do satélite do ponto do GPS)
 //
 // BACKEND: cada função abaixo documenta a rota que o front chama. Os nomes de
 // rota seguem a proposta da convenção §6 (/api/v1, substantivo no plural).
-import type { Analise, AnaliseEntrada, Cultura, ErroApi, Local, RespostaAnalise } from './tipos';
+import type { Acompanhamento, Analise, AnaliseEntrada, Cultura, ErroApi, Local, OrigemLocal, PainelProducao, PrevisaoClima, RespostaAnalise } from './tipos';
+import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
+import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
+import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
+import { montarEstrategias } from './mock/montarEstrategias';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';
@@ -211,7 +217,15 @@ function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
 }
 
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
-  return { ...ANALISE_MOCK, descricao_local: descricaoLocal, talhao: montarTalhaoMock(entrada.correcoes) };
+  // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
+  const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
+  return {
+    ...ANALISE_MOCK,
+    descricao_local: descricaoLocal,
+    talhao: montarTalhaoMock(entrada.correcoes),
+    estrategias,
+    limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
+  };
 }
 
 /**
@@ -244,4 +258,80 @@ export async function criarAnalise(entrada: AnaliseEntrada, descricaoLocal: stri
     throw new FalhaApi('dados_insuficientes', 'Ainda não temos dados de satélite bons o bastante para esse lugar.');
   }
   return analiseMock(entrada, descricaoLocal);
+}
+
+/** Cidade usada quando a pessoa abre o painel sem ter escolhido o local. */
+export const CODIGO_IBGE_EXEMPLO = '3549805';
+
+/**
+ * GET /api/v1/producao?codigo_ibge=3549805 → PainelProducao   (PROPOSTA, ainda não existe)
+ * BACKEND: a resposta já é montada por web/Backend/app/modelos/painel_producao.py
+ * (montar_painel); falta só a rota. 404 com codigo 'dados_insuficientes' para
+ * município sem dados pré-processados.
+ *
+ * Enquanto a rota não existe, usa a cópia local gerada por esse mesmo script.
+ * Os números da cópia são REAIS (IBGE + NASA POWER), só congelados em `gerado_em`.
+ */
+export async function buscarPainelProducao(codigoIbge: string): Promise<PainelProducao> {
+  if (await backendTem('GET', '/producao')) {
+    return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+  }
+  const simular = simulacaoPedida();
+  if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  const painel = PAINEIS_PRODUCAO[codigoIbge];
+  if (!painel || simular === 'dados_insuficientes') {
+    throw new FalhaApi('dados_insuficientes', 'Ainda não temos os números da colheita dessa cidade.');
+  }
+  return painel;
+}
+
+/** Como backendTem, mas também tenta no modo mock, e servidor desligado vira false (sem erro). */
+async function backendTemSemFalhar(metodo: 'GET' | 'POST', caminho: string): Promise<boolean> {
+  try {
+    return (await carregarRotas()).has(`${metodo} ${caminho}`);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * GET /api/v1/acompanhamento?latitude=&longitude= → Acompanhamento   (REAL: web/Backend/app/api/v1/acompanhamento.py)
+ * Fotos do Sentinel-2 do PONTO DO GPS. Primeira consulta de um ponto leva ~30 s
+ * (o backend processa e guarda em cache); as seguintes respondem na hora.
+ *
+ * Usa a rota sempre que o ponto veio do GPS e o servidor está no ar, MESMO no modo
+ * mock: é a única tela que precisa do ponto exato (o resto do fluxo usa a cidade).
+ * Sem servidor, ou com a cidade escolhida na busca (o centro da cidade mostraria
+ * casas), usa a cópia local: talhão de EXEMPLO da cidade (ponto_exemplo = true).
+ */
+export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | null): Promise<Acompanhamento> {
+  const pontoReal = origem === 'gps';
+  if (pontoReal && (USANDO_MOCK ? await backendTemSemFalhar('GET', '/acompanhamento') : await backendTem('GET', '/acompanhamento'))) {
+    return requisitar<Acompanhamento>(`/acompanhamento?latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`);
+  }
+  const simular = simulacaoPedida();
+  if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  const copia = ACOMPANHAMENTOS[local.codigo_ibge];
+  if (!copia && pontoReal) {
+    throw new FalhaApi('dados_insuficientes', `Para ver as fotos do seu ponto (${local.latitude.toFixed(5)}, ${local.longitude.toFixed(5)}), o servidor precisa estar ligado.`);
+  }
+  if (!copia || simular === 'dados_insuficientes') {
+    throw new FalhaApi('dados_insuficientes', 'Ainda não temos fotos de satélite dessa área.');
+  }
+  return { ...copia, ponto_exemplo: true };
+}
+
+/**
+ * GET /api/v1/previsao?codigo_ibge=3530300 → PrevisaoClima | null   (PROPOSTA, ainda não existe)
+ * Previsão oficial dos próximos meses para a região do município (o boletim do INMET
+ * fala por região, ex.: noroeste paulista). null = não temos previsão para essa região.
+ * BACKEND: previsao_do_municipio() em web/Backend/app/modelos/painel_producao.py.
+ */
+export async function buscarPrevisao(codigoIbge: string): Promise<PrevisaoClima | null> {
+  if (await backendTem('GET', '/previsao')) {
+    return requisitar<PrevisaoClima | null>(`/previsao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+  }
+  return PREVISOES_POR_REGIAO.find(r => r.codigos_ibge.includes(codigoIbge))?.previsao ?? null;
 }

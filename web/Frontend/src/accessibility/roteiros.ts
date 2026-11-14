@@ -106,6 +106,12 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
       return estrategia ? aviso + roteiroEstrategia(estrategia) : '';
     case 'clima':
       return analise && estrategia ? aviso + roteiroClima(analise, estrategia) : '';
+    case 'decisao':
+      return estrategia ? `Pronto. Você escolheu: ${estrategia.nome}. Agora vamos acompanhar a sua área pelo satélite.` : '';
+    case 'producao':
+    case 'acompanhamento':
+      // O roteiro desta tela vem de features/producao/roteiroProducao.ts (depende dos dados carregados).
+      return '';
     case 'proximos':
       return 'Este é o seu resumo. Ele junta a sua área e os caminhos, com as figuras. Antes de decidir, três coisas. Primeiro: mostre este resumo ao agrônomo da usina, da cooperativa ou da Casa da Agricultura. Segundo: faça a análise de solo antes da reforma. Terceiro: confira a melhor época de plantar no aplicativo Plantio Certo. Se quiser, toque em imprimir para levar no papel.';
   }

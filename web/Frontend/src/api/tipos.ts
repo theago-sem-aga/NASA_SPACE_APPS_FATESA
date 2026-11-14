@@ -110,6 +110,8 @@ export interface AtributosEstrategia {
   renda_direta: Nivel;
   demanda_agua: Nivel;
   trabalho_custo: Nivel;
+  /** Quanto serve de comida para o gado (pasto, silagem). */
+  valor_forragem: Nivel;
 }
 
 export interface ClimaMensal {
@@ -254,4 +256,118 @@ export interface ErroApi {
     detalhes: unknown[];
     requisicao_id: string | null;
   };
+}
+
+// ---------------------------------------------------------------------------
+// PROPOSTA: painel "Sua colheita" (GET /api/v1/producao?codigo_ibge=...).
+// Montado em web/Backend/app/modelos/painel_producao.py: TODA regra (situação,
+// cenários) fica no backend; o front só desenha. Ver docs/contrato_api.md.
+
+/** acima/abaixo = rendimento do último ano passou 5% da média dos 5 anteriores. */
+export type SituacaoColheita = 'acima' | 'normal' | 'abaixo' | 'sem_plantio';
+
+export interface ColheitaCultura {
+  /** Mesmo id de Cultura (escolhe o pictograma). */
+  cultura_id: string;
+  nome: string;
+  situacao: SituacaoColheita;
+  ano: number;
+  area_plantada_ha: number | null;
+  rendimento_kg_ha: number | null;
+  rendimento_medio_anterior_kg_ha: number | null;
+}
+
+export interface ClimaAno {
+  ano: number;
+  chuva_mm: number;
+  chuva_normal_mm: number;
+  /** pouca/muita = 15% abaixo/acima da média do período normal. */
+  situacao_chuva: 'pouca' | 'normal' | 'muita';
+  /** Para o desenho: de cada 10 gotas de um ano normal, quantas caíram. */
+  gotas_em_10: number;
+  tmax_c: number;
+  tmax_normal_c: number;
+  /** Média da temperatura máxima 1 °C ou mais acima/abaixo do normal. */
+  situacao_calor: 'mais_quente' | 'normal' | 'mais_frio';
+  /** Diferença arredondada em graus (positivo = mais quente). */
+  graus_de_diferenca: number;
+  /** Ex.: '1995-2024'. */
+  periodo_normal: string;
+}
+
+/** Comparação com a média do clima, como o INMET publica. */
+export type Tendencia = 'acima' | 'normal' | 'abaixo';
+/** Como a chuva deve vir no mês, pelo texto do boletim para a região. */
+export type ChuvaDoMes = 'irregular' | 'melhora' | 'normal' | 'excesso';
+
+/**
+ * Previsão OFICIAL para os próximos ~3 meses (INMET/INPE/FUNCEME), transcrita
+ * do boletim mensal. tipo_dado = 'previsao': a tela mostra o selo "Previsão".
+ */
+export interface PrevisaoClima {
+  /** Região do boletim, ex.: 'Região de São José do Rio Preto (noroeste paulista)'. */
+  abrangencia: string;
+  /** Ex.: 'novembro de 2026 a janeiro de 2027'. */
+  periodo: string;
+  chuva: Tendencia;
+  temperatura: Tendencia;
+  meses: { mes: string; nome: string; chuva: ChuvaDoMes }[];
+  /** figura = nome de pictograma (src/components/Pictograma.tsx). */
+  dicas: { figura: string; frase: string }[];
+  fonte: string;
+  url_fonte: string;
+  /** AAAA-MM do boletim. */
+  publicado_em: string;
+  tipo_dado: 'previsao';
+}
+
+export interface PainelProducao {
+  codigo_ibge: string;
+  municipio: string;
+  uf: string;
+  culturas: ColheitaCultura[];
+  clima: ClimaAno;
+  /** null = ainda não temos a previsão oficial transcrita para esta cidade. */
+  previsao: PrevisaoClima | null;
+  fontes: string[];
+  limitacoes: string[];
+  tipo_dado: TipoDado;
+  /** Data em que os números foram calculados (AAAA-MM-DD). */
+  gerado_em: string;
+}
+
+// ---------------------------------------------------------------------------
+// PROPOSTA: acompanhamento da área pelo satélite
+// (GET /api/v1/acompanhamento?latitude=&longitude=). Montado por
+// web/Backend/app/pipelines/acompanhamento_sentinel2.py; regras no backend.
+
+/** Pelo verdor (NDVI) num quadrado de 100 m: < 0,25 / 0,25–0,50 / >= 0,50. */
+export type EstadoArea = 'terra_descoberta' | 'pouca_planta' | 'planta_verde';
+
+export interface FotoSatelite {
+  /** AAAA-MM-DD da passagem do satélite. */
+  data: string;
+  /** Verdor de -1 a 1 (NDVI). Só para referência; a tela mostra `estado`. */
+  ndvi: number;
+  estado: EstadoArea;
+  /** Caminho relativo à raiz do site (ex.: 'imagens/satelite/3549805_2026-11-12.png'). */
+  imagem: string;
+}
+
+export interface Acompanhamento {
+  codigo_ibge: string;
+  latitude: number;
+  longitude: number;
+  /** true = talhão de exemplo da cidade, não o ponto da pessoa (o front avisa). */
+  ponto_exemplo?: boolean;
+  /** Da mais nova para a mais velha; só fotos sem nuvem sobre o talhão. Vazio = sem foto limpa. */
+  fotos: FotoSatelite[];
+  /** A última foto confere com o que o plano previa? null = sem foto. */
+  confere_por_cobertura: Record<CoberturaSolo, boolean | null>;
+  lado_talhao_m: number;
+  fonte: string;
+  /** Texto de atribuição exigido pelo Copernicus. */
+  atribuicao: string;
+  tipo_dado: TipoDado;
+  gerado_em: string;
 }

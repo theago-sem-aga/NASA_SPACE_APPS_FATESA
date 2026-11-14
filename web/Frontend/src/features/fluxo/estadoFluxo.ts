@@ -2,7 +2,7 @@ import type { Analise, CorrecoesTalhao, Local, OrigemLocal, PrioridadeId, Proble
 
 export const ETAPAS = [
   'inicio', 'local', 'cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades',
-  'estrategias', 'comparar', 'estrategia', 'clima', 'proximos'
+  'estrategias', 'comparar', 'estrategia', 'clima', 'proximos', 'producao', 'decisao', 'acompanhamento'
 ] as const;
 export type Etapa = (typeof ETAPAS)[number];
 
@@ -22,7 +22,10 @@ export const TITULO_ETAPA: Record<Etapa, string> = {
   comparar: 'Comparar',
   estrategia: 'Detalhe',
   clima: 'Chuva',
-  proximos: 'Resumo'
+  proximos: 'Resumo',
+  producao: 'Colheita',
+  decisao: 'Caminho escolhido',
+  acompanhamento: 'Acompanhar'
 };
 
 /** Para onde o botão Voltar leva em cada tela (o fluxo tem desvios). */
@@ -30,7 +33,7 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   inicio: 'inicio',
   local: 'inicio',
   cultura: 'local',
-  maquinas_graos: 'cultura',
+  maquinas_graos: 'producao',
   comprador_graos: 'maquinas_graos',
   irrigacao: 'comprador_graos',
   problemas: 'irrigacao',
@@ -39,7 +42,10 @@ export const VOLTAR_PARA: Record<Etapa, Etapa> = {
   comparar: 'estrategias',
   estrategia: 'estrategias',
   clima: 'estrategia',
-  proximos: 'estrategias'
+  proximos: 'estrategias',
+  producao: 'cultura',
+  decisao: 'comparar',
+  acompanhamento: 'comparar'
 };
 
 export const MAX_PRIORIDADES = 2;
@@ -81,6 +87,9 @@ export const DADOS_INICIAIS: DadosFluxo = {
 };
 
 /** 'Olímpia (SP)'. Sem UF (ponto do GPS sem município identificado), só o texto do local. */
+/** '-20.73430, -49.44290': a mesma coordenada do GPS em todas as telas. */
+export const formatarCoordenada = (latitude: number, longitude: number) => `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
 export const descreverLocal = (local: Local | null) => (local ? (local.uf ? `${local.municipio} (${local.uf})` : local.municipio) : '');
 
 export type SituacaoAnalise =

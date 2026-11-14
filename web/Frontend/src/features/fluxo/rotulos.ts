@@ -76,7 +76,8 @@ export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; 
   quebra_pragas: { nome: 'Ajuda contra praga', maiorEhMelhor: true },
   renda_direta: { nome: 'Dá dinheiro na reforma', maiorEhMelhor: true },
   demanda_agua: { nome: 'Gasta água', maiorEhMelhor: false },
-  trabalho_custo: { nome: 'Dá trabalho e gasto', maiorEhMelhor: false }
+  trabalho_custo: { nome: 'Dá trabalho e gasto', maiorEhMelhor: false },
+  valor_forragem: { nome: 'Dá comida pro gado', maiorEhMelhor: true }
 };
 
 export const ROTULO_CONFIANCA: Record<Confianca, string> = {
@@ -125,7 +126,8 @@ export const PICTO_ATRIBUTO: Record<keyof AtributosEstrategia, NomePictograma> =
   quebra_pragas: 'quebra_pragas',
   renda_direta: 'renda',
   demanda_agua: 'agua',
-  trabalho_custo: 'trabalho'
+  trabalho_custo: 'trabalho',
+  valor_forragem: 'gado'
 };
 /** Textura e relevo usam o próprio id como nome do pictograma. */
 export const PICTO_TEXTURA: Record<TexturaSolo, NomePictograma> = { arenosa: 'arenosa', media: 'media', argilosa: 'argilosa' };

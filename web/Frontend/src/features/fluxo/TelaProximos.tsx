@@ -8,6 +8,7 @@ interface TelaProximosProps {
   analise: Analise;
   aoVoltar: () => void;
   aoRecomecar: () => void;
+  aoAcompanhar: () => void;
 }
 
 const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
@@ -28,7 +29,7 @@ const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
   }
 ];
 
-export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProximosProps) {
+export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar, aoAcompanhar }: TelaProximosProps) {
   return (
     <>
       <h1 tabIndex={-1}>Seu resumo</h1>
@@ -36,6 +37,10 @@ export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProx
 
       <button type="button" className="botao botao-primario botao-largo" onClick={() => window.print()}>
         <Icone nome="imprimir" /> Imprimir ou salvar
+      </button>
+
+      <button type="button" className="botao botao-contorno botao-largo" onClick={aoAcompanhar}>
+        <Icone nome="local" /> Acompanhar a área pelo satélite
       </button>
 
       <h2 className="titulo-secao">Antes de bater o martelo</h2>

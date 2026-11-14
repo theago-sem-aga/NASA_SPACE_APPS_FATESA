@@ -3,7 +3,7 @@ import { buscarMunicipios } from '../../api/cliente';
 import type { Local } from '../../api/tipos';
 import { Icone } from '../../components/Icone';
 import { DicaPermissao } from '../../components/DicaPermissao';
-import { descreverLocal, type DadosFluxo } from './estadoFluxo';
+import { type DadosFluxo, descreverLocal, formatarCoordenada } from './estadoFluxo';
 import type { SituacaoGps } from './useLocalizacao';
 
 interface TelaLocalProps {
@@ -28,6 +28,11 @@ export function TelaLocal(props: TelaLocalProps) {
             Você está perto de <span className="local-nome">{descreverLocal(dados.local)}</span>
           </h1>
           <p className="texto-grande">É aqui que fica a plantação?</p>
+          {dados.origem_local === 'gps' && (
+            <p className="texto-apoio local-coordenada">
+              Seu ponto: <span className="numero">{formatarCoordenada(dados.local.latitude, dados.local.longitude)}</span>
+            </p>
+          )}
         </div>
         <div className="respostas-grandes">
           <button type="button" className="botao botao-primario botao-gigante" onClick={props.aoConfirmar}>

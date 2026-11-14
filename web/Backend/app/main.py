@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from app.api.v1.acompanhamento import roteador as acompanhamento
 from app.api.v1.analises import roteador as analises
 from app.api.v1.catalogos import roteador as catalogos
 from app.configuracao import configuracao
@@ -136,6 +137,7 @@ async def tratar_validacao(request, exc):
 
 app.include_router(analises, prefix="/api/v1")
 app.include_router(catalogos, prefix="/api/v1")
+app.include_router(acompanhamento, prefix="/api/v1")
 
 
 @app.get("/api/v1/health", tags=["operacao"])
