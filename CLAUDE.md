@@ -12,8 +12,8 @@ Transformar 25+ anos de observações da Terra (NASA) + solo local + caracterís
 - Cultura atual: consumo excessivo de água, doenças, conflito com mercado local, fora da janela ideal de plantio.
 
 ## Fontes de dados
-Tabela completa + descrição de cada base: [`docs/fontes-dados.md`](docs/fontes-dados.md).
-**Atenção Brasil:** várias bases oficiais cobrem só os EUA — priorizar as 🌎 Global (SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, NASA POWER, SRTM, ECOSTRESS, GEDI, GLDAS, FAO GAEZ, Sentinel-2, ERA5). Caminho mais rápido para protótipo: **NASA POWER** (sem login) + **FAO GAEZ**.
+Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.md`](docs/fontes-dados.md).
+**Atenção Brasil:** várias bases oficiais cobrem só os EUA — priorizar as 🌎 Global (SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, NASA POWER, SRTM, ECOSTRESS, GEDI, GLDAS, FAO GAEZ, Sentinel-2, ERA5). Caminho mais rápido para protótipo: **NASA POWER** (sem login) + **FAO GAEZ**. Para histórico de rotações, água e mercado (sem fonte brasileira na lista oficial) usar fontes nacionais: IBGE SIDRA, Conab, ANA, MapBiomas — detalhe em `docs/fontes-dados.md`.
 
 ## Análises exigidas
 - Temperatura, estresse térmico, risco de geada.
