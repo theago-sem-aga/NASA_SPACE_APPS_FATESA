@@ -26,4 +26,5 @@ def configuracao() -> dict:
         "ano_inicio": int(os.getenv("CLIMA_ANO_INICIO", "1991")),
         "ano_fim": int(os.getenv("CLIMA_ANO_FIM", "2020")),
         "cenarios_beta": os.getenv("HABILITAR_CENARIOS_BETA", "false").lower() == "true",
+        "gcs_bucket": os.getenv("GCS_BUCKET", ""),
     }
