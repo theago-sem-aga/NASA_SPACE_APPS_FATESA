@@ -58,6 +58,7 @@ Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.m
 
 Fluxo padrão: `feature/*` → PR → `homolog` → validação → PR → `main`.
 Nunca commitar direto em `main` ou `homolog`.
+**Proibido `git push --force`** (ou qualquer variante, incluindo `--force-with-lease`) em qualquer branch — sobrescreve trabalho de outra pessoa/agente sem aviso. Se o push for rejeitado (`fetch first`), sempre `git fetch` + `merge` antes de reenviar.
 
 **Commits:** [Conventional Commits](https://www.conventionalcommits.org/), português, imperativo, curto.
 Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
