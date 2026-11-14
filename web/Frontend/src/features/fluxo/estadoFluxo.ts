@@ -80,7 +80,8 @@ export const DADOS_INICIAIS: DadosFluxo = {
   estrategia_id: null
 };
 
-export const descreverLocal = (local: Local | null) => (local ? `${local.municipio} (${local.uf})` : '');
+/** 'Olímpia (SP)'. Sem UF (ponto do GPS sem município identificado), só o texto do local. */
+export const descreverLocal = (local: Local | null) => (local ? (local.uf ? `${local.municipio} (${local.uf})` : local.municipio) : '');
 
 export type SituacaoAnalise =
   | { situacao: 'ociosa' }
