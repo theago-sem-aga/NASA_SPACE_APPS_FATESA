@@ -20,14 +20,14 @@ milho/feijao soma 1a e 2a safra; janelas de safra aproximadas; associacao
 historica, nao causalidade.
 
 RESULTADO (2026-11-14) -- NAO USAR COMO PREVISOR:
-  R2 na validacao por ano ficou ~0 (entre -0,11 e 0,02) em todas as
+  R2 na validacao por ano ficou ~0 (entre -0,05 e 0,09) em todas as
   culturas. Tambem testados, sem melhora relevante: agregar por ponto da
   grade POWER (melhor caso amendoim/tmax R2=0,13) e clima mes a mes com
   Ridge (R2 de -0,35 a 0,12). Causas provaveis: 23-41% dos rendimentos
   municipais da PAM repetem o ano anterior (estimativa, nao medicao) e o
   clima de 0,5 grau e grosso demais para o municipio.
-  O que se sustenta (IC 90% sem cruzar zero): milho -5,8% e sorgo -13%
-  por mes seco a mais na safra. Na media estadual por ano o sinal tem o
+  O que se sustenta (IC 90% sem cruzar zero): amendoim -6,2% por +1 grau
+  na tmax media da safra; milho -5,5% por mes seco a mais na safra. Na media estadual por ano o sinal tem o
   sentido esperado (chuva +, calor -; r ~0,4-0,5 em soja/milho/cana/
   amendoim) e os piores anos sao 2014 e 2024 (secas). Use os coeficientes
   so com a coluna efeito_confiavel e citando o R2.
@@ -35,6 +35,7 @@ RESULTADO (2026-11-14) -- NAO USAR COMO PREVISOR:
 Entrada: data/processed/modelo_produtividade/dataset_sp.parquet
 Saida:   data/processed/modelo_produtividade/coeficientes.parquet
 Uso:     python produtividade_clima.py
+Testes:  cd web/Backend && .venv/bin/python -m pytest tests
 """
 
 from __future__ import annotations
@@ -64,6 +65,11 @@ N_BOOTSTRAP = 300
 CULTURAS_EXCLUIDAS = {"laranja"}
 
 
+def _sem_tendencia(anos: pd.Series, valores: pd.Series) -> np.ndarray:
+    v = valores.to_numpy(dtype=float)
+    return v - np.polyval(np.polyfit(anos, v, 1), anos)
+
+
 def preparar(df: pd.DataFrame) -> pd.DataFrame:
     df = df[~df["cultura"].isin(CULTURAS_EXCLUIDAS)]
     df = df[(df["area_plantada_ha"] >= AREA_MINIMA_HA) & (df["rendimento_kg_ha"] > 0)].copy()
@@ -80,11 +86,16 @@ def preparar(df: pd.DataFrame) -> pd.DataFrame:
         tendencia = np.polyval(coef, g["ano"])
         if (tendencia <= 0).any():
             continue
+        # O clima tambem perde a tendencia linear (nao so a media): se a
+        # tmax sobe ao longo dos anos, a tendencia do rendimento absorveria
+        # parte do efeito e o coeficiente sairia atenuado (bug pego por
+        # tests/test_produtividade_clima.py). O efeito medido e o da
+        # variacao de um ano para o outro.
         g = g.assign(
             anomalia_rendimento_pct=(g["rendimento_kg_ha"] / tendencia - 1) * 100,
-            chuva_anom_100mm=(g["chuva_safra_mm"] - g["chuva_safra_mm"].mean()) / 100,
-            tmax_anom_c=g["tmax_safra_c"] - g["tmax_safra_c"].mean(),
-            meses_secos_anom=g["meses_secos"] - g["meses_secos"].mean(),
+            chuva_anom_100mm=_sem_tendencia(g["ano"], g["chuva_safra_mm"]) / 100,
+            tmax_anom_c=_sem_tendencia(g["ano"], g["tmax_safra_c"]),
+            meses_secos_anom=_sem_tendencia(g["ano"], g["meses_secos"]),
         )
         partes.append(g)
     out = pd.concat(partes, ignore_index=True)
