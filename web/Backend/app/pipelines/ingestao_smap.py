@@ -18,7 +18,7 @@ import h5py
 import numpy as np
 import pandas as pd
 
-from indice_espacial import registrar_celula, caminho_parquet_da_celula, TAMANHO_CELULA_GRAUS
+from indice_espacial import registrar_celula, celula_id, caminho_parquet_da_celula, TAMANHO_CELULA_GRAUS
 
 # Mesma regiao piloto usada na ingestao do GPM (ver docs/convencao_programacao.md).
 LAT_MIN, LAT_MAX = 36.4, 36.8
@@ -51,17 +51,21 @@ def ingerir(caminho_arquivo_bruto: Path) -> int:
 
     # Varios pixels de 9km podem cair na mesma celula de 0,1 grau; agrega por media.
     acumulado: dict[str, list[float]] = {}
+    representante: dict[str, tuple[float, float]] = {}
     for lin, col in zip(linhas_px, colunas_px):
         valor = float(umidade[lin, col])
         if valor == FILL_VALUE or valor < 0:
             continue
         latitude_px = float(lat[lin, col])
         longitude_px = float(lon[lin, col])
-        celula = registrar_celula(FONTE, latitude_px, longitude_px)["celula_id"]
+        celula = celula_id(latitude_px, longitude_px)
         acumulado.setdefault(celula, []).append(valor)
+        representante.setdefault(celula, (latitude_px, longitude_px))
 
     for celula, valores in acumulado.items():
-        caminho_saida = caminho_parquet_da_celula(FONTE, celula)
+        lat_rep, lon_rep = representante[celula]
+        linha_manifesto = registrar_celula(FONTE, lat_rep, lon_rep)
+        caminho_saida = caminho_parquet_da_celula(FONTE, linha_manifesto["celula_id"])
         caminho_saida.parent.mkdir(parents=True, exist_ok=True)
         registro = pd.DataFrame([{
             "data": data_observacao,
