@@ -47,15 +47,15 @@ export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {
       }
     ],
     "clima": {
-      "ano": 2024,
-      "chuva_mm": 909,
+      "ano": 2025,
+      "chuva_mm": 699,
       "chuva_normal_mm": 1177,
       "situacao_chuva": "pouca",
-      "gotas_em_10": 8,
-      "tmax_c": 33.2,
+      "gotas_em_10": 6,
+      "tmax_c": 32.4,
       "tmax_normal_c": 30.2,
       "situacao_calor": "mais_quente",
-      "graus_de_diferenca": 3,
+      "graus_de_diferenca": 2,
       "periodo_normal": "1995-2024"
     },
     "previsao": {
