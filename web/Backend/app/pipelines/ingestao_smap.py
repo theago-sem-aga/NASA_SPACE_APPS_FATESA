@@ -18,11 +18,12 @@ import h5py
 import numpy as np
 import pandas as pd
 
+from regioes import caixa_da_regiao
 from indice_espacial import registrar_celula, celula_id, caminho_parquet_da_celula, TAMANHO_CELULA_GRAUS
 
 # Mesma regiao piloto usada na ingestao do GPM (ver docs/convencao_programacao.md).
-LAT_MIN, LAT_MAX = 36.4, 36.8
-LON_MIN, LON_MAX = -119.9, -119.5
+# Caixa da regiao piloto escolhida por REGIAO_PILOTO (padrao: fresno), ver regioes.py.
+LAT_MIN, LAT_MAX, LON_MIN, LON_MAX = caixa_da_regiao()
 
 FONTE = "smap"
 FILL_VALUE = -9999.0

@@ -263,3 +263,29 @@ Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em ma
 - **Login do NASA Earthdata:** SMAP, GPM, ECOSTRESS, GEDI e NLDAS/GLDAS exigem uma conta gratuita em https://urs.earthdata.nasa.gov.
 - **Caminho mais rápido para um protótipo:** NASA POWER, consultado por coordenada sem login, mais FAO GAEZ para a aptidão das culturas. As duas cobrem o Brasil.
 - **AppEEARS** (https://appeears.earthdatacloud.nasa.gov) recorta SMAP, MODIS, Landsat e ECOSTRESS para um ponto ou área e devolve CSV, o que evita baixar arquivos enormes.
+
+## Fontes integradas — região piloto Brasil (São José do Rio Preto-SP)
+
+> Estado em 2026-11-14 (Matheus/Claude). Pipelines em `web/Backend/app/pipelines/`, rodar com `REGIAO_PILOTO=sjrp`. Região: geocódigo IBGE `3549805`, caixa da malha municipal (lat -20.93 a -20.64, lon -49.46 a -49.26), 12 células de 0,1°.
+
+| Fonte | Script | Acesso | Saída (`data/processed/`) | Estado |
+|---|---|---|---|---|
+| ZARC – Tábua de Risco (MAPA) | `ingestao_zarc.py` | CSV aberto, sem login | `zarc/municipio_3549805.parquet` | ✅ 72 culturas, 27.432 linhas (safra 2025/26 + perenes/olerícolas) |
+| IBGE PAM (tabela 5457) | `ingestao_ibge.py` | API SIDRA, sem chave | `ibge_pam/municipio_3549805.parquet` | ✅ 26 culturas, 2016–2025 |
+| IBGE Censo Agro 2017 (6957, 6955) | `ingestao_ibge.py` | API SIDRA, sem chave | `ibge_censo_agro/municipio_3549805.parquet` | ✅ familiar x não familiar |
+| MapBiomas Col. 10.1 (estatística municipal) | `ingestao_mapbiomas.py` | Dataverse `doi:10.58053/MapBiomas/SJZOLT`, CC BY 4.0 | `mapbiomas/municipio_3549805.parquet` | ✅ 1985–2024 |
+| SICOR / Banco Central (crédito rural, Pronaf) | `ingestao_sicor.py` | OData Olinda, sem chave | `sicor/municipio_3549805.parquet` | ⏳ script pronto; API do BCB devolve erro 500 intermitente, coleta em andamento |
+| SoilGrids 2.0 (ISRIC) | `ingestao_soilgrids.py` | REST, sem chave (~5 req/min) | `soilgrids/<celula>.parquet` | ✅ 8 propriedades x 4 profundidades |
+| NASA POWER (cache 1995–2024) | `ingestao_power_historico.py` | API, sem login | `nasa_power/<celula>.parquet` | ✅ cópia offline da fonte ao vivo |
+| Modelo produtividade x clima (SP inteiro) | `dataset_produtividade_sp.py` + `app/modelos/produtividade_clima.py` | PAM + POWER mensal | `modelo_produtividade/` | ⚠️ não serve como previsor (R² ~0); ver docstring |
+| GPM, SMAP, SRTM, ECOSTRESS (NASA) | `ingestao_gpm.py` etc. | Earthdata Login (`~/.netrc`) | `<fonte>/<celula>.parquet` | ⏳ scripts aceitam `REGIAO_PILOTO=sjrp`; falta credencial e baixar os arquivos (SRTM: tile `S21W050`) |
+| SATVeg – NDVI/EVI MODIS (Embrapa AgroAPI) | `ingestao_satveg.py` | Chaves AgroAPI (plano grátis 1.000 req/mês) | `satveg/<celula>.parquet` | ⏳ escrito, **não testado** — falta cadastro |
+| CONAB (preços, PAA) | — | Portal de informações | — | ❌ certificado TLS do `portaldeinformacoes.conab.gov.br` é de outro domínio (`barramento.conab.gov.br`); baixar manualmente pelo navegador |
+| PNAE (FNDE) | — | Planilhas no gov.br/fnde | — | ❌ não integrado: dado mais recente é de 2022 e só traz % de compra da agricultura familiar por município |
+
+Notas de interpretação:
+- **ZARC:** `risco_perda_pct` = 20/30/40 (% de chance de perda se plantar naquele decêndio). `plantio_indicado = False` significa fora do zoneamento, **não** risco zero. Solo AD1–AD6 = classes de água disponível (AD1 menor). É o critério para seguro rural e Pronaf.
+- **IBGE:** `X` (sigilo) e `..`/`...` viram `None`; `-` vira 0. Unidade de `quantidade_produzida` varia por cultura (ver coluna `unidade`).
+- **SICOR:** `pronaf = True` quando `cdPrograma == "0001"`. Investimento usa o código de município do SICOR (`23764`), não o do IBGE.
+- **MapBiomas:** estatística do município inteiro, não do talhão. O raster de 30 m por ponto exige Google Earth Engine (o bucket público respondeu 403).
+- **SoilGrids:** células urbanas voltam nulas (máscara do produto).

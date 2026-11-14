@@ -23,10 +23,11 @@ import pandas as pd
 import rasterio
 from rasterio.warp import transform as warp_transform
 
+from regioes import caixa_da_regiao
 from indice_espacial import registrar_celula, celula_id, caminho_parquet_da_celula, TAMANHO_CELULA_GRAUS
 
-LAT_MIN, LAT_MAX = 36.4, 36.8
-LON_MIN, LON_MAX = -119.9, -119.5
+# Caixa da regiao piloto escolhida por REGIAO_PILOTO (padrao: fresno), ver regioes.py.
+LAT_MIN, LAT_MAX, LON_MIN, LON_MAX = caixa_da_regiao()
 
 FONTE = "ecostress"
 
