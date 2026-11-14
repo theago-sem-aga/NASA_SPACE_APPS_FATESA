@@ -1,0 +1,21 @@
+{
+  "_comentario": "Transcrito à mão do Boletim Agroclimatológico do INMET de novembro de 2026 (prognóstico INMET/INPE/FUNCEME para NDJ), trechos da Região Sudeste e do noroeste de São Paulo. Atualizar quando sair o boletim do mês seguinte. PDF bruto em data/raw/inmet/.",
+  "codigo_ibge": "3549805",
+  "periodo": "novembro de 2026 a janeiro de 2027",
+  "chuva": "acima",
+  "temperatura": "acima",
+  "meses": [
+    {"mes": "2026-11", "nome": "Novembro", "chuva": "irregular", "trecho": "chuvas ainda irregulares, principalmente em Minas Gerais e no noroeste de São Paulo"},
+    {"mes": "2026-12", "nome": "Dezembro", "chuva": "melhora", "trecho": "níveis elevados de armazenamento de água no solo em todo o estado de São Paulo; no noroeste de São Paulo ainda são esperados déficits hídricos de até 30 mm"},
+    {"mes": "2027-01", "nome": "Janeiro", "chuva": "excesso", "trecho": "os excedentes hídricos devem abranger grande parte da região; os volumes de chuva poderão gerar excedentes hídricos"}
+  ],
+  "dicas": [
+    {"figura": "soja", "frase": "Novembro é bom para plantar soja e milho", "trecho": "Em novembro, as condições previstas deverão favorecer o avanço da semeadura de soja e milho em São Paulo"},
+    {"figura": "cana", "frase": "A chuva deve ajudar a cana a crescer", "trecho": "maior frequência de chuvas em São Paulo tende a favorecer a recuperação hídrica das lavouras de frutíferas e cana-de-açúcar"},
+    {"figura": "pragas", "frase": "Calor com umidade: olho na doença e na praga", "trecho": "as temperaturas e a umidade elevadas exijam maior atenção ao manejo fitossanitário"},
+    {"figura": "trator", "frase": "Em janeiro, chuva demais pode atrapalhar a colheita", "trecho": "Em janeiro de 2027, os volumes de chuva poderão gerar excedentes hídricos, dificultando as operações de campo e a colheita das lavouras semeadas mais cedo"}
+  ],
+  "fonte": "INMET, INPE e FUNCEME – Boletim Agroclimatológico de novembro de 2026",
+  "url_fonte": "https://portal.inmet.gov.br/uploads/boletinsAgroclimatologicos/Boletim_AGRO_Novembro_2026.pdf",
+  "publicado_em": "2026-11"
+}

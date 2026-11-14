@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { buscarPainelProducao, CODIGO_IBGE_EXEMPLO, FalhaApi } from '../../api/cliente';
-import type { CenarioId, ColheitaCultura, Local, PainelProducao, SituacaoColheita } from '../../api/tipos';
+import type { ChuvaDoMes, ColheitaCultura, Local, PainelProducao, PrevisaoClima, SituacaoColheita, Tendencia } from '../../api/tipos';
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from '../../components/Pictograma';
-import { FRASE_CHUVA, FRASE_COLHEITA, fraseCalor, fraseCenario } from './frases';
+import { FRASE_CHUVA, FRASE_CHUVA_MES, FRASE_COLHEITA, FRASE_PREVISAO_CALOR, FRASE_PREVISAO_CHUVA, fraseCalor } from './frases';
 import { roteiroProducao } from './roteiroProducao';
 
 interface TelaProducaoProps {
@@ -24,20 +24,18 @@ type Situacao =
   | { situacao: 'sucesso'; painel: PainelProducao }
   | { situacao: 'falha'; codigo: string; mensagem: string };
 
-const FIGURA_CENARIO: Record<CenarioId, NomePictograma> = { seco: 'seca', normal: 'agua', chuvoso: 'chuva' };
+const FIGURA_MES: Record<ChuvaDoMes, NomePictograma> = { irregular: 'seca', melhora: 'agua', normal: 'agua', excesso: 'chuva' };
 
 // ---------- peças visuais ----------
 
-type Rumo = 'sobe' | 'igual' | 'desce' | 'duvida' | 'nada';
+type Rumo = 'sobe' | 'igual' | 'desce' | 'nada';
 
 function rumoDaColheita(s: SituacaoColheita): Rumo {
   return s === 'acima' ? 'sobe' : s === 'abaixo' ? 'desce' : s === 'normal' ? 'igual' : 'nada';
 }
-function rumoDoCenario(sacos: number | null): Rumo {
-  return sacos === null ? 'duvida' : sacos > 0 ? 'sobe' : sacos < 0 ? 'desce' : 'igual';
-}
+const RUMO_TENDENCIA: Record<Tendencia, Rumo> = { acima: 'sobe', normal: 'igual', abaixo: 'desce' };
 
-/** Seta grande (sobe/desce), sinal de igual ou interrogação. Sempre acompanha uma frase. */
+/** Seta grande (sobe/desce) ou sinal de igual. Sempre acompanha uma frase. */
 function Seta({ rumo, tamanho = 56 }: { rumo: Rumo; tamanho?: number }) {
   return (
     <svg aria-hidden="true" focusable="false" width={tamanho} height={tamanho} viewBox="0 0 48 48" className={`seta seta-${rumo}`}>
@@ -45,12 +43,6 @@ function Seta({ rumo, tamanho = 56 }: { rumo: Rumo; tamanho?: number }) {
       {rumo === 'sobe' && <path d="M24 10l13 14h-8v13h-10V24h-8z" className="seta-tinta" />}
       {rumo === 'desce' && <path d="M24 38L11 24h8V11h10v13h8z" className="seta-tinta" />}
       {rumo === 'igual' && <path d="M13 17h22v5H13zM13 26h22v5H13z" className="seta-tinta" />}
-      {rumo === 'duvida' && (
-        <>
-          <path d="M18 18c0-8 12-8 12 0 0 5-6 5-6 11" fill="none" strokeWidth="4.5" strokeLinecap="round" className="seta-traco" />
-          <circle cx="24" cy="36" r="3" className="seta-tinta" />
-        </>
-      )}
       {rumo === 'nada' && <path d="M14 22h20v5H14z" className="seta-tinta" />}
     </svg>
   );
@@ -64,24 +56,6 @@ function Gotas({ quantas, total = 10, tom }: { quantas: number; total?: number; 
           <path d="M12 2C8 8 5 12 5 15.5a7 7 0 0 0 14 0C19 12 16 8 12 2z" />
         </svg>
       ))}
-    </span>
-  );
-}
-
-/** 20 sacos = 100 sacos (cada figura vale 5). Perda apaga sacos; ganho acrescenta sacos verdes. */
-function Sacos({ sacos }: { sacos: number }) {
-  const mudam = Math.max(1, Math.round(Math.abs(sacos) / 5));
-  const total = sacos > 0 ? 20 + mudam : 20;
-  return (
-    <span className="sacos" aria-hidden="true">
-      {Array.from({ length: total }, (_, i) => {
-        const classe = sacos < 0 && i >= 20 - mudam ? 'saco-perdido' : sacos > 0 && i >= 20 ? 'saco-ganho' : '';
-        return (
-          <span key={i} className={`saco ${classe}`}>
-            <Pictograma nome="saco" tamanho={26} semFundo />
-          </span>
-        );
-      })}
     </span>
   );
 }
@@ -101,13 +75,64 @@ function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
   );
 }
 
+/** Previsão oficial dos próximos meses. Selo "Previsão" para não confundir com o que já aconteceu. */
+function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
+  return (
+    <section className="producao-bloco" aria-labelledby="t-previsao">
+      <div className="producao-titulo-linha">
+        <h2 id="t-previsao" className="producao-titulo">Previsão para os próximos meses</h2>
+        <span className="etiqueta etiqueta-atencao">Previsão</span>
+      </div>
+      <p className="texto-apoio">De {pv.periodo}. Previsão pode mudar.</p>
+
+      <div className="producao-previsao-resumo">
+        <div className="producao-cartao">
+          <div className="producao-cartao-cab">
+            <Pictograma nome="chuva" tamanho={64} />
+            <strong className="producao-nome">{FRASE_PREVISAO_CHUVA[pv.chuva]}</strong>
+            <Seta rumo={RUMO_TENDENCIA[pv.chuva]} tamanho={48} />
+          </div>
+        </div>
+        <div className="producao-cartao">
+          <div className="producao-cartao-cab">
+            <Pictograma nome="calor" tamanho={64} />
+            <strong className="producao-nome">{FRASE_PREVISAO_CALOR[pv.temperatura]}</strong>
+            <Seta rumo={RUMO_TENDENCIA[pv.temperatura]} tamanho={48} />
+          </div>
+        </div>
+      </div>
+
+      <ol className="producao-meses" aria-label="Chuva mês a mês">
+        {pv.meses.map(m => (
+          <li key={m.mes} className={`producao-mes producao-mes-${m.chuva}`}>
+            <strong>{m.nome}</strong>
+            <Pictograma nome={FIGURA_MES[m.chuva]} tamanho={56} />
+            <span>{FRASE_CHUVA_MES[m.chuva]}</span>
+          </li>
+        ))}
+      </ol>
+
+      <h3 className="producao-subtitulo">O que fazer</h3>
+      <ul className="producao-dicas">
+        {pv.dicas.map(d => (
+          <li key={d.frase}>
+            {/* figura vem da API; nome desconhecido cai no pictograma "não sei" */}
+            <Pictograma nome={d.figura as NomePictograma} tamanho={52} />
+            <span>{d.frase}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="texto-apoio producao-fonte">Fonte: {pv.fonte}.</p>
+    </section>
+  );
+}
+
 // ---------- tela ----------
 
 export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, aoContinuar }: TelaProducaoProps) {
   const codigo = local?.codigo_ibge || CODIGO_IBGE_EXEMPLO;
   const ehExemplo = !local?.codigo_ibge;
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
-  const [cenario, setCenario] = useState<CenarioId>('seco');
 
   const carregar = useCallback(async () => {
     setEstado({ situacao: 'carregando' });
@@ -125,8 +150,8 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
 
   const painel = estado.situacao === 'sucesso' ? estado.painel : null;
   useEffect(() => {
-    aoMudarRoteiro(painel ? roteiroProducao(painel, cenario, ehExemplo) : 'Buscando os números da colheita.');
-  }, [painel, cenario, ehExemplo, aoMudarRoteiro]);
+    aoMudarRoteiro(painel ? roteiroProducao(painel, ehExemplo) : 'Buscando os números da colheita.');
+  }, [painel, ehExemplo, aoMudarRoteiro]);
 
   if (estado.situacao === 'carregando') {
     return (
@@ -154,7 +179,6 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   const p = estado.painel;
   const ano = p.culturas[0]?.ano ?? p.clima.ano;
   const calor = fraseCalor(p.clima);
-  const escolhido = p.cenarios.find(c => c.cenario_id === cenario) ?? p.cenarios[0];
   const pouca = p.clima.situacao_chuva === 'pouca';
   // A cultura da pessoa vem primeiro (o resto mantém a ordem da API).
   const culturas = [...p.culturas].sort((a, b) => Number(b.cultura_id === culturaAtualId) - Number(a.cultura_id === culturaAtualId));
@@ -206,42 +230,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
         </section>
       </div>
 
-      <section className="producao-bloco" aria-labelledby="t-ese">
-        <h2 id="t-ese" className="producao-titulo">E se o próximo ano for…</h2>
-        <div className="producao-cenarios" role="group" aria-label="Tipo de ano">
-          {p.cenarios.map(c => (
-            <button
-              key={c.cenario_id}
-              type="button"
-              className="producao-cenario"
-              aria-pressed={c.cenario_id === cenario}
-              onClick={() => setCenario(c.cenario_id)}
-            >
-              <Pictograma nome={FIGURA_CENARIO[c.cenario_id]} tamanho={56} />
-              <span>{c.nome.replace('Ano ', '')}</span>
-            </button>
-          ))}
-        </div>
-        <ul className="producao-resultados" aria-live="polite">
-          {escolhido.culturas.map(r => {
-            const cultura = p.culturas.find(c => c.cultura_id === r.cultura_id);
-            const frase = fraseCenario(r.sacos_em_100);
-            return (
-              <li key={r.cultura_id} className="producao-cartao producao-resultado">
-                <div className="producao-cartao-cab">
-                  <Pictograma nome={PICTOGRAMA_CULTURA[r.cultura_id] ?? 'nao_sei'} tamanho={56} />
-                  <span className="producao-cultura-texto">
-                    <strong className="producao-nome">{cultura?.nome ?? r.cultura_id}</strong>
-                    <span>{frase}</span>
-                  </span>
-                  <Seta rumo={rumoDoCenario(r.sacos_em_100)} tamanho={48} />
-                </div>
-                {r.sacos_em_100 !== null && r.sacos_em_100 !== 0 && <Sacos sacos={r.sacos_em_100} />}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      {p.previsao && <SecaoPrevisao previsao={p.previsao} />}
 
       <p className="destaque destaque-neutro">
         <Icone nome="pessoa" tamanho={24} />

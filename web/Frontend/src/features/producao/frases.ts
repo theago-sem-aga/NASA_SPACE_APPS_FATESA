@@ -1,5 +1,5 @@
 // Textos curtos da tela de colheita. O front não decide nada: só traduz o que a API mandou.
-import type { ClimaAno, SituacaoColheita } from '../../api/tipos';
+import type { ChuvaDoMes, ClimaAno, SituacaoColheita, Tendencia } from '../../api/tipos';
 
 export const FRASE_COLHEITA: Record<SituacaoColheita, string> = {
   acima: 'Colheu mais que o normal',
@@ -22,9 +22,21 @@ export function fraseCalor(c: ClimaAno): { titulo: string; detalhe: string } {
   return { titulo: 'Calor normal', detalhe: 'Igual aos outros anos' };
 }
 
-export function fraseCenario(sacos: number | null): string {
-  if (sacos === null) return 'Ainda não sabemos';
-  if (sacos === 0) return 'Colhe o normal';
-  return sacos < 0 ? `De 100 sacos, perde uns ${-sacos}` : `De 100 sacos, ganha uns ${sacos}`;
-}
+export const FRASE_PREVISAO_CHUVA: Record<Tendencia, string> = {
+  acima: 'Deve chover mais que o normal',
+  normal: 'Deve chover o normal',
+  abaixo: 'Deve chover menos que o normal'
+};
 
+export const FRASE_PREVISAO_CALOR: Record<Tendencia, string> = {
+  acima: 'Deve fazer mais calor que o normal',
+  normal: 'O calor deve ficar normal',
+  abaixo: 'Deve fazer menos calor que o normal'
+};
+
+export const FRASE_CHUVA_MES: Record<ChuvaDoMes, string> = {
+  irregular: 'Chuva ainda falha',
+  melhora: 'Chuva melhora',
+  normal: 'Chuva normal',
+  excesso: 'Pode sobrar água'
+};

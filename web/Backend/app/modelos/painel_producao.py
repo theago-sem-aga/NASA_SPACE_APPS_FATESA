@@ -5,9 +5,9 @@ docs/contrato_api.md). Toda regra fica aqui, no backend -- o front so exibe:
   - situacao de cada cultura: rendimento do ultimo ano vs media dos 5 anteriores
     (acima/abaixo se passar de 5%);
   - clima do ultimo ano vs media 1995-2024 (NASA POWER, celula do municipio);
-  - cenarios seco/normal/chuvoso: so usa efeitos do modelo produtividade x clima
-    marcados como confiaveis (IC 90% sem cruzar zero). Sem efeito confiavel ->
-    variacao None ("ainda nao sabemos"). Ver produtividade_clima.py.
+  - previsao dos proximos meses: prognostico OFICIAL INMET/INPE/FUNCEME,
+    transcrito em data/processed/inmet/prognostico_<codigo_ibge>.json (sem
+    arquivo -> previsao None). E previsao, nao observacao (convencao secao 7).
 
 Enquanto a rota nao existe, o CLI grava uma copia local para o front:
   python painel_producao.py [codigo_ibge=3549805]
@@ -32,7 +32,7 @@ MUNICIPIOS = {
     "3549805": {"municipio": "São José do Rio Preto", "uf": "SP", "celula_power": "-209_-494"},
 }
 
-# cultura_id do front (src/components/Pictograma.tsx) -> (nome na PAM, nome no modelo)
+# cultura_id do front (src/components/Pictograma.tsx) -> (nome na PAM, nome no modelo, nome curto)
 CULTURAS = {
     "cana_de_acucar": ("Cana-de-açúcar", "cana", "Cana"),
     "soja": ("Soja (em grão)", "soja", "Soja"),
@@ -42,12 +42,6 @@ CULTURAS = {
 LIMIAR_SITUACAO_PCT = 5
 ANOS_MEDIA = 5
 
-# Cenarios em anomalia do clima da safra (mesmas variaveis do modelo).
-CENARIOS = {
-    "seco": {"nome": "Ano seco", "chuva_anom_100mm": -2, "tmax_anom_c": 1, "meses_secos_anom": 1},
-    "normal": {"nome": "Ano normal", "chuva_anom_100mm": 0, "tmax_anom_c": 0, "meses_secos_anom": 0},
-    "chuvoso": {"nome": "Ano chuvoso", "chuva_anom_100mm": 2, "tmax_anom_c": -0.5, "meses_secos_anom": -1},
-}
 
 
 def _situacao(serie: pd.DataFrame) -> dict:
@@ -64,12 +58,23 @@ def _situacao(serie: pd.DataFrame) -> dict:
             "rendimento_kg_ha": float(ultimo["rendimento_medio"]), "rendimento_medio_anterior_kg_ha": round(media)}
 
 
-def _sacos_em_100(coef: pd.DataFrame, cultura_modelo: str, cenario: dict) -> int | None:
-    c = coef[(coef["cultura"] == cultura_modelo) & coef["efeito_confiavel"]]
-    usados = [(r.efeito_pct, cenario[r.variavel]) for r in c.itertuples() if cenario[r.variavel] != 0]
-    if not usados:
+def _previsao(codigo_ibge: str) -> dict | None:
+    """Prognostico oficial transcrito; os trechos originais ficam no arquivo, nao vao para a tela."""
+    caminho = PROCESSADOS / "inmet" / f"prognostico_{codigo_ibge}.json"
+    if not caminho.exists():
         return None
-    return int(round(sum(e * x for e, x in usados)))
+    p = json.loads(caminho.read_text(encoding="utf-8"))
+    return {
+        "periodo": p["periodo"],
+        "chuva": p["chuva"],
+        "temperatura": p["temperatura"],
+        "meses": [{k: m[k] for k in ("mes", "nome", "chuva")} for m in p["meses"]],
+        "dicas": [{k: d[k] for k in ("figura", "frase")} for d in p["dicas"]],
+        "fonte": p["fonte"],
+        "url_fonte": p["url_fonte"],
+        "publicado_em": p["publicado_em"],
+        "tipo_dado": "previsao",
+    }
 
 
 def _clima(anual: pd.DataFrame, ano: int) -> dict:
@@ -99,7 +104,6 @@ def montar_painel(codigo_ibge: str) -> dict:
     m = MUNICIPIOS[codigo_ibge]
     pam = pd.read_parquet(PROCESSADOS / "ibge_pam" / f"municipio_{codigo_ibge}.parquet")
     pam = pam.pivot_table(index=["produto", "ano"], columns="variavel", values="valor").reset_index()
-    coef = pd.read_parquet(PROCESSADOS / "modelo_produtividade" / "coeficientes.parquet")
 
     culturas = []
     for cultura_id, (nome_pam, _, nome) in CULTURAS.items():
@@ -114,27 +118,18 @@ def montar_painel(codigo_ibge: str) -> dict:
                                      tmax=("temperatura_maxima_c", "mean"))
     ultimo_ano = int(anual.index.max())
 
-    cenarios = []
-    for cenario_id, c in CENARIOS.items():
-        cenarios.append({
-            "cenario_id": cenario_id,
-            "nome": c["nome"],
-            "culturas": [{"cultura_id": cid, "sacos_em_100": 0 if cenario_id == "normal" else _sacos_em_100(coef, mod, c)}
-                         for cid, (_, mod, _) in CULTURAS.items() if any(x["cultura_id"] == cid for x in culturas)],
-        })
-
     return {
         "codigo_ibge": codigo_ibge,
         "municipio": m["municipio"],
         "uf": m["uf"],
         "culturas": culturas,
         "clima": _clima(anual, ultimo_ano),
-        "cenarios": cenarios,
+        "previsao": _previsao(codigo_ibge),
         "fontes": ["IBGE – Produção Agrícola Municipal (tabela 5457)", "NASA POWER (MERRA-2)",
-                   "Modelo produtividade x clima, 645 municípios de SP, 2000–2024"],
+                   "INMET, INPE e FUNCEME – prognóstico climático trimestral"],
         "limitacoes": [
             "Números da cidade toda, não da sua roça.",
-            "O modelo só sabe dizer o efeito do clima quando ele é claro nos anos passados. Quando não é, a resposta é: ainda não sabemos.",
+            "A previsão vale para os próximos 3 meses. Ninguém consegue prever a chuva de um ano inteiro.",
         ],
         "tipo_dado": "observacao_historica",
         "gerado_em": dt.date.today().isoformat(),
@@ -147,7 +142,7 @@ def gravar_copia_front(codigo_ibge: str) -> Path:
     SAIDA_FRONT.write_text(
         "// GERADO por web/Backend/app/modelos/painel_producao.py -- nao editar a mao.\n"
         "// Copia local da rota proposta GET /api/v1/producao enquanto o backend nao a tem.\n"
-        "// Numeros REAIS (IBGE + NASA POWER + modelo), congelados na data de `gerado_em`.\n"
+        "// Numeros REAIS (IBGE + NASA POWER) e previsao oficial (INMET), congelados em `gerado_em`.\n"
         "import type { PainelProducao } from '../tipos';\n\n"
         f"export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {corpo};\n",
         encoding="utf-8",

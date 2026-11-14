@@ -280,6 +280,7 @@ Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em ma
 | Modelo produtividade x clima (SP inteiro) | `dataset_produtividade_sp.py` + `app/modelos/produtividade_clima.py` | PAM + POWER mensal | `modelo_produtividade/` | ⚠️ não serve como previsor (R² ~0); ver docstring |
 | GPM, SMAP, SRTM, ECOSTRESS (NASA) | `ingestao_gpm.py` etc. | Earthdata Login (`~/.netrc`) | `<fonte>/<celula>.parquet` | ⏳ scripts aceitam `REGIAO_PILOTO=sjrp`; falta credencial e baixar os arquivos (SRTM: tile `S21W050`) |
 | SATVeg – NDVI/EVI MODIS (Embrapa AgroAPI) | `ingestao_satveg.py` | Chaves AgroAPI (plano grátis 1.000 req/mês) | `satveg/<celula>.parquet` | ⏳ escrito, **não testado** — falta cadastro |
+| Prognóstico climático INMET/INPE/FUNCEME (próximos 3 meses) | transcrito à mão em `data/processed/inmet/prognostico_3549805.json` | Boletim Agroclimatológico mensal (PDF público) | usado pelo painel de colheita | ✅ boletim de nov/2026 (NDJ); atualizar todo mês. NOAA CFSv2 via Open-Meteo testado e descartado: sem hindcast para corrigir o viés úmido do modelo |
 | CONAB (preços, PAA) | — | Portal de informações | — | ❌ certificado TLS do `portaldeinformacoes.conab.gov.br` é de outro domínio (`barramento.conab.gov.br`); baixar manualmente pelo navegador |
 | PNAE (FNDE) | — | Planilhas no gov.br/fnde | — | ❌ não integrado: dado mais recente é de 2022 e só traz % de compra da agricultura familiar por município |
 

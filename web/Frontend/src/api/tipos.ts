@@ -263,7 +263,6 @@ export interface ErroApi {
 
 /** acima/abaixo = rendimento do último ano passou 5% da média dos 5 anteriores. */
 export type SituacaoColheita = 'acima' | 'normal' | 'abaixo' | 'sem_plantio';
-export type CenarioId = 'seco' | 'normal' | 'chuvoso';
 
 export interface ColheitaCultura {
   /** Mesmo id de Cultura (escolhe o pictograma). */
@@ -294,17 +293,28 @@ export interface ClimaAno {
   periodo_normal: string;
 }
 
-export interface CenarioProducao {
-  cenario_id: CenarioId;
-  nome: string;
-  culturas: {
-    cultura_id: string;
-    /**
-     * De cada 100 sacos colhidos num ano normal, quantos ganha (+) ou perde (-).
-     * null = o modelo não tem efeito confiável para essa cultura: "ainda não sabemos".
-     */
-    sacos_em_100: number | null;
-  }[];
+/** Comparação com a média do clima, como o INMET publica. */
+export type Tendencia = 'acima' | 'normal' | 'abaixo';
+/** Como a chuva deve vir no mês, pelo texto do boletim para a região. */
+export type ChuvaDoMes = 'irregular' | 'melhora' | 'normal' | 'excesso';
+
+/**
+ * Previsão OFICIAL para os próximos ~3 meses (INMET/INPE/FUNCEME), transcrita
+ * do boletim mensal. tipo_dado = 'previsao': a tela mostra o selo "Previsão".
+ */
+export interface PrevisaoClima {
+  /** Ex.: 'novembro de 2026 a janeiro de 2027'. */
+  periodo: string;
+  chuva: Tendencia;
+  temperatura: Tendencia;
+  meses: { mes: string; nome: string; chuva: ChuvaDoMes }[];
+  /** figura = nome de pictograma (src/components/Pictograma.tsx). */
+  dicas: { figura: string; frase: string }[];
+  fonte: string;
+  url_fonte: string;
+  /** AAAA-MM do boletim. */
+  publicado_em: string;
+  tipo_dado: 'previsao';
 }
 
 export interface PainelProducao {
@@ -313,7 +323,8 @@ export interface PainelProducao {
   uf: string;
   culturas: ColheitaCultura[];
   clima: ClimaAno;
-  cenarios: CenarioProducao[];
+  /** null = ainda não temos a previsão oficial transcrita para esta cidade. */
+  previsao: PrevisaoClima | null;
   fontes: string[];
   limitacoes: string[];
   tipo_dado: TipoDado;

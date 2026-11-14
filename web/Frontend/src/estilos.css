@@ -572,7 +572,7 @@ p { margin: 0; }
 .producao-titulo { margin: 0; font-family: var(--fonte-titulo); font-size: 1.4rem; line-height: 1.2; }
 .producao-nome { font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
 
-.producao-culturas, .producao-resultados { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.producao-culturas, .producao-dicas, .producao-meses { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .producao-cultura {
   display: grid; grid-template-columns: 64px minmax(0, 1fr) 56px; align-items: center; gap: 14px;
   padding: 12px; background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio);
@@ -603,37 +603,36 @@ p { margin: 0; }
 .seta-desce .seta-tinta { fill: var(--cor-alerta); }
 .seta-igual .seta-fundo { fill: var(--cor-ceu-clara); }
 .seta-igual .seta-tinta { fill: var(--cor-ceu); }
-.seta-duvida .seta-fundo, .seta-nada .seta-fundo { fill: #eceee9; }
-.seta-duvida .seta-tinta, .seta-nada .seta-tinta { fill: var(--cor-texto-suave); }
-.seta-duvida .seta-traco { stroke: var(--cor-texto-suave); }
+.seta-nada .seta-fundo { fill: #eceee9; }
+.seta-nada .seta-tinta { fill: var(--cor-texto-suave); }
 
-.producao-cenarios { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.producao-cenario {
-  display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 112px; padding: 12px 6px;
-  font: inherit; font-weight: 700; font-size: 1.05rem; color: var(--cor-texto); cursor: pointer;
-  background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio);
+.producao-titulo-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.producao-subtitulo { margin: 4px 0 0; font-size: 1.15rem; font-weight: 700; }
+.producao-previsao-resumo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.producao-meses { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.producao-mes {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; text-align: center;
+  background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio); font-size: 1rem; line-height: 1.25;
 }
-.producao-cenario:hover { border-color: var(--cor-borda-forte); }
-.producao-cenario[aria-pressed='true'] { border-color: var(--cor-mata); background: var(--cor-folha-clara); box-shadow: 0 0 0 2px var(--cor-mata); }
-.producao-cenario:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
-
-.sacos { display: flex; flex-wrap: wrap; gap: 2px; }
-.saco { display: inline-flex; }
-.saco-perdido { opacity: 0.18; filter: grayscale(1); }
-.saco-ganho .pictograma path:first-child { fill: var(--cor-folha-clara); stroke: var(--cor-folha); }
+.producao-mes strong { font-size: 1.05rem; }
+.producao-mes-irregular { border-color: var(--cor-alerta); }
+.producao-mes-excesso { border-color: var(--cor-ceu); }
+.producao-dicas li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px;
+  padding: 10px 12px; background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); font-size: 1.05rem;
+}
+.producao-fonte { font-size: 0.9rem; }
 
 @media (max-width: 380px) {
   .producao-cultura { grid-template-columns: 52px minmax(0, 1fr) 44px; gap: 10px; }
   .producao-cultura .pictograma { width: 52px; height: 52px; }
   .producao-cultura .seta, .producao-cartao-cab .seta { width: 44px; height: 44px; }
-  .producao-cenario { font-size: 0.95rem; }
+  .producao-mes { font-size: 0.9rem; padding: 10px 4px; }
 }
 
 @media (min-width: 900px) {
   .pagina-larga .conteudo { max-width: 1080px; }
   .producao-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
-  .producao-cenarios { max-width: 560px; }
-  /* 2 colunas: em 4 a frase quebra em 3 linhas e os cartões sem sacos ficam vazios. */
-  .producao-resultados { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .producao-previsao-resumo, .producao-dicas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pagina-larga .navegacao { max-width: 560px; }
 }

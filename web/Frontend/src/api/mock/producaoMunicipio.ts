@@ -1,6 +1,6 @@
 // GERADO por web/Backend/app/modelos/painel_producao.py -- nao editar a mao.
 // Copia local da rota proposta GET /api/v1/producao enquanto o backend nao a tem.
-// Numeros REAIS (IBGE + NASA POWER + modelo), congelados na data de `gerado_em`.
+// Numeros REAIS (IBGE + NASA POWER) e previsao oficial (INMET), congelados em `gerado_em`.
 import type { PainelProducao } from '../tipos';
 
 export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {
@@ -58,82 +58,58 @@ export const PAINEIS_PRODUCAO: Record<string, PainelProducao> = {
       "graus_de_diferenca": 3,
       "periodo_normal": "1995-2024"
     },
-    "cenarios": [
-      {
-        "cenario_id": "seco",
-        "nome": "Ano seco",
-        "culturas": [
-          {
-            "cultura_id": "cana_de_acucar",
-            "sacos_em_100": null
-          },
-          {
-            "cultura_id": "soja",
-            "sacos_em_100": null
-          },
-          {
-            "cultura_id": "milho",
-            "sacos_em_100": -6
-          },
-          {
-            "cultura_id": "mandioca",
-            "sacos_em_100": null
-          }
-        ]
-      },
-      {
-        "cenario_id": "normal",
-        "nome": "Ano normal",
-        "culturas": [
-          {
-            "cultura_id": "cana_de_acucar",
-            "sacos_em_100": 0
-          },
-          {
-            "cultura_id": "soja",
-            "sacos_em_100": 0
-          },
-          {
-            "cultura_id": "milho",
-            "sacos_em_100": 0
-          },
-          {
-            "cultura_id": "mandioca",
-            "sacos_em_100": 0
-          }
-        ]
-      },
-      {
-        "cenario_id": "chuvoso",
-        "nome": "Ano chuvoso",
-        "culturas": [
-          {
-            "cultura_id": "cana_de_acucar",
-            "sacos_em_100": null
-          },
-          {
-            "cultura_id": "soja",
-            "sacos_em_100": null
-          },
-          {
-            "cultura_id": "milho",
-            "sacos_em_100": 6
-          },
-          {
-            "cultura_id": "mandioca",
-            "sacos_em_100": null
-          }
-        ]
-      }
-    ],
+    "previsao": {
+      "periodo": "novembro de 2026 a janeiro de 2027",
+      "chuva": "acima",
+      "temperatura": "acima",
+      "meses": [
+        {
+          "mes": "2026-11",
+          "nome": "Novembro",
+          "chuva": "irregular"
+        },
+        {
+          "mes": "2026-12",
+          "nome": "Dezembro",
+          "chuva": "melhora"
+        },
+        {
+          "mes": "2027-01",
+          "nome": "Janeiro",
+          "chuva": "excesso"
+        }
+      ],
+      "dicas": [
+        {
+          "figura": "soja",
+          "frase": "Novembro é bom para plantar soja e milho"
+        },
+        {
+          "figura": "cana",
+          "frase": "A chuva deve ajudar a cana a crescer"
+        },
+        {
+          "figura": "pragas",
+          "frase": "Calor com umidade: olho na doença e na praga"
+        },
+        {
+          "figura": "trator",
+          "frase": "Em janeiro, chuva demais pode atrapalhar a colheita"
+        }
+      ],
+      "fonte": "INMET, INPE e FUNCEME – Boletim Agroclimatológico de novembro de 2026",
+      "url_fonte": "https://portal.inmet.gov.br/uploads/boletinsAgroclimatologicos/Boletim_AGRO_Novembro_2026.pdf",
+      "publicado_em": "2026-11",
+      "tipo_dado": "previsao"
+    },
     "fontes": [
       "IBGE – Produção Agrícola Municipal (tabela 5457)",
       "NASA POWER (MERRA-2)",
-      "Modelo produtividade x clima, 645 municípios de SP, 2000–2024"
+      "INMET, INPE e FUNCEME – prognóstico climático trimestral"
     ],
     "limitacoes": [
       "Números da cidade toda, não da sua roça.",
-      "O modelo só sabe dizer o efeito do clima quando ele é claro nos anos passados. Quando não é, a resposta é: ainda não sabemos."
+      "A previsão vale para os próximos 3 meses. Ninguém consegue prever a chuva de um ano inteiro."
     ],
     "tipo_dado": "observacao_historica",
     "gerado_em": "2026-11-14"
