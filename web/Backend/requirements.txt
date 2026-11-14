@@ -9,3 +9,5 @@ pyproj>=3.6
 fastapi>=0.115
 uvicorn[standard]>=0.32
 python-dotenv>=1.0
+sqlalchemy>=2.0,<3
+alembic>=1.13,<2

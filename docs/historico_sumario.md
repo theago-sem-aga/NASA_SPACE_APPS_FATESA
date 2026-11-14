@@ -6,6 +6,7 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 
 ---
 
+
 - **2026-11-14** _Julya (Claude)_: cria o `CLAUDE.md`, arquivo de contexto compartilhado do projeto, com resumo do desafio Field Shift e descrição das 26 bases de dados oficiais (conteúdo, uso no projeto, cobertura e resolução).
 - **2026-11-14** _Julya (Claude)_: adiciona os links oficiais do desafio Field Shift, do evento local (São José do Rio Preto), da página da equipe e de cada base de dados.
 - **2026-11-14** _Tiago (Claude)_: estrutura o contexto do projeto no `CLAUDE.md` (desafio, dados, objetivo, problemas-alvo, análises exigidas, entregável, submissão, equipe) e define o fluxo Git `feature/*` → `homolog` → `main`.
@@ -36,3 +37,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Thiago (Claude)_: refaz a entrada do front: começa pela localização (GPS após toque, dica "Permitir", busca de cidade discreta), uma pergunta por tela, solo/relevo vindos dos dados com "Não é bem assim", narração em frases com voz pt-BR e roteiros reescritos. Propõe rotas `/locais` e `/municipios` e o bloco `talhao`; tarefas do back marcadas com `BACKEND:` no código.
 - **2026-11-14** _Thiago (Claude)_: enxuga as telas de resultado do front para o celular (detalhe de 4,1 para 2,5 telas de rolagem, resumo de 4,0 para 2,7, caminhos de 3,0 para 2,0) com sanfonas, comparação com "ver mais" e resumo compacto; troca a dica de "Permitir" por uma linha simples.
 - **2026-11-14** _Thiago (Claude)_: conecta o front à API real: no modo `api` o front lê o `/openapi.json`, usa toda rota que já existir e cai no mock sinalizado nas que faltam; hoje consome `GET /api/v1/analises` (tipos `Variavel`/`RespostaAnalise` copiados do contrato) e lista nas limitações quais fontes reais responderam. Testado contra a API do Tiago (Fresno: 6 fontes; Olímpia: só NASA POWER).
+- **2026-11-14** _Ghabriel (Codex)_: implementa entrega beta do backend para o piloto confirmado na Califórnia: contratos Pydantic e OpenAPI, catálogos do piloto, POST/recuperação de análises persistidas, SQLAlchemy/Alembic, coleta concorrente com falhas isoladas, histórico mensal POWER e cenários simulados opt-in. Instala ambiente virtual, PostgreSQL 17/PostGIS 3.7 locais e registra as 60 células existentes sem alterar datasets. Valida banco/fontes reais, contrato TypeScript, build frontend e testes automatizados; registra pendências científicas e de deploy em docs/pendencias_backend.md.
