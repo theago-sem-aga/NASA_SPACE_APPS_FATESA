@@ -48,18 +48,6 @@ function Seta({ rumo, tamanho = 56 }: { rumo: Rumo; tamanho?: number }) {
   );
 }
 
-function Gotas({ quantas, total = 10, tom }: { quantas: number; total?: number; tom: 'normal' | 'alerta' }) {
-  return (
-    <span className="gotas" aria-hidden="true">
-      {Array.from({ length: Math.max(total, quantas) }, (_, i) => (
-        <svg key={i} width="22" height="22" viewBox="0 0 24 24" className={i < quantas ? `gota-cheia gota-${tom}` : 'gota-vazia'}>
-          <path d="M12 2C8 8 5 12 5 15.5a7 7 0 0 0 14 0C19 12 16 8 12 2z" />
-        </svg>
-      ))}
-    </span>
-  );
-}
-
 function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
   const frase = FRASE_COLHEITA[c.situacao];
   return (
@@ -150,8 +138,8 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
 
   const painel = estado.situacao === 'sucesso' ? estado.painel : null;
   useEffect(() => {
-    aoMudarRoteiro(painel ? roteiroProducao(painel, ehExemplo) : 'Buscando os números da colheita.');
-  }, [painel, ehExemplo, aoMudarRoteiro]);
+    aoMudarRoteiro(painel ? roteiroProducao(painel, ehExemplo, culturaAtualId) : 'Buscando os números da colheita.');
+  }, [painel, ehExemplo, culturaAtualId, aoMudarRoteiro]);
 
   if (estado.situacao === 'carregando') {
     return (
@@ -179,9 +167,10 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   const p = estado.painel;
   const ano = p.culturas[0]?.ano ?? p.clima.ano;
   const calor = fraseCalor(p.clima);
-  const pouca = p.clima.situacao_chuva === 'pouca';
-  // A cultura da pessoa vem primeiro (o resto mantém a ordem da API).
-  const culturas = [...p.culturas].sort((a, b) => Number(b.cultura_id === culturaAtualId) - Number(a.cultura_id === culturaAtualId));
+  const alerta = p.clima.situacao_chuva === 'pouca' || p.clima.situacao_calor === 'mais_quente';
+  // A lavoura da pessoa em destaque; as outras da cidade numa linha pequena.
+  const sua = p.culturas.find(c => c.cultura_id === culturaAtualId) ?? null;
+  const outras = p.culturas.filter(c => c !== sua);
 
   return (
     <>
@@ -196,31 +185,39 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
       <div className="producao-grade">
         <section className="producao-bloco" aria-labelledby="t-colheita">
           <h2 id="t-colheita" className="producao-titulo">A colheita de {ano}</h2>
-          <ul className="producao-culturas">
-            {culturas.map(c => <LinhaCultura key={c.cultura_id} c={c} sua={c.cultura_id === culturaAtualId} />)}
-          </ul>
+          {sua && (
+            <ul className="producao-culturas">
+              <LinhaCultura c={sua} sua />
+            </ul>
+          )}
+          {outras.length > 0 && (
+            <div className="producao-outras">
+              <span className="texto-apoio">{sua ? 'Outras lavouras da cidade' : 'Lavouras da cidade'}</span>
+              <ul className="producao-outras-lista">
+                {outras.map(c => (
+                  <li key={c.cultura_id}>
+                    <Pictograma nome={PICTOGRAMA_CULTURA[c.cultura_id] ?? 'nao_sei'} tamanho={40} />
+                    <span>{c.nome}<span className="visualmente-oculto">: {FRASE_COLHEITA[c.situacao].toLowerCase()}</span></span>
+                    <Seta rumo={rumoDaColheita(c.situacao)} tamanho={28} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
         <section className="producao-bloco" aria-labelledby="t-tempo">
           <h2 id="t-tempo" className="producao-titulo">O tempo em {p.clima.ano}</h2>
-          <div className={`producao-cartao ${pouca ? 'producao-cartao-alerta' : ''}`}>
+          <div className={`producao-cartao ${alerta ? 'producao-cartao-alerta' : ''}`}>
             <div className="producao-cartao-cab">
-              <Pictograma nome="chuva" tamanho={64} />
+              <Pictograma nome="chuva" tamanho={52} />
               <span>
                 <strong className="producao-nome">{FRASE_CHUVA[p.clima.situacao_chuva]}</strong>
                 <span className="texto-apoio">De cada 10 chuvas, caíram {p.clima.gotas_em_10}</span>
               </span>
             </div>
-            <div className="producao-gotas">
-              <span className="producao-gotas-rotulo">Normal</span>
-              <Gotas quantas={10} tom="normal" />
-              <span className="producao-gotas-rotulo">{p.clima.ano}</span>
-              <Gotas quantas={p.clima.gotas_em_10} tom={pouca ? 'alerta' : 'normal'} />
-            </div>
-          </div>
-          <div className={`producao-cartao ${p.clima.situacao_calor === 'mais_quente' ? 'producao-cartao-alerta' : ''}`}>
             <div className="producao-cartao-cab">
-              <Pictograma nome="calor" tamanho={64} />
+              <Pictograma nome="calor" tamanho={52} />
               <span>
                 <strong className="producao-nome">{calor.titulo}</strong>
                 <span className="texto-apoio">{calor.detalhe}</span>
@@ -229,13 +226,6 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
           </div>
         </section>
       </div>
-
-      {p.previsao && <SecaoPrevisao previsao={p.previsao} />}
-
-      <p className="destaque destaque-neutro">
-        <Icone nome="pessoa" tamanho={24} />
-        É uma ajuda. Converse com o técnico antes de decidir.
-      </p>
 
       <details className="detalhes cartao">
         <summary>De onde vêm esses números</summary>
