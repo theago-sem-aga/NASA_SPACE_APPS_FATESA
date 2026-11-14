@@ -22,6 +22,7 @@ import { TelaProblemas } from './features/fluxo/TelaProblemas';
 import { TelaProximos } from './features/fluxo/TelaProximos';
 import { TelaRecurso } from './features/fluxo/TelaRecurso';
 import { useLocalizacao } from './features/fluxo/useLocalizacao';
+import { TelaProducao } from './features/producao/TelaProducao';
 
 /** Pausa curta depois de um toque, para a pessoa ver o ✓ antes de trocar de tela. */
 const PAUSA_TOQUE_MS = 250;
@@ -36,6 +37,17 @@ export function App() {
   const principal = useRef<HTMLElement>(null);
   const primeiraRenderizacao = useRef(true);
   const temporizador = useRef<number>();
+  /** Roteiro falado da tela de colheita: depende dos dados que a própria tela carrega. */
+  const roteiroProducao = useRef('');
+  const guardarRoteiroProducao = useCallback((texto: string) => {
+    roteiroProducao.current = texto;
+  }, []);
+  /** De onde a pessoa abriu a tela de colheita (o Voltar volta para lá). */
+  const [voltarDaProducao, setVoltarDaProducao] = useState<Etapa>('inicio');
+  const abrirProducao = (de: Etapa) => {
+    setVoltarDaProducao(de);
+    ir('producao');
+  };
 
   const mudar = useCallback((parcial: Partial<DadosFluxo>) => setDados(d => ({ ...d, ...parcial })), []);
 
@@ -54,6 +66,11 @@ export function App() {
     },
     [ir]
   );
+
+  // A tela de colheita usa a largura toda no computador (cabeçalho e rodapé juntos, para alinhar).
+  useEffect(() => {
+    document.body.classList.toggle('pagina-larga', etapa === 'producao');
+  }, [etapa]);
 
   // A cada troca de tela: volta ao topo e leva o foco ao título, para teclado e leitor de tela.
   useEffect(() => {
@@ -123,7 +140,7 @@ export function App() {
 
   const analisePronta = analise.situacao === 'sucesso' ? analise.analise : null;
   const estrategia = analisePronta?.estrategias.find(e => e.estrategia_id === dados.estrategia_id) ?? analisePronta?.estrategias[0] ?? null;
-  const voltar = () => ir(VOLTAR_PARA[etapa]);
+  const voltar = () => ir(etapa === 'producao' ? voltarDaProducao : VOLTAR_PARA[etapa]);
   const proximaPergunta = (atual: Etapa): Etapa => PERGUNTAS[PERGUNTAS.indexOf(atual) + 1] ?? 'estrategias';
   const abrirEstrategia = (id: string) => {
     mudar({ estrategia_id: id });
@@ -157,6 +174,16 @@ export function App() {
             mostrarDica={gps.mostrarDica}
             aoUsarLocalizacao={() => void gps.pedir()}
             aoDigitarCidade={irParaBusca}
+            aoVerColheita={() => abrirProducao('inicio')}
+          />
+        );
+      case 'producao':
+        return (
+          <TelaProducao
+            local={dados.local}
+            aoMudarRoteiro={guardarRoteiroProducao}
+            aoVoltar={voltar}
+            aoVerCaminhos={() => ir(analisePronta ? 'estrategias' : dados.local ? 'cultura' : 'inicio')}
           />
         );
       case 'local':
@@ -261,6 +288,7 @@ export function App() {
             dados={dados}
             analise={a}
             aoVoltar={voltar}
+            aoVerColheita={() => abrirProducao('proximos')}
             aoRecomecar={() => {
               setDados(DADOS_INICIAIS);
               setAnalise({ situacao: 'ociosa' });
@@ -282,7 +310,8 @@ export function App() {
         narracao={{
           suportado: narracao.suportado,
           falando: narracao.falando,
-          aoOuvir: () => narracao.falar(roteiroDaTela(etapa, dados, analisePronta, estrategia)),
+          aoOuvir: () =>
+            narracao.falar(etapa === 'producao' ? roteiroProducao.current : roteiroDaTela(etapa, dados, analisePronta, estrategia)),
           aoParar: narracao.parar
         }}
       />

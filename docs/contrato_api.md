@@ -64,6 +64,15 @@ Recebe uma coordenada e devolve todas as variáveis disponíveis (ao vivo + pré
 }
 ```
 
+## GET /api/v1/producao  (PROPOSTA — rota ainda não existe)
+
+Painel "Como foi a colheita" para produtores com pouca leitura. **A resposta já é montada** por `montar_painel(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`; falta só expor a rota. Enquanto isso, o front usa a cópia gerada pelo mesmo script (`web/Frontend/src/api/mock/producaoMunicipio.ts`, números reais congelados em `gerado_em`).
+
+- **Query:** `codigo_ibge` (obrigatório). Hoje só `3549805` (São José do Rio Preto) tem dados.
+- **Sucesso 200:** `PainelProducao` (tipos em `web/Frontend/src/api/tipos.ts`): `culturas[]` com `situacao` (`acima`/`normal`/`abaixo`/`sem_plantio`, último ano vs média dos 5 anteriores, limiar 5%), `clima` (último ano vs média 1995–2024, com `situacao_chuva`, `gotas_em_10`, `situacao_calor`, `graus_de_diferenca`), `cenarios[]` (`seco`/`normal`/`chuvoso`, `sacos_em_100` = de 100 sacos quantos ganha/perde; `null` = sem efeito confiável no modelo), `fontes`, `limitacoes`, `tipo_dado`, `gerado_em`.
+- **Erro 404:** `{"erro": {"codigo": "dados_insuficientes", ...}}` para município sem dados pré-processados.
+- Toda regra (situação, classificação do clima, cenários) fica no backend; o front só desenha.
+
 ## Pendente / não implementado ainda
 
 - `GET /api/v1/culturas`, `POST /api/v1/analises`, `GET /api/v1/analises/{id}` — ainda apenas propostos (ver convenção seção 6), não implementados.

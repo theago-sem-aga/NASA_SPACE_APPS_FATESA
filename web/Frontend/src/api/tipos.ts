@@ -255,3 +255,68 @@ export interface ErroApi {
     requisicao_id: string | null;
   };
 }
+
+// ---------------------------------------------------------------------------
+// PROPOSTA: painel "Sua colheita" (GET /api/v1/producao?codigo_ibge=...).
+// Montado em web/Backend/app/modelos/painel_producao.py: TODA regra (situação,
+// cenários) fica no backend; o front só desenha. Ver docs/contrato_api.md.
+
+/** acima/abaixo = rendimento do último ano passou 5% da média dos 5 anteriores. */
+export type SituacaoColheita = 'acima' | 'normal' | 'abaixo' | 'sem_plantio';
+export type CenarioId = 'seco' | 'normal' | 'chuvoso';
+
+export interface ColheitaCultura {
+  /** Mesmo id de Cultura (escolhe o pictograma). */
+  cultura_id: string;
+  nome: string;
+  situacao: SituacaoColheita;
+  ano: number;
+  area_plantada_ha: number | null;
+  rendimento_kg_ha: number | null;
+  rendimento_medio_anterior_kg_ha: number | null;
+}
+
+export interface ClimaAno {
+  ano: number;
+  chuva_mm: number;
+  chuva_normal_mm: number;
+  /** pouca/muita = 15% abaixo/acima da média do período normal. */
+  situacao_chuva: 'pouca' | 'normal' | 'muita';
+  /** Para o desenho: de cada 10 gotas de um ano normal, quantas caíram. */
+  gotas_em_10: number;
+  tmax_c: number;
+  tmax_normal_c: number;
+  /** Média da temperatura máxima 1 °C ou mais acima/abaixo do normal. */
+  situacao_calor: 'mais_quente' | 'normal' | 'mais_frio';
+  /** Diferença arredondada em graus (positivo = mais quente). */
+  graus_de_diferenca: number;
+  /** Ex.: '1995-2024'. */
+  periodo_normal: string;
+}
+
+export interface CenarioProducao {
+  cenario_id: CenarioId;
+  nome: string;
+  culturas: {
+    cultura_id: string;
+    /**
+     * De cada 100 sacos colhidos num ano normal, quantos ganha (+) ou perde (-).
+     * null = o modelo não tem efeito confiável para essa cultura: "ainda não sabemos".
+     */
+    sacos_em_100: number | null;
+  }[];
+}
+
+export interface PainelProducao {
+  codigo_ibge: string;
+  municipio: string;
+  uf: string;
+  culturas: ColheitaCultura[];
+  clima: ClimaAno;
+  cenarios: CenarioProducao[];
+  fontes: string[];
+  limitacoes: string[];
+  tipo_dado: TipoDado;
+  /** Data em que os números foram calculados (AAAA-MM-DD). */
+  gerado_em: string;
+}

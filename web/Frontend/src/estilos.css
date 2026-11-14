@@ -561,3 +561,89 @@ p { margin: 0; }
   .marca-sub { display: none; }
   .botao-ouvir { padding: 0 12px; }
 }
+
+/* ---------- tela "Como foi a colheita" (features/producao) ----------
+   Celular primeiro: uma coluna, figura + frase curta + seta, alvos de toque grandes.
+   Computador (>= 900px): tela mais larga, colheita e tempo lado a lado,
+   resultados dos cenários em grade. */
+.atalho-colheita {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  width: 100%; min-height: 72px; padding: 12px 16px; text-align: left; cursor: pointer;
+  background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio); color: var(--cor-texto);
+}
+.atalho-colheita:hover { border-color: var(--cor-folha); }
+.atalho-colheita > span { display: flex; flex-direction: column; gap: 2px; }
+.atalho-colheita strong { font-size: 1.1rem; }
+.atalho-colheita .icone { color: var(--cor-mata); }
+
+.producao-topo { display: flex; flex-direction: column; gap: 4px; }
+.producao-grade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.producao-bloco { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.producao-titulo { margin: 0; font-family: var(--fonte-titulo); font-size: 1.4rem; line-height: 1.2; }
+.producao-nome { font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
+
+.producao-culturas, .producao-resultados { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.producao-cultura {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) 56px; align-items: center; gap: 14px;
+  padding: 12px; background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio);
+}
+.producao-cultura.producao-acima { border-color: var(--cor-folha); }
+.producao-cultura.producao-abaixo { border-color: var(--cor-alerta); }
+.producao-cultura-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 1.05rem; }
+
+.producao-cartao {
+  display: flex; flex-direction: column; gap: 12px; padding: 14px;
+  background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio);
+}
+.producao-cartao-alerta { border-color: var(--cor-alerta); }
+.producao-cartao-cab { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.producao-cartao-cab > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.producao-gotas { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 10px; }
+.producao-gotas-rotulo { font-weight: 700; color: var(--cor-texto-suave); font-size: 0.95rem; min-width: 3.5em; }
+.gotas { display: flex; flex-wrap: wrap; gap: 2px; }
+.gota-cheia.gota-normal path { fill: var(--cor-ceu); }
+.gota-cheia.gota-alerta path { fill: var(--cor-alerta); }
+.gota-vazia path { fill: none; stroke: var(--cor-borda-forte); stroke-width: 1.5; }
+
+.seta { flex: none; }
+.seta-sobe .seta-fundo { fill: var(--cor-folha-clara); }
+.seta-sobe .seta-tinta { fill: var(--cor-folha); }
+.seta-desce .seta-fundo { fill: var(--cor-alerta-clara); }
+.seta-desce .seta-tinta { fill: var(--cor-alerta); }
+.seta-igual .seta-fundo { fill: var(--cor-ceu-clara); }
+.seta-igual .seta-tinta { fill: var(--cor-ceu); }
+.seta-duvida .seta-fundo, .seta-nada .seta-fundo { fill: #eceee9; }
+.seta-duvida .seta-tinta, .seta-nada .seta-tinta { fill: var(--cor-texto-suave); }
+.seta-duvida .seta-traco { stroke: var(--cor-texto-suave); }
+
+.producao-cenarios { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.producao-cenario {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 112px; padding: 12px 6px;
+  font: inherit; font-weight: 700; font-size: 1.05rem; color: var(--cor-texto); cursor: pointer;
+  background: var(--cor-superficie); border: 2px solid var(--cor-borda); border-radius: var(--raio);
+}
+.producao-cenario:hover { border-color: var(--cor-borda-forte); }
+.producao-cenario[aria-pressed='true'] { border-color: var(--cor-mata); background: var(--cor-folha-clara); box-shadow: 0 0 0 2px var(--cor-mata); }
+.producao-cenario:focus-visible, .atalho-colheita:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+.sacos { display: flex; flex-wrap: wrap; gap: 2px; }
+.saco { display: inline-flex; }
+.saco-perdido { opacity: 0.18; filter: grayscale(1); }
+.saco-ganho .pictograma path:first-child { fill: var(--cor-folha-clara); stroke: var(--cor-folha); }
+
+@media (max-width: 380px) {
+  .producao-cultura { grid-template-columns: 52px minmax(0, 1fr) 44px; gap: 10px; }
+  .producao-cultura .pictograma { width: 52px; height: 52px; }
+  .producao-cultura .seta, .producao-cartao-cab .seta { width: 44px; height: 44px; }
+  .producao-cenario { font-size: 0.95rem; }
+}
+
+@media (min-width: 900px) {
+  .pagina-larga .conteudo { max-width: 1080px; }
+  .producao-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .producao-cenarios { max-width: 560px; }
+  /* 2 colunas: em 4 a frase quebra em 3 linhas e os cartões sem sacos ficam vazios. */
+  .producao-resultados { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .pagina-larga .navegacao { max-width: 560px; }
+}

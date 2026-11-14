@@ -1,5 +1,6 @@
 import type { Analise } from '../../api/tipos';
 import { Icone, type NomeIcone } from '../../components/Icone';
+import { Pictograma } from '../../components/Pictograma';
 import { ResumoVisual } from '../../components/ResumoVisual';
 import type { DadosFluxo } from './estadoFluxo';
 
@@ -8,6 +9,7 @@ interface TelaProximosProps {
   analise: Analise;
   aoVoltar: () => void;
   aoRecomecar: () => void;
+  aoVerColheita: () => void;
 }
 
 const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
@@ -28,7 +30,7 @@ const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
   }
 ];
 
-export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProximosProps) {
+export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar, aoVerColheita }: TelaProximosProps) {
   return (
     <>
       <h1 tabIndex={-1}>Seu resumo</h1>
@@ -51,6 +53,15 @@ export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar }: TelaProx
           </li>
         ))}
       </ol>
+
+      <button type="button" className="atalho-colheita" onClick={aoVerColheita}>
+        <Pictograma nome="saco" tamanho={48} />
+        <span>
+          <strong>Como foi a colheita na cidade</strong>
+          <span className="texto-apoio">E o que esperar se o ano for seco ou chuvoso</span>
+        </span>
+        <Icone nome="seguir" />
+      </button>
 
       <p className="destaque destaque-neutro">
         A decisão é sua. A ferramenta só ajuda a pensar.

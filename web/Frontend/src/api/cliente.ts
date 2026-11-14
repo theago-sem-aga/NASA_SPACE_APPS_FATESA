@@ -8,11 +8,13 @@
 //
 // Situação hoje (ver docs/contrato_api.md):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
-//  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise
+//  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
+//               GET /producao → PainelProducao
 //
 // BACKEND: cada função abaixo documenta a rota que o front chama. Os nomes de
 // rota seguem a proposta da convenção §6 (/api/v1, substantivo no plural).
-import type { Analise, AnaliseEntrada, Cultura, ErroApi, Local, RespostaAnalise } from './tipos';
+import type { Analise, AnaliseEntrada, Cultura, ErroApi, Local, PainelProducao, RespostaAnalise } from './tipos';
+import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
@@ -244,4 +246,30 @@ export async function criarAnalise(entrada: AnaliseEntrada, descricaoLocal: stri
     throw new FalhaApi('dados_insuficientes', 'Ainda não temos dados de satélite bons o bastante para esse lugar.');
   }
   return analiseMock(entrada, descricaoLocal);
+}
+
+/** Cidade usada quando a pessoa abre o painel sem ter escolhido o local. */
+export const CODIGO_IBGE_EXEMPLO = '3549805';
+
+/**
+ * GET /api/v1/producao?codigo_ibge=3549805 → PainelProducao   (PROPOSTA, ainda não existe)
+ * BACKEND: a resposta já é montada por web/Backend/app/modelos/painel_producao.py
+ * (montar_painel); falta só a rota. 404 com codigo 'dados_insuficientes' para
+ * município sem dados pré-processados.
+ *
+ * Enquanto a rota não existe, usa a cópia local gerada por esse mesmo script.
+ * Os números da cópia são REAIS (IBGE + NASA POWER), só congelados em `gerado_em`.
+ */
+export async function buscarPainelProducao(codigoIbge: string): Promise<PainelProducao> {
+  if (await backendTem('GET', '/producao')) {
+    return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+  }
+  const simular = simulacaoPedida();
+  if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  const painel = PAINEIS_PRODUCAO[codigoIbge];
+  if (!painel || simular === 'dados_insuficientes') {
+    throw new FalhaApi('dados_insuficientes', 'Ainda não temos os números da colheita dessa cidade.');
+  }
+  return painel;
 }
