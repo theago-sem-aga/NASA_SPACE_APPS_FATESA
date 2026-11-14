@@ -8,7 +8,7 @@ pre-indexada. So funciona para pontos dentro dos EUA (cobertura do SSURGO).
 
 from __future__ import annotations
 
-import requests
+from app.integrations.http import requisitar
 
 SDA_URL = "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest"
 
@@ -35,7 +35,7 @@ def _mukey_do_ponto(latitude: float, longitude: float, timeout_s: int) -> int | 
         ),
         "format": "JSON",
     }
-    resposta = requests.post(SDA_URL, json=consulta, timeout=timeout_s)
+    resposta = requisitar("POST", SDA_URL, json=consulta, timeout=timeout_s)
     resposta.raise_for_status()
     corpo = resposta.json()
     linhas = corpo.get("Table")
@@ -79,15 +79,21 @@ def buscar_solo_ponto(latitude: float, longitude: float, timeout_s: int = 30) ->
         ),
         "format": "JSON",
     }
-    resposta = requests.post(SDA_URL, json=consulta, timeout=timeout_s)
+    resposta = requisitar("POST", SDA_URL, json=consulta, timeout=timeout_s)
     resposta.raise_for_status()
     linhas = resposta.json().get("Table") or []
 
     componentes = []
     for linha in linhas:
-        registro = dict(zip(_CAMPOS, linha))
+        if len(linha) != len(_CAMPOS):
+            raise ValueError("Formato de componente USDA inesperado")
+        registro = dict(zip(_CAMPOS, linha, strict=True))
         for campo in registro:
-            if campo != "nome_unidade_mapeamento" and campo != "nome_componente" and registro[campo] is not None:
+            if (
+                campo != "nome_unidade_mapeamento"
+                and campo != "nome_componente"
+                and registro[campo] is not None
+            ):
                 try:
                     registro[campo] = float(registro[campo])
                 except (TypeError, ValueError):

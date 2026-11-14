@@ -1,5 +1,39 @@
 # Dicionário de dados — Field Shift
 
+## Extensão beta — 14/11/2026
+
+DTOs de entrada e resultado seguem web/Frontend/src/api/tipos.ts e são validados
+por Pydantic. As propriedades JSON não têm aliases camelCase.
+
+- analise_id: UUID serializado como string; criado pelo servidor.
+- criada_em_utc: instante ISO 8601 UTC.
+- versao_motor: versão da interpretação, inclusive simulação beta.
+- estado_recomendacoes: simulacao_beta ou dados_insuficientes.
+- eh_mock: true se estratégias/calendários/níveis contêm hipóteses simuladas,
+  mesmo quando o clima foi obtido de fonte real.
+- origem_local: gps ou municipio; municipio é referência aproximada, não talhão.
+- codigo_ibge: null em entrada da Califórnia; string vazia em Local da Califórnia.
+- correcoes: textura_solo/relevo opcionais, autorrelatados, não observação NASA.
+- recursos_disponiveis: maquinas_graos/comprador_graos/irrigacao: sim|nao|nao_sei.
+- prioridades: 1–2 valores distintos do enum do frontend.
+- problemas: até 3 valores distintos do enum do frontend; não são diagnósticos.
+- clima_mensal: 12 meses, chuva em mm/mês (média dos acumulados mensais de
+  anos completos válidos). Nunca substituir meses incompletos por zero.
+- umidade_solo no clima mensal: null enquanto não existir transformação validada
+  para o índice de zona radicular esperado pelo frontend. SMAP superficial não é esse índice.
+- fonte_clima.periodo_inicio/fim: período realmente solicitado, documentado no resultado.
+- declividade_pct: null enquanto não houver derivação espacial validada; amplitude
+  de elevação não é declividade.
+- textura_solo/relevo/risco_erosao/risco_seca: null se sem método aprovado;
+  correções do produtor podem preencher textura e relevo com origem identificada.
+- atributos, calendário e confiança dos cenários beta: valores de simulação para
+  teste de integração, não classes agronômicas validadas nem probabilidades.
+- fontes_indisponiveis: fonte e motivo técnico/científico documentado no contrato.
+
+Catálogo beta não constitui decisão sobre culturas suportadas em produção.
+Persistência: analises guarda entrada, resposta e coleta em JSON, versão e criação;
+as coordenadas ficam no registro da análise, sem histórico independente de GPS.
+
 > Campos em uso real na API (não propostas). Nomes em português sem acento, `snake_case`, conforme `docs/convencao_programacao.md` seção 5.
 
 | Campo | Unidade | Fonte(s) | Descrição |
@@ -30,4 +64,6 @@
 | `data` | string (`YYYY-MM-DD`) ou `null` | Data da observação; `null` quando a variável não tem dimensão temporal (ex. solo) |
 | `valor` | float ou `null` | `null` = ausência de medição, nunca convertido pra zero |
 
-Pendente: definir campos do motor de decisão (estratégias de rotação) quando ele existir — hoje a API só coleta e abstrai dado, não recomenda nada.
+Campos do motor beta constam no OpenAPI e na extensão acima. Pendente validar
+seu significado agronômico: a implementação atual entrega cenários simulados,
+não recomendações científicas homologadas.

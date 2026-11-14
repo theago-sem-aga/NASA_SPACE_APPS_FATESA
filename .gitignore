@@ -8,3 +8,8 @@ data/raw/
 # Python
 __pycache__/
 *.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+web/Backend/.cache/

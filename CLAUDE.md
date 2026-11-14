@@ -71,7 +71,7 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 
 ## Convenção de programação
-**Estrutura inicial:** `web/Frontend/` tem o protótipo visual (React + TS + Vite, só dados mock; ver `web/Frontend/README.md`). `web/Backend/` tem os pipelines de ingestão (NASA POWER, GPM, SMAP, PostGIS). `web/API/` ainda é placeholder. A árvore na convenção é uma sugestão; usar os caminhos existentes antes de criar diretórios.
+**Estrutura atual:** `web/Frontend/` tem o protótipo React + TS + Vite, com modo API. `web/Backend/` contém FastAPI, ingestão, repositórios PostgreSQL/PostGIS, Alembic, histórico mensal POWER e cenários beta opt-in. `web/API/` aponta para esse servidor, não é outro serviço. Primeiro piloto: Califórnia, confirmado por Ghabriel; Brasil depois. Ver `web/Backend/README.md`, `docs/decisoes_arquitetura.md` e `docs/pendencias_backend.md`. Cenários beta são simulados e identificados; culturas e regras agronômicas de produção seguem pendentes.
 Convenções de código e direção de arquitetura: [`docs/convencao_programacao.md`](docs/convencao_programacao.md). Ler antes de criar, alterar ou refatorar código; respeitar a distinção entre decisões e propostas futuras.
 
 ## Histórico sumário
