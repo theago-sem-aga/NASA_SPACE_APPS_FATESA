@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime as dt
 
 import nasa_power
+import openet
 import usda_soil_data_access
 from indice_espacial_postgis import buscar_por_coordenada_pg
 
@@ -70,6 +71,19 @@ def coletar_variaveis(latitude: float, longitude: float) -> dict:
                 })
     else:
         fontes_indisponiveis.append({"fonte": "usda_soil_data_access", "motivo": "fora_da_cobertura"})
+
+    # --- OpenET (ao vivo, so oeste dos EUA; ET tem atraso de disponibilidade) ---
+    # Mes completo, 2 meses atras (a consulta "monthly" exige comecar no dia 1).
+    primeiro_dia_mes_atual = hoje.replace(day=1)
+    ultimo_dia_mes_anterior = primeiro_dia_mes_atual - dt.timedelta(days=1)
+    primeiro_dia_mes_anterior = ultimo_dia_mes_anterior.replace(day=1)
+    fim_dois_meses_atras = primeiro_dia_mes_anterior - dt.timedelta(days=1)
+    inicio_dois_meses_atras = fim_dois_meses_atras.replace(day=1)
+    resultado_et = openet.buscar_et_ponto(latitude, longitude, inicio_dois_meses_atras, fim_dois_meses_atras)
+    if resultado_et["disponivel"]:
+        variaveis += _variaveis_de_serie(resultado_et["serie"], "openet", "ao_vivo")
+    else:
+        fontes_indisponiveis.append({"fonte": "openet", "motivo": "fora_da_cobertura"})
 
     # --- Fontes pre-indexadas (PostGIS + Parquet) ---
     for fonte in _FONTES_INDEXADAS:

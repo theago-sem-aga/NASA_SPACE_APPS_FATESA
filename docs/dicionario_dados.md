@@ -19,6 +19,7 @@
 | `elevacao_media_m` / `elevacao_min_m` / `elevacao_max_m` | m | srtm | Elevação agregada por célula (0,1°) |
 | `temperatura_superficie_media_c` | °C | ecostress | Temperatura da superfície (LST), agregada por célula |
 | `ndvi_medio` | adimensional (-1 a 1) | landsat | Índice de vegetação (NDVI), via bandas vermelho/infravermelho próximo (HLS L30), agregado por célula |
+| `evapotranspiracao_mm` | mm/mês | openet | Evapotranspiração mensal (modelo Ensemble, referência gridMET) |
 
 ## Metadados por variável (sempre presentes na resposta da API)
 

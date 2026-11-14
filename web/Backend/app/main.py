@@ -17,6 +17,10 @@ for _caminho in (_RAIZ_APP, _RAIZ_APP / "integrations", _RAIZ_APP / "pipelines")
     if _caminho_str not in sys.path:
         sys.path.insert(0, _caminho_str)
 
+from dotenv import load_dotenv
+
+load_dotenv(_RAIZ_APP.parents[1] / ".env")  # web/.env -- chaves de API, nunca no Git
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
