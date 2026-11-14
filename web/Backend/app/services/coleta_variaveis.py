@@ -14,7 +14,7 @@ import nasa_power
 import usda_soil_data_access
 from indice_espacial_postgis import buscar_por_coordenada_pg
 
-_FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress")
+_FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat")
 
 _CAMPOS_IGNORADOS = {
     "data", "data_levantamento", "n_pixels_agregados",

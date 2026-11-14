@@ -18,6 +18,7 @@
 | `umidade_solo_cm3_cm3` | cm³/cm³ | smap | Umidade volumétrica do solo |
 | `elevacao_media_m` / `elevacao_min_m` / `elevacao_max_m` | m | srtm | Elevação agregada por célula (0,1°) |
 | `temperatura_superficie_media_c` | °C | ecostress | Temperatura da superfície (LST), agregada por célula |
+| `ndvi_medio` | adimensional (-1 a 1) | landsat | Índice de vegetação (NDVI), via bandas vermelho/infravermelho próximo (HLS L30), agregado por célula |
 
 ## Metadados por variável (sempre presentes na resposta da API)
 
