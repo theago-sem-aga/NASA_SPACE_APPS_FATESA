@@ -40,7 +40,10 @@ from PIL import Image, ImageDraw
 from rasterio.warp import transform as warp_transform
 from rasterio.windows import Window
 
-from indice_espacial import RAIZ_DADOS_PROCESSADOS
+try:  # como pacote, pela API (python -m uvicorn app.main:app)
+    from app.pipelines.indice_espacial import RAIZ_DADOS_PROCESSADOS
+except ImportError:  # como script, de dentro de app/pipelines
+    from indice_espacial import RAIZ_DADOS_PROCESSADOS
 
 # Leitura remota de COG mais rapida: nao listar a pasta do S3 a cada arquivo
 # aberto e reaproveitar conexoes. Medido em 2026-11-14, junto com as leituras

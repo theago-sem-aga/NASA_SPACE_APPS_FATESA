@@ -20,8 +20,8 @@ import requests
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 
-from acompanhamento_sentinel2 import acompanhar
-from indice_espacial import RAIZ_DADOS_PROCESSADOS
+from app.pipelines.acompanhamento_sentinel2 import acompanhar
+from app.pipelines.indice_espacial import RAIZ_DADOS_PROCESSADOS
 
 roteador = APIRouter(tags=["acompanhamento"])
 
