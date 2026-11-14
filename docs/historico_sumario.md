@@ -20,3 +20,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Ghabriel (Codex)_: corrige os placeholders para as pastas existentes `web/Frontend/` e `web/Backend/` e inclui `web/API/`.
 - **2026-11-14** _Tiago (Claude)_: define regiao piloto do prototipo (Condado de Fresno, CA) e a estrategia de indexacao espacial (recorte na ingestao + PostGIS), registradas em docs/convencao_programacao.md.
 - **2026-11-14** _Tiago (Claude)_: documenta em docs/convencao_programacao.md a estrategia de acesso a dados (API ao vivo x arquivo pre-indexado), o contrato entre ingestao e API, e atualiza a tabela de responsaveis (Thiago no frontend).
+- **2026-11-14** _Tiago (Claude)_: implementa cliente ao vivo da NASA POWER e o pipeline de indexacao espacial (0,1 grau, Parquet); ingere GPM real para a regiao piloto (16 celulas, Fresno County) apos autorizar o app GESDISC no Earthdata.
