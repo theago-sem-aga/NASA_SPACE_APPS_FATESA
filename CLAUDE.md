@@ -58,6 +58,7 @@ Tabela completa, guia por tema e descrição de cada base: [`docs/fontes-dados.m
 
 Fluxo padrão: `feature/*` → PR → `homolog` → validação → PR → `main`.
 Nunca commitar direto em `main` ou `homolog`.
+**Proibido `git push --force`** (ou qualquer variante, incluindo `--force-with-lease`) em qualquer branch — sobrescreve trabalho de outra pessoa/agente sem aviso. Se o push for rejeitado (`fetch first`), sempre `git fetch` + `merge` antes de reenviar.
 
 **Commits:** [Conventional Commits](https://www.conventionalcommits.org/), português, imperativo, curto.
 Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
@@ -68,6 +69,9 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 
 ## Outros links úteis
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
+
+## Convenção de programação
+Convenções de código e direção de arquitetura: [`docs/convencao_programacao.md`](docs/convencao_programacao.md). Ler antes de criar, alterar ou refatorar código; respeitar a distinção entre decisões e propostas futuras.
 
 ## Histórico sumário
 Toda ação **relevante** deve ganhar uma linha em [`docs/historico_sumario.md`](docs/historico_sumario.md): data, pessoa/agente e descrição curta.

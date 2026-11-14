@@ -14,3 +14,4 @@ Formato: `- **AAAA-MM-DD** _pessoa (agente)_: descrição da ação.`
 - **2026-11-14** _Julya (Claude)_: classifica as 26 bases por origem: 10 da NASA, 2 de agências parceiras (ESA/Copernicus) e 14 de outras instituições.
 - **2026-11-14** _Tiago (Claude)_: define a macro-visão do planejamento no `CLAUDE.md` (objetivo principal, opcionais, requisitos e obstáculos).
 - **2026-11-14** _Tiago (Claude)_: cria este histórico sumário e a regra de registro de ações relevantes para todos os agentes.
+- **2026-11-14** _Ghabriel (Codex)_: organiza o contexto de convenções de programação e arquitetura em `docs/convencao_programacao.md` e adiciona referência no `CLAUDE.md`.
