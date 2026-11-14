@@ -13,6 +13,34 @@ Arquivo de contexto compartilhado do projeto. O Claude Code carrega este arquivo
 
 > O resumo acima foi montado a partir de buscas e de guias de eventos locais. A descrição dos dados abaixo vem da aba *Resources* oficial. Quem tiver o texto oficial dos objetivos deve colá-lo nesta seção.
 
+## Onde buscar cada tema
+
+Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em mais de um tema. **Só EUA** indica que a base não cobre o Brasil.
+
+| Tema | Bases (links oficiais) |
+|---|---|
+| 💧 Umidade do solo e seca | [SMAP](https://www.earthdata.nasa.gov/data/platforms/space-based-platforms/smap) · [NLDAS/GLDAS](https://www.earthdata.nasa.gov/) (buscar "GLDAS") · [ERA5](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=overview) |
+| 🌧️ Chuva | [GPM/IMERG](https://gpm.nasa.gov/data) · [NASA POWER](https://power.larc.nasa.gov/) · [ERA5](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=overview) · [PRISM](https://prism.oregonstate.edu/) (só EUA) · [CoCoRaHS](https://www.cocorahs.org/Maps) (só América do Norte) |
+| 🌡️ Clima, temperatura e geada | [NASA POWER](https://power.larc.nasa.gov/) · [ERA5](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=overview) · [NLDAS/GLDAS](https://www.earthdata.nasa.gov/) · [PRISM](https://prism.oregonstate.edu/) (só EUA) |
+| 🌱 Saúde da lavoura e vegetação (NDVI, estresse) | [Sentinel-2](https://dataspace.copernicus.eu/) (10 m) · [Landsat](https://earthexplorer.usgs.gov/) (30 m) · [MODIS](https://lpdaac.usgs.gov/products/) · [VIIRS](https://search.earthdata.nasa.gov/search?q=VIIRS) · [GEDI](https://gedi.umd.edu/data) · [NAIP](https://naip-usdaonline.hub.arcgis.com/) (só EUA) |
+| 🔥 Calor e consumo de água da planta (evapotranspiração) | [ECOSTRESS](https://ecostress.jpl.nasa.gov/data) · [NASA POWER](https://power.larc.nasa.gov/) · [OpenET](https://openetdata.org/) (só oeste dos EUA) |
+| 🟫 Propriedades do solo | [FAO GAEZ](https://gaez.fao.org/) · [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/app/) (só EUA) · [SSURGO/STATSGO2](https://www.nrcs.usda.gov/resources/data-and-reports/soils) (só EUA) · [Ag Data Commons](https://www.nal.usda.gov/services/agdatacommons) (maioria EUA) |
+| ⛰️ Relevo e erosão | [SRTM](https://www.earthdata.nasa.gov/data/instruments/srtm) · [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/app/) e [SSURGO](https://www.nrcs.usda.gov/resources/data-and-reports/soils) (só EUA) |
+| 🌾 Que culturas plantar (aptidão) | [FAO GAEZ](https://gaez.fao.org/), a fonte principal deste tema |
+| 🔄 Histórico de culturas e rotações praticadas | [Cropland Data Layer](https://nassgeodata.gmu.edu/CropScape/) (só EUA) · [NASS QuickStats](https://quickstats.nass.usda.gov/) (só EUA) · [Ag Data Commons](https://www.nal.usda.gov/services/agdatacommons) |
+| 🗺️ Uso da terra e paisagem | [NLCD](https://www.usgs.gov/centers/eros/science/national-land-cover-database) (só EUA) · [LANDFIRE](https://www.landfire.gov/) (só EUA) · [GEDI](https://gedi.umd.edu/data) |
+| 🚰 Água para irrigação (rios e aquíferos) | [USGS NWIS](https://waterdata.usgs.gov/nwis) (só EUA) |
+| 💰 Mercado e preços | [USDA AMS Market News](https://www.ams.usda.gov/market-news) (só EUA) |
+
+### Para um projeto no Brasil
+
+- **Bases da lista oficial que cobrem o Brasil:** NASA POWER, SMAP, GPM/IMERG, Sentinel-2, Landsat, MODIS/VIIRS, SRTM, ECOSTRESS, GEDI, GLDAS, ERA5 e FAO GAEZ.
+- **Temas sem fonte brasileira na lista oficial:** histórico de rotações, água para irrigação e mercado. Fontes nacionais equivalentes, que **não fazem parte da lista oficial**:
+  - Produção agrícola por município: IBGE SIDRA (https://sidra.ibge.gov.br)
+  - Safras e preços: Conab (https://www.conab.gov.br)
+  - Recursos hídricos: ANA (https://www.gov.br/ana)
+  - Uso e cobertura da terra, incluindo culturas por ano: MapBiomas (https://brasil.mapbiomas.org)
+
 ## Bases de dados
 
 Os links marcados como **Link oficial** são os que a página do desafio indica para cada base.
