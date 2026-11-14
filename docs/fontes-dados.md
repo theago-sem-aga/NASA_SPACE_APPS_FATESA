@@ -274,7 +274,7 @@ Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em ma
 | IBGE PAM (tabela 5457) | `ingestao_ibge.py` | API SIDRA, sem chave | `ibge_pam/municipio_3549805.parquet` | ✅ 26 culturas, 2016–2025 |
 | IBGE Censo Agro 2017 (6957, 6955) | `ingestao_ibge.py` | API SIDRA, sem chave | `ibge_censo_agro/municipio_3549805.parquet` | ✅ familiar x não familiar |
 | MapBiomas Col. 10.1 (estatística municipal) | `ingestao_mapbiomas.py` | Dataverse `doi:10.58053/MapBiomas/SJZOLT`, CC BY 4.0 | `mapbiomas/municipio_3549805.parquet` | ✅ 1985–2024 |
-| SICOR / Banco Central (crédito rural, Pronaf) | `ingestao_sicor.py` | OData Olinda, sem chave | `sicor/municipio_3549805.parquet` | ⏳ script pronto; API do BCB devolve erro 500 intermitente, coleta em andamento |
+| SICOR / Banco Central (crédito rural, Pronaf) | `ingestao_sicor.py` | OData Olinda, sem chave | `sicor/municipio_3549805.parquet` | ✅ 577 linhas, 2013–2026 (API do BCB dá erro 500 intermitente; o script tenta de novo) |
 | SoilGrids 2.0 (ISRIC) | `ingestao_soilgrids.py` | REST, sem chave (~5 req/min) | `soilgrids/<celula>.parquet` | ✅ 8 propriedades x 4 profundidades |
 | NASA POWER (cache 1995–2024) | `ingestao_power_historico.py` | API, sem login | `nasa_power/<celula>.parquet` | ✅ cópia offline da fonte ao vivo |
 | Modelo produtividade x clima (SP inteiro) | `dataset_produtividade_sp.py` + `app/modelos/produtividade_clima.py` | PAM + POWER mensal | `modelo_produtividade/` | ⚠️ não serve como previsor (R² ~0); ver docstring |
