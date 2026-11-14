@@ -1,15 +1,19 @@
 # FATESA — NASA Space Apps 2026
-**Desafio:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)
+
+**Desafio:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/) · **Evento:** 14–15/11/2026 (48h) · [Evento local — São José do Rio Preto](https://www.spaceappschallenge.org/2026/local-events/sao-jose-do-rio-preto/) · [Página da equipe](https://www.spaceappschallenge.org/2026/find-a-team/fatesa/)
+
+> Carregado automaticamente em toda sessão (Claude ou Codex) aberta no repositório. Mantenha conciso — detalhe extenso vai em `/docs`.
 
 ## Objetivo
-Transformar 25+ anos de observações da Terra (NASA) + solo local + características de culturas + prioridades do agricultor em **estratégias de rotação de culturas ranqueadas e explicáveis** para uma fazenda específica.
+Transformar 25+ anos de observações da Terra (NASA) + solo local + características de culturas + prioridades do agricultor em **estratégias de rotação de culturas ranqueadas e explicáveis** para uma fazenda específica, resilientes a mudanças de temperatura, chuva e água.
 
 ## Problemas-alvo
 - Fazenda: escassez de água, erosão, esgotamento de nutrientes.
 - Cultura atual: consumo excessivo de água, doenças, conflito com mercado local, fora da janela ideal de plantio.
 
 ## Fontes de dados
-SMAP (umidade do solo) · GPM/IMERG (precipitação) · ECOSTRESS (temp. superfície/estresse hídrico) · Landsat/MODIS/VIIRS (uso do solo e vegetação) · NASA POWER (clima) · GRACE/GRACE-FO (água subterrânea) · SRTM (topografia) · USDA SSURGO/CDL/NASS, PRISM, FAO GAEZ (contexto agrícola local). Lista completa de recursos: [tab=resources](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=resources).
+Tabela completa + descrição de cada base: [`docs/fontes-dados.md`](docs/fontes-dados.md).
+**Atenção Brasil:** várias bases oficiais cobrem só os EUA — priorizar as 🌎 Global (SMAP, GPM/IMERG, Landsat, MODIS/VIIRS, NASA POWER, SRTM, ECOSTRESS, GEDI, GLDAS, FAO GAEZ, Sentinel-2, ERA5). Caminho mais rápido para protótipo: **NASA POWER** (sem login) + **FAO GAEZ**.
 
 ## Análises exigidas
 - Temperatura, estresse térmico, risco de geada.
@@ -55,6 +59,9 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 - Datasets brutos: `/data/raw`. Tratados: `/data/processed`.
 - Não versionar arquivos >100MB sem Git LFS — preferir script de download à cópia do dataset.
 
+## Outros links úteis
+[FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
+
 ## Regras deste markdown
-- Manter conciso: listas e tabelas, sem prosa longa.
+- Manter conciso: listas e tabelas, sem prosa longa. Detalhe extenso (ex.: descrição completa de cada fonte de dados) vai em `/docs`, não aqui.
 - Qualquer decisão estrutural nova (branch, dataset, critério de submissão) deve ser refletida aqui, substituindo o que ficou obsoleto — não acumular histórico.
