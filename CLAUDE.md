@@ -71,7 +71,7 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 
 ## Convenção de programação
-**Estrutura inicial:** `web/`, `front/` e `back/` contêm placeholders para compartilhar as pastas; ainda não há aplicação implementada. Os nomes `frontend/` e `backend/` na convenção são sugestões, não diretórios implementados.
+**Estrutura inicial:** `web/`, `web/Frontend/`, `web/Backend/` e `web/API/` contêm placeholders para compartilhar as pastas; ainda não há aplicação implementada. A árvore na convenção é uma sugestão; usar os caminhos existentes antes de criar diretórios.
 Convenções de código e direção de arquitetura: [`docs/convencao_programacao.md`](docs/convencao_programacao.md). Ler antes de criar, alterar ou refatorar código; respeitar a distinção entre decisões e propostas futuras.
 
 ## Histórico sumário
