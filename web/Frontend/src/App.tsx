@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { criarAnalise, FalhaApi, SINALIZAR_MOCK } from './api/cliente';
+import { criarAnalise, FalhaApi, SINALIZAR_MOCK, USANDO_MOCK } from './api/cliente';
 import type { CorrecoesTalhao, Local, RequisitoId, Resposta } from './api/tipos';
 import { roteiroDaTela } from './accessibility/roteiros';
 import { useNarracao } from './accessibility/useNarracao';
@@ -93,7 +93,7 @@ export function App() {
             latitude: dados.local.latitude,
             longitude: dados.local.longitude,
             origem_local: dados.origem_local,
-            codigo_ibge: dados.local.codigo_ibge,
+            codigo_ibge: dados.local.codigo_ibge || null,
             cultura_atual_id: dados.cultura_atual_id,
             problemas: dados.problemas,
             recursos_disponiveis: {
@@ -296,7 +296,7 @@ export function App() {
             Feito pela equipe FATESA no NASA Space Apps Challenge 2026. Ajuda a pensar, mas não substitui o agrônomo.
           </p>
           <p>
-            {SINALIZAR_MOCK ? 'Dados de exemplo (inventados). ' : 'Clima: NASA POWER. '}
+            {(analisePronta?.eh_mock ?? USANDO_MOCK) && SINALIZAR_MOCK ? 'Dados de exemplo (inventados). ' : 'Clima: NASA POWER. '}
             <a href={`${import.meta.env.BASE_URL}imagens/CREDITOS.md`}>Créditos das fotos</a>
           </p>
         </div>
