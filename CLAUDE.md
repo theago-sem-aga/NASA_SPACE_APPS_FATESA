@@ -68,6 +68,11 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 ## Outros links úteis
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 
+## Histórico sumário
+Toda ação **relevante** deve ganhar uma linha em [`docs/historico_sumario.md`](docs/historico_sumario.md): data, pessoa/agente e descrição curta.
+- **Relevante** (registrar): implementar um módulo (ex.: módulo de voz), decisão de arquitetura, integração de uma fonte de dados, mudança no fluxo de scoring, alteração estrutural do projeto.
+- **Irrelevante** (não registrar): sincronizar repositório, ajuste de formatação, typo, commits triviais.
+
 ## Regras deste markdown
 - Manter conciso: listas e tabelas, sem prosa longa. Detalhe extenso (ex.: descrição completa de cada fonte de dados) vai em `/docs`, não aqui.
 - Qualquer decisão estrutural nova (branch, dataset, critério de submissão) deve ser refletida aqui, substituindo o que ficou obsoleto — não acumular histórico.
