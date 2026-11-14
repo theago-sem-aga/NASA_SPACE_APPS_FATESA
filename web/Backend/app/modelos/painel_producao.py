@@ -4,7 +4,7 @@ Monta a resposta da rota proposta GET /api/v1/producao?codigo_ibge=... (ver
 docs/contrato_api.md). Toda regra fica aqui, no backend -- o front so exibe:
   - situacao de cada cultura: rendimento do ultimo ano vs media dos 5 anteriores
     (acima/abaixo se passar de 5%);
-  - clima do ultimo ano vs media 1995-2024 (NASA POWER, celula do municipio);
+  - clima do mesmo ano da colheita vs media dos anos anteriores desde 1995 (NASA POWER, celula do municipio);
   - previsao dos proximos meses: prognostico OFICIAL INMET/INPE/FUNCEME,
     transcrito em data/processed/inmet/prognostico_<regiao>.json; vale para os
     municipios em `codigos_ibge` (a regiao do boletim). Fora deles -> None.
@@ -89,8 +89,10 @@ def previsao_do_municipio(codigo_ibge: str) -> dict | None:
 
 
 def _clima(anual: pd.DataFrame, ano: int) -> dict:
-    chuva, chuva_normal = float(anual.at[ano, "chuva"]), float(anual["chuva"].mean())
-    tmax, tmax_normal = float(anual.at[ano, "tmax"]), float(anual["tmax"].mean())
+    # A normal sai dos anos ANTERIORES ao comparado: incluir o proprio ano puxaria a media para ele.
+    anteriores = anual.loc[anual.index < ano]
+    chuva, chuva_normal = float(anual.at[ano, "chuva"]), float(anteriores["chuva"].mean())
+    tmax, tmax_normal = float(anual.at[ano, "tmax"]), float(anteriores["tmax"].mean())
     proporcao = chuva / chuva_normal
     graus = tmax - tmax_normal
     return {
@@ -105,7 +107,7 @@ def _clima(anual: pd.DataFrame, ano: int) -> dict:
         "tmax_normal_c": round(tmax_normal, 1),
         "situacao_calor": "mais_quente" if graus >= 1 else "mais_frio" if graus <= -1 else "normal",
         "graus_de_diferenca": int(round(graus)),
-        "periodo_normal": f"{int(anual.index.min())}-{ano}",
+        "periodo_normal": f"{int(anteriores.index.min())}-{int(anteriores.index.max())}",
     }
 
 
@@ -126,15 +128,24 @@ def montar_painel(codigo_ibge: str) -> dict:
     clima = pd.read_parquet(PROCESSADOS / "nasa_power" / f"{m['celula_power']}.parquet")
     clima["ano"] = clima["data"].str[:4].astype(int)
     anual = clima.groupby("ano").agg(chuva=("precipitacao_acumulada_mm", "sum"),
-                                     tmax=("temperatura_maxima_c", "mean"))
-    ultimo_ano = int(anual.index.max())
+                                     tmax=("temperatura_maxima_c", "mean"),
+                                     dias=("precipitacao_acumulada_mm", "count"))
+    # So anos completos: somar a chuva de um ano pela metade daria "choveu pouco" sem ser verdade.
+    anual = anual[anual["dias"] >= 365]
+    # O tempo mostrado e o do MESMO ano da colheita mostrada, para explicar aquela colheita.
+    ano_colheita = max((c["ano"] for c in culturas), default=int(anual.index.max()))
+    if ano_colheita not in anual.index or anual.index.min() >= ano_colheita:
+        raise LookupError(
+            f"cache da NASA POWER sem o ano {ano_colheita} completo (anos completos ate {int(anual.index.max())}); "
+            "rode pipelines/ingestao_power_historico.py de novo"
+        )
 
     return {
         "codigo_ibge": codigo_ibge,
         "municipio": m["municipio"],
         "uf": m["uf"],
         "culturas": culturas,
-        "clima": _clima(anual, ultimo_ano),
+        "clima": _clima(anual, ano_colheita),
         "previsao": previsao_do_municipio(codigo_ibge),
         "fontes": ["IBGE – Produção Agrícola Municipal (tabela 5457)", "NASA POWER (MERRA-2)",
                    "INMET, INPE e FUNCEME – prognóstico climático trimestral"],

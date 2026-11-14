@@ -298,7 +298,7 @@ Guia rápido de quais links usar para cada assunto. Algumas bases aparecem em ma
 | MapBiomas Col. 10.1 (estatística municipal) | `ingestao_mapbiomas.py` | Dataverse `doi:10.58053/MapBiomas/SJZOLT`, CC BY 4.0 | `mapbiomas/municipio_3549805.parquet` | ✅ 1985–2024 |
 | SICOR / Banco Central (crédito rural, Pronaf) | `ingestao_sicor.py` | OData Olinda, sem chave | `sicor/municipio_3549805.parquet` | ✅ 577 linhas, 2013–2026 (API do BCB dá erro 500 intermitente; o script tenta de novo) |
 | SoilGrids 2.0 (ISRIC) | `ingestao_soilgrids.py` | REST, sem chave (~5 req/min) | `soilgrids/<celula>.parquet` | ✅ 8 propriedades x 4 profundidades |
-| NASA POWER (cache 1995–2024) | `ingestao_power_historico.py` | API, sem login | `nasa_power/<celula>.parquet` | ✅ cópia offline da fonte ao vivo |
+| NASA POWER (cache 1995 até o último ano completo) | `ingestao_power_historico.py` | API, sem login | `nasa_power/<celula>.parquet` | ✅ cópia offline da fonte ao vivo |
 | Modelo produtividade x clima (SP inteiro) | `dataset_produtividade_sp.py` + `app/modelos/produtividade_clima.py` | PAM + POWER mensal | `modelo_produtividade/` | ⚠️ não serve como previsor (R² ~0); ver docstring |
 | GPM, SMAP, SRTM, ECOSTRESS (NASA) | `ingestao_gpm.py` etc. | Earthdata Login (`~/.netrc`) | `<fonte>/<celula>.parquet` | ⏳ scripts aceitam `REGIAO_PILOTO=sjrp`; falta credencial e baixar os arquivos (SRTM: tile `S21W050`) |
 | SATVeg – NDVI/EVI MODIS (Embrapa AgroAPI) | `ingestao_satveg.py` | Chaves AgroAPI (plano grátis 1.000 req/mês) | `satveg/<celula>.parquet` | ⏳ escrito, **não testado** — falta cadastro |
