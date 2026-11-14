@@ -70,6 +70,9 @@ Prefixos: `feat:` `fix:` `data:` `docs:` `chore:` `refactor:`.
 ## Outros links úteis
 [FAQ dos participantes](https://www.spaceappschallenge.org/resources/participant-faqs/) · [Recursos gerais](https://www.spaceappschallenge.org/resources/) · [Agências parceiras 2026](https://www.spaceappschallenge.org/2026/space-agency-partners/) · [Ofertas globais](https://www.spaceappschallenge.org/2026/global-offers/) · [Space Apps Connect (GitHub)](https://github.com/nasa/spaceapps) · [Vencedores de 2025](https://www.spaceappschallenge.org/2025/awards/global-winners/)
 
+## Convenção de programação
+Convenções de código e direção de arquitetura: [`docs/convencao_programacao.md`](docs/convencao_programacao.md). Ler antes de criar, alterar ou refatorar código; respeitar a distinção entre decisões e propostas futuras.
+
 ## Histórico sumário
 Toda ação **relevante** deve ganhar uma linha em [`docs/historico_sumario.md`](docs/historico_sumario.md): data, pessoa/agente e descrição curta.
 - **Relevante** (registrar): implementar um módulo (ex.: módulo de voz), decisão de arquitetura, integração de uma fonte de dados, mudança no fluxo de scoring, alteração estrutural do projeto.
