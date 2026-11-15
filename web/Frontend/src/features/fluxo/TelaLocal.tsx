@@ -42,9 +42,11 @@ export function TelaLocal(props: TelaLocalProps) {
             Não, é em outro lugar
           </button>
         </div>
-        <button type="button" className="link-discreto" onClick={props.aoVoltar}>
-          <Icone nome="voltar" tamanho={18} /> Voltar
-        </button>
+        <div className="navegacao navegacao-unica">
+          <button type="button" className="botao botao-secundario" onClick={props.aoVoltar}>
+            <Icone nome="voltar" /> Voltar
+          </button>
+        </div>
       </>
     );
   }
@@ -130,11 +132,13 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
 
       {mostrarDica && <DicaPermissao />}
       <div className="acoes-discretas">
-        <button type="button" className="link-discreto" onClick={aoVoltar}>
-          <Icone nome="voltar" tamanho={18} /> Voltar
-        </button>
         <button type="button" className="link-discreto" onClick={aoTentarGps} disabled={situacaoGps !== 'parado'}>
           <Icone nome="local" tamanho={18} /> {situacaoGps === 'parado' ? 'Usar onde estou agora' : 'Procurando…'}
+        </button>
+      </div>
+      <div className="navegacao navegacao-unica">
+        <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
+          <Icone nome="voltar" /> Voltar
         </button>
       </div>
     </>

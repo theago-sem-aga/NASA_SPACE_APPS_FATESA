@@ -26,10 +26,13 @@ export function FaixaPrecipitacaoExtrema({ precipitacaoExtrema: p }: { precipita
       </span>
       <div>
         <p className="faixa-chuva-extrema-frase">{fraseChuvaExtrema(p)}</p>
-        <p className="texto-apoio faixa-chuva-extrema-legenda">
-          Limiar = chuva diária que só ocorre em 1 de cada 20 dias daquele mês, pelo histórico da NASA POWER
-          até {p.data_referencia.split('-').reverse().slice(0, 2).join('/')}. Grade regional, não é pluviômetro no talhão.
-        </p>
+        <details className="como-ler">
+          <summary>Como ler este dado</summary>
+          <p className="texto-apoio faixa-chuva-extrema-legenda">
+            Limiar = chuva diária que só ocorre em 1 de cada 20 dias daquele mês, pelo histórico da NASA POWER
+            até {p.data_referencia.split('-').reverse().slice(0, 2).join('/')}. Grade regional, não é pluviômetro no talhão.
+          </p>
+        </details>
       </div>
     </div>
   );

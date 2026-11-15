@@ -22,6 +22,7 @@ import { TelaProblemas } from './features/fluxo/TelaProblemas';
 import { TelaProximos } from './features/fluxo/TelaProximos';
 import { TelaRecurso } from './features/fluxo/TelaRecurso';
 import { useLocalizacao } from './features/fluxo/useLocalizacao';
+import { vocabulario } from './features/fluxo/vocabularioCultura';
 import { TelaProducao } from './features/producao/TelaProducao';
 import { TelaAcompanhamento } from './features/acompanhamento/TelaAcompanhamento';
 import { TelaDecisao } from './features/fluxo/TelaDecisao';
@@ -261,6 +262,9 @@ export function App() {
           <TelaEstrategias
             analise={a}
             prioridades={dados.prioridades}
+            marcouPraga={dados.problemas.includes('nematoides_pragas')}
+            culturaId={dados.cultura_atual_id}
+            nomeCultura={dados.nomeCultura}
             aoAbrir={abrirEstrategia}
             aoCorrigir={corrigirTalhao}
             aoVoltar={voltar}
@@ -337,6 +341,7 @@ export function App() {
       <Cabecalho
         progresso={indicePergunta >= 0 ? { atual: indicePergunta + 1, total: PERGUNTAS.length } : null}
         tituloPasso={TITULO_ETAPA[etapa]}
+        subtitulo={vocabulario(dados.cultura_atual_id, dados.nomeCultura).planejamento}
         narracao={{
           suportado: narracao.suportado,
           falando: narracao.falando,

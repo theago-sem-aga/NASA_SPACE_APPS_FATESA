@@ -1,6 +1,6 @@
-import { Foto } from '../../components/Foto';
+import { GaleriaFotos } from '../../components/GaleriaFotos';
 import { Icone } from '../../components/Icone';
-import { IMAGENS } from '../../components/imagens';
+import { GALERIA_INICIO } from '../../components/imagens';
 import { Pictograma } from '../../components/Pictograma';
 import { DicaPermissao } from '../../components/DicaPermissao';
 import type { SituacaoGps } from './useLocalizacao';
@@ -17,11 +17,11 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
   const ocupado = situacaoGps !== 'parado';
   return (
     <>
-      <h1 tabIndex={-1}>Vai reformar o canavial? Veja o que fazer com a terra até plantar de novo.</h1>
+      <h1 tabIndex={-1}>Vai trocar ou renovar a lavoura? Veja o que fazer com a terra até o próximo plantio.</h1>
       <ul className="tres-pontos" aria-label="O que você vai ver">
-        <li><Pictograma nome="agua" tamanho={48} /> Como chove aí</li>
-        <li><Pictograma nome="crotalaria" tamanho={48} /> 3 caminhos</li>
-        <li><span className="tres-pontos-icone"><Icone nome="pessoa" tamanho={28} /></span> O que perguntar ao agrônomo</li>
+        <li><Pictograma nome="agua" tamanho={48} /> Chuva</li>
+        <li><Pictograma nome="crotalaria" tamanho={48} /> Sugestão de cultura</li>
+        <li><span className="tres-pontos-icone"><Icone nome="pessoa" tamanho={28} /></span> Orientação</li>
       </ul>
 
       <div className="entrada-local">
@@ -39,7 +39,7 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
       </div>
 
 
-      <Foto imagem={IMAGENS.orbita} classe="foto-destaque" legenda="Plantações no Brasil vistas da Estação Espacial Internacional." />
+      <GaleriaFotos fotos={GALERIA_INICIO} rotulo="Fotos de lavouras no Brasil" />
     </>
   );
 }

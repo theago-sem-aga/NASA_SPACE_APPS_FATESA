@@ -1,3 +1,5 @@
+import { NomeCientificoCaminho } from './NomeCientifico';
+import { vocabulario } from '../features/fluxo/vocabularioCultura';
 import { useId } from 'react';
 import type { Analise, AtributosEstrategia, RequisitoId } from '../api/tipos';
 import type { DadosFluxo } from '../features/fluxo/estadoFluxo';
@@ -87,7 +89,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
                 <h3 className="resumo-subtitulo">Incomoda</h3>
                 <ul className="figuras-com-nome">
                   {dados.problemas.map(p => (
-                    <li key={p}><Pictograma nome={PICTO_PROBLEMA[p]} tamanho={40} /> {ROTULO_PROBLEMA[p]}</li>
+                    <li key={p}><Pictograma nome={PICTO_PROBLEMA[p]} tamanho={40} /> {p === 'solo_cansado' ? vocabulario(dados.cultura_atual_id, dados.nomeCultura).produzindoMenos : ROTULO_PROBLEMA[p]}</li>
                   ))}
                 </ul>
               </div>
@@ -113,6 +115,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
             <li key={e.estrategia_id} className="resumo-caminho">
               <p className="resumo-caminho-nome">
                 {e.nome}
+                <NomeCientificoCaminho estrategia={e} />
                 {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">Mais comum</span>}
               </p>
               <FaixaRotacao etapas={e.etapas_rotacao} tamanho={compacto ? 28 : 36} />

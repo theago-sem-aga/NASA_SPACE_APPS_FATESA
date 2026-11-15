@@ -17,7 +17,10 @@ const SIMBOLO: Record<Resposta, { texto: string; tom: 'sim' | 'nao' | 'talvez' }
   nao_sei: { texto: '?', tom: 'talvez' }
 };
 
-/** Uma pergunta, uma figura, três botões. Tocar responde e já vai para a próxima. */
+/** Respostas mostradas: só Sim e Não. Sem resposta, o App manda 'nao_sei' para a API. */
+const OPCOES: Resposta[] = ['sim', 'nao'];
+
+/** Uma pergunta, uma figura, dois botões. Tocar responde e já vai para a próxima. */
 export function TelaRecurso({ recurso, resposta, aoResponder, aoVoltar }: TelaRecursoProps) {
   const r = ROTULO_REQUISITO[recurso];
   return (
@@ -28,7 +31,7 @@ export function TelaRecurso({ recurso, resposta, aoResponder, aoVoltar }: TelaRe
         <p className="texto-apoio">{r.porque}</p>
       </div>
       <div className="grade-respostas" role="group" aria-label={r.pergunta}>
-        {(Object.keys(ROTULO_RESPOSTA) as Resposta[]).map(resp => (
+        {OPCOES.map(resp => (
           <BotaoFigura
             key={resp}
             simbolo={SIMBOLO[resp]}
@@ -38,9 +41,11 @@ export function TelaRecurso({ recurso, resposta, aoResponder, aoVoltar }: TelaRe
           />
         ))}
       </div>
-      <button type="button" className="link-discreto" onClick={aoVoltar}>
-        <Icone nome="voltar" tamanho={18} /> Voltar
-      </button>
+      <div className="navegacao navegacao-unica">
+        <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
+          <Icone nome="voltar" /> Voltar
+        </button>
+      </div>
     </>
   );
 }

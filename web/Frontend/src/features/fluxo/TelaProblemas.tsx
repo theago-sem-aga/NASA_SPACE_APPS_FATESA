@@ -1,8 +1,10 @@
 import type { ProblemaId } from '../../api/tipos';
+import { AvisoEspecialistaPragas } from '../../components/AvisoEspecialistaPragas';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Icone } from '../../components/Icone';
 import type { DadosFluxo } from './estadoFluxo';
 import { PICTO_PROBLEMA, ROTULO_PROBLEMA } from './rotulos';
+import { vocabulario } from './vocabularioCultura';
 
 interface TelaProblemasProps {
   dados: DadosFluxo;
@@ -37,7 +39,7 @@ export function TelaProblemas({ dados, aoMudar, aoVoltar, aoAvancar }: TelaProbl
             tipo="checkbox"
             marcado={dados.problemas.includes(p)}
             pictograma={PICTO_PROBLEMA[p]}
-            titulo={ROTULO_PROBLEMA[p]}
+            titulo={p === 'solo_cansado' ? vocabulario(dados.cultura_atual_id, dados.nomeCultura).produzindoMenos : ROTULO_PROBLEMA[p]}
             aoMudar={() => alternar(p)}
           />
         ))}
@@ -49,6 +51,7 @@ export function TelaProblemas({ dados, aoMudar, aoVoltar, aoAvancar }: TelaProbl
           aoMudar={() => aoMudar({ problemas: [], problemasRespondidos: !nenhum })}
         />
       </fieldset>
+      {dados.problemas.includes('nematoides_pragas') && <AvisoEspecialistaPragas />}
       <div className="navegacao">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
           <Icone nome="voltar" /> Voltar

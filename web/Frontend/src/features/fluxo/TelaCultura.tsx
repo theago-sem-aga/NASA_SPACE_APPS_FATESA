@@ -1,3 +1,4 @@
+import { NomeCientifico } from '../../components/NomeCientifico';
 import { useEffect, useState } from 'react';
 import { listarCulturas, FalhaApi } from '../../api/cliente';
 import type { Cultura } from '../../api/tipos';
@@ -32,7 +33,8 @@ export function TelaCultura({ dados, aoEscolher, aoVoltar }: TelaCulturaProps) {
 
   function tocar(c: Cultura) {
     if (!c.tem_demonstracao) {
-      setAviso(`${c.nome} ainda não está pronto. Por enquanto, a ferramenta ajuda na reforma da cana.`);
+      const prontas = (culturas ?? []).filter(x => x.tem_demonstracao).map(x => x.nome.toLocaleLowerCase('pt-BR'));
+      setAviso(`${c.nome} ainda não está pronto. Por enquanto, a ferramenta funciona para: ${prontas.join(', ')}.`);
       return;
     }
     setAviso(null);
@@ -54,6 +56,7 @@ export function TelaCultura({ dados, aoEscolher, aoVoltar }: TelaCulturaProps) {
               key={c.cultura_id}
               pictograma={PICTOGRAMA_CULTURA[c.cultura_id] ?? 'nao_sei'}
               titulo={c.nome}
+              detalhe={<NomeCientifico culturaId={c.cultura_id} />}
               selo={c.tem_demonstracao ? undefined : 'Em breve'}
               escolhido={dados.cultura_atual_id === c.cultura_id}
               aoTocar={() => tocar(c)}
@@ -70,9 +73,11 @@ export function TelaCultura({ dados, aoEscolher, aoVoltar }: TelaCulturaProps) {
         )}
       </div>
 
-      <button type="button" className="link-discreto" onClick={aoVoltar}>
-        <Icone nome="voltar" tamanho={18} /> Voltar
-      </button>
+      <div className="navegacao navegacao-unica">
+        <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
+          <Icone nome="voltar" /> Voltar
+        </button>
+      </div>
     </>
   );
 }

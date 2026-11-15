@@ -1,3 +1,4 @@
+import { NomeCientifico } from '../../components/NomeCientifico';
 import { useEffect, useRef } from 'react';
 import type { Estrategia } from '../../api/tipos';
 import { Icone } from '../../components/Icone';
@@ -36,7 +37,10 @@ export function TelaDecisao({ estrategia, aoSeguir }: TelaDecisaoProps) {
       <h1 tabIndex={-1}>Caminho escolhido</h1>
       <p className="decisao-escolha">
         {meio && <Pictograma nome={PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei'} tamanho={56} />}
-        <strong>{nome}</strong>
+        <span className="decisao-nome">
+          <strong>{nome}</strong>
+          <NomeCientifico culturaId={meio?.cultura_id} />
+        </span>
       </p>
 
       <div className="decisao-campo" aria-hidden="true">

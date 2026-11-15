@@ -1,13 +1,16 @@
 import type { MesCalendario } from '../api/tipos';
 import { NOME_MES, NOME_MES_CURTO, ROTULO_COBERTURA } from '../features/fluxo/rotulos';
+import { vocabulario } from '../features/fluxo/vocabularioCultura';
 
-export function CalendarioCobertura({ calendario }: { calendario: MesCalendario[] }) {
+/** culturaId = cultura atual (primeira etapa do caminho), para o texto falar dela. */
+export function CalendarioCobertura({ calendario, culturaId }: { calendario: MesCalendario[]; culturaId?: string }) {
+  const v = vocabulario(culturaId);
   const usados = [...new Set(calendario.map(m => m.cobertura))];
   return (
     <section className="cartao" aria-labelledby="titulo-calendario">
       <div>
         <h2 id="titulo-calendario" className="titulo-secao">O que cobre a terra, mês a mês</h2>
-        <p className="texto-apoio">Do último corte até a cana nova estar no chão. Os meses listrados são de terra descoberta.</p>
+        <p className="texto-apoio">Da última colheita até {v.culturaNova} estar no chão. Os meses listrados são de terra descoberta.</p>
       </div>
       <div className="rolagem-horizontal">
         <ol className="calendario">

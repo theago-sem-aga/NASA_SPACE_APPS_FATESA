@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
+import { CarrosselClima } from './CarrosselClima';
 import { FaixaGeada, nivelComFaixa } from './FaixaGeada';
 import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { FaixaTendenciaHidrica, ROTULO_TENDENCIA } from './FaixaTendenciaHidrica';
@@ -38,11 +39,36 @@ const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
 
 /**
  * O que os dados acharam sobre o talhão (solo, terreno, riscos), em vez de perguntar.
- * A pessoa pode discordar: "Não é bem assim" reenvia a análise com a correção.
+ * A pessoa pode discordar: em "Não é bem assim" ela marca a terra, o terreno ou os
+ * dois, e só ao tocar em "Confirmar mudanças" a análise é refeita com a correção.
  */
 export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidrica, aoCorrigir }: PainelTalhaoProps) {
   const id = useId();
   const [corrigindo, setCorrigindo] = useState(false);
+  /** O que a pessoa marcou e ainda não confirmou. Começa igual ao que os mapas mostraram. */
+  const [rascunho, setRascunho] = useState<CorrecoesTalhao>({});
+  const texturaMarcada = rascunho.textura_solo ?? talhao.textura_solo;
+  const relevoMarcado = rascunho.relevo ?? talhao.relevo;
+  const mudancas: CorrecoesTalhao = {
+    ...(texturaMarcada && texturaMarcada !== talhao.textura_solo ? { textura_solo: texturaMarcada } : {}),
+    ...(relevoMarcado && relevoMarcado !== talhao.relevo ? { relevo: relevoMarcado } : {})
+  };
+  const temMudanca = Object.keys(mudancas).length > 0;
+  const idAjuda = `${id}-ajuda-confirmar`;
+
+  const abrir = () => {
+    setRascunho({});
+    setCorrigindo(true);
+  };
+  const cancelar = () => {
+    setRascunho({});
+    setCorrigindo(false);
+  };
+  const confirmar = () => {
+    if (!temMudanca) return;
+    setCorrigindo(false);
+    aoCorrigir(mudancas);
+  };
 
   const valorRelevo = talhao.relevo
     ? ROTULO_RELEVO[talhao.relevo].nome
@@ -64,8 +90,8 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
           valor={valorRelevo}
           corrigido={talhao.fonte_relevo === 'informado_produtor'}
         />
-        <Item pictograma="erosao" rotulo="Risco de erosão" valor={risco(talhao.risco_erosao)} />
         <Item pictograma="falta_agua" rotulo="Risco de seca" valor={risco(talhao.risco_seca)} />
+        <Item pictograma="erosao" rotulo="Risco de erosão" valor={risco(talhao.risco_erosao)} />
         <Item pictograma="geada" rotulo="Risco de geada" valor={geada ? nivelComFaixa(geada) : risco(talhao.risco_geada)} />
         <Item
           pictograma="chuva"
@@ -73,13 +99,10 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
           valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : 'Sem dado'}
         />
       </ul>
-      {geada && <FaixaGeada geada={geada} />}
-      {precipitacaoExtrema && <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} />}
-      {tendenciaHidrica && <FaixaTendenciaHidrica tendencia={tendenciaHidrica} />}
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (
-          <button type="button" className="link-discreto" onClick={() => setCorrigindo(true)} aria-expanded={false}>
+          <button type="button" className="link-discreto" onClick={abrir} aria-expanded={false}>
             Não é bem assim
           </button>
         )}
@@ -87,7 +110,9 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
 
       {corrigindo && (
         <div className="painel-correcao">
-          <p className="texto-apoio">Você conhece a sua terra melhor que o satélite. Toque no que é certo e a gente refaz os caminhos.</p>
+          <p className="texto-apoio">
+            Você conhece a sua terra melhor que o satélite. Marque o que é certo: pode mudar só a terra, só o terreno ou os dois. Depois toque em confirmar.
+          </p>
           <fieldset className="grade-escolhas grade-escolhas-3">
             <legend className="resumo-subtitulo">A terra é…</legend>
             {TEXTURAS.map(t => (
@@ -95,11 +120,11 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
                 key={t}
                 tipo="radio"
                 nomeGrupo={`${id}-textura`}
-                marcado={talhao.textura_solo === t}
+                marcado={texturaMarcada === t}
                 pictograma={PICTO_TEXTURA[t]}
                 titulo={ROTULO_TEXTURA[t].nome}
                 detalhe={ROTULO_TEXTURA[t].dica}
-                aoMudar={() => aoCorrigir({ textura_solo: t })}
+                aoMudar={() => setRascunho(r => ({ ...r, textura_solo: t }))}
               />
             ))}
           </fieldset>
@@ -110,19 +135,47 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
                 key={r}
                 tipo="radio"
                 nomeGrupo={`${id}-relevo`}
-                marcado={talhao.relevo === r}
+                marcado={relevoMarcado === r}
                 pictograma={PICTO_RELEVO[r]}
                 titulo={ROTULO_RELEVO[r].nome}
                 detalhe={ROTULO_RELEVO[r].dica}
-                aoMudar={() => aoCorrigir({ relevo: r })}
+                aoMudar={() => setRascunho(r0 => ({ ...r0, relevo: r }))}
               />
             ))}
           </fieldset>
-          <button type="button" className="link-discreto" onClick={() => setCorrigindo(false)}>
-            Está certo, pode fechar
-          </button>
+          <div className="navegacao">
+            <button type="button" className="botao botao-secundario" onClick={cancelar}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="botao botao-primario"
+              onClick={confirmar}
+              aria-disabled={!temMudanca || undefined}
+              aria-describedby={temMudanca ? undefined : idAjuda}
+            >
+              Confirmar mudanças
+            </button>
+          </div>
+          {!temMudanca && (
+            <p id={idAjuda} className="texto-apoio">
+              Marque a terra ou o terreno certo para poder confirmar.
+            </p>
+          )}
         </div>
       )}
+      {/* Clima da área depois do "Não é bem assim", que é só de terra e terreno. Uma explicação por vez. */}
+      <CarrosselClima
+        slides={[
+          ...(geada ? [{ id: 'geada', titulo: 'Geada', pictograma: 'geada' as const, conteudo: <FaixaGeada geada={geada} /> }] : []),
+          ...(precipitacaoExtrema
+            ? [{ id: 'chuva-forte', titulo: 'Chuva forte', pictograma: 'chuva' as const, conteudo: <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} /> }]
+            : []),
+          ...(tendenciaHidrica
+            ? [{ id: 'chuva-anos', titulo: 'Chuva ao longo dos anos', pictograma: 'chuva' as const, conteudo: <FaixaTendenciaHidrica tendencia={tendenciaHidrica} /> }]
+            : [])
+        ]}
+      />
     </section>
   );
 }

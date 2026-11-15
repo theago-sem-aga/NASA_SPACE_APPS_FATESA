@@ -1,3 +1,4 @@
+import { NomeCientifico } from '../../components/NomeCientifico';
 import { useCallback, useEffect, useState } from 'react';
 import { buscarPainelProducao, CODIGO_IBGE_EXEMPLO, FalhaApi } from '../../api/cliente';
 import type { ChuvaDoMes, ColheitaCultura, Local, PainelProducao, PrevisaoClima, SituacaoColheita, Tendencia } from '../../api/tipos';
@@ -55,6 +56,7 @@ function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
       <Pictograma nome={PICTOGRAMA_CULTURA[c.cultura_id] ?? 'nao_sei'} tamanho={64} />
       <span className="producao-cultura-texto">
         <strong className="producao-nome">{c.nome}</strong>
+        <NomeCientifico culturaId={c.cultura_id} />
         <span>{frase}</span>
         {sua && <span className="etiqueta etiqueta-positiva">Sua lavoura</span>}
       </span>
@@ -197,7 +199,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
                 {outras.map(c => (
                   <li key={c.cultura_id}>
                     <Pictograma nome={PICTOGRAMA_CULTURA[c.cultura_id] ?? 'nao_sei'} tamanho={40} />
-                    <span>{c.nome}<span className="visualmente-oculto">: {FRASE_COLHEITA[c.situacao].toLowerCase()}</span></span>
+                    <span>{c.nome} <NomeCientifico culturaId={c.cultura_id} /><span className="visualmente-oculto">: {FRASE_COLHEITA[c.situacao].toLowerCase()}</span></span>
                     <Seta rumo={rumoDaColheita(c.situacao)} tamanho={28} />
                   </li>
                 ))}

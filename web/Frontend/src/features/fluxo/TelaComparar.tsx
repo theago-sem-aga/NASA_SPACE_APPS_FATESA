@@ -1,3 +1,4 @@
+import { NomeCientifico } from '../../components/NomeCientifico';
 import { useState } from 'react';
 import type { Analise, AtributosEstrategia, Estrategia } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
@@ -49,6 +50,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
                     <button type="button" className="comparacao-cabeca" onClick={() => aoAbrir(e.estrategia_id)}>
                       {meio && <Pictograma nome={PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei'} tamanho={40} />}
                       <span className="comparacao-nome">{nomeCurto(e)}</span>
+                      <NomeCientifico culturaId={meio?.cultura_id} />
                       <span className="visualmente-oculto">: {e.nome}</span>
                     </button>
                   </th>

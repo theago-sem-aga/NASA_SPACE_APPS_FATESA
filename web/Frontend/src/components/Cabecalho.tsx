@@ -4,10 +4,12 @@ interface CabecalhoProps {
   /** Só nas telas de pergunta. null = sem bolinhas (início, local e resultados). */
   progresso: { atual: number; total: number } | null;
   tituloPasso: string;
+  /** Subtítulo da marca, conforme a cultura escolhida (vocabularioCultura). */
+  subtitulo: string;
   narracao: { suportado: boolean; falando: boolean; aoOuvir: () => void; aoParar: () => void };
 }
 
-export function Cabecalho({ progresso, tituloPasso, narracao }: CabecalhoProps) {
+export function Cabecalho({ progresso, tituloPasso, subtitulo, narracao }: CabecalhoProps) {
   return (
     <header className="cabecalho">
       <div className="conteudo cabecalho-topo">
@@ -19,7 +21,7 @@ export function Cabecalho({ progresso, tituloPasso, narracao }: CabecalhoProps) 
           <span>
             {/* Nome do produto ainda não definido pela equipe (convenção §10) */}
             <span className="marca-nome">Rotação de culturas</span>
-            <span className="marca-sub">Planejamento da reforma</span>
+            <span className="marca-sub">{subtitulo}</span>
           </span>
         </div>
         {narracao.suportado && (

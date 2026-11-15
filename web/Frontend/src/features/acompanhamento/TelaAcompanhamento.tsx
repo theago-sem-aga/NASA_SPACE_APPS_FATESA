@@ -1,3 +1,4 @@
+import { NomeCientificoCaminho } from '../../components/NomeCientifico';
 import { useCallback, useEffect, useState } from 'react';
 import { buscarAcompanhamento, buscarPrevisao, FalhaApi } from '../../api/cliente';
 import type { Acompanhamento, CoberturaSolo, EstadoArea, Estrategia, FotoSatelite, Local, Nivel, OrigemLocal, PrevisaoClima } from '../../api/tipos';
@@ -135,6 +136,12 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
           acaoRotulo={semDados ? 'Voltar' : 'Tentar de novo'}
           aoAgir={semDados ? aoVoltar : () => void carregar()}
         />
+        {/* Sem fotos a pesquisa termina aqui do mesmo jeito: o resumo não pode ficar inacessível. */}
+        {aoVerResumo && (
+          <button type="button" className="botao botao-primario botao-largo" onClick={aoVerResumo}>
+            Ver meu resumo <Icone nome="seguir" />
+          </button>
+        )}
       </>
     );
   }
@@ -151,6 +158,7 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
           <p className="acompanhamento-caminho">
             <span className="texto-apoio">Seu caminho:</span>
             <span className="etiqueta etiqueta-positiva">{estrategia.etapas_rotacao[1]?.nome ?? estrategia.nome}</span>
+            <NomeCientificoCaminho estrategia={estrategia} />
           </p>
         )}
         <p className="texto-apoio">

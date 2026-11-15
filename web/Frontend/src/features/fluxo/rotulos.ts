@@ -12,13 +12,18 @@ export const NOME_MES = [
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
 ];
 
+/**
+ * Na explicação, {safra} vira "próxima safra de <cultura escolhida>" (ou só "próxima safra").
+ * Use sempre explicacaoPrioridade(): o texto não pode citar uma cultura fixa, porque vale para
+ * qualquer cultura cadastrada.
+ */
 export const ROTULO_PRIORIDADE: Record<PrioridadeId, { nome: string; explicacao: string }> = {
-  reducao_erosao: { nome: 'Segurar o solo', explicacao: 'Não deixar a chuva levar a terra boa nem abrir valeta.' },
-  materia_organica: { nome: 'Deixar a terra mais forte', explicacao: 'Mais palha e raiz no solo para os próximos cortes.' },
-  fixacao_nitrogenio: { nome: 'Gastar menos adubo', explicacao: 'Plantas que deixam nitrogênio na terra para a cana.' },
-  uso_agua: { nome: 'Aguentar a seca', explicacao: 'Algo que precise de pouca água ou ajude a terra a segurar umidade.' },
-  adequacao_mercado: { nome: 'Ter renda na reforma', explicacao: 'Uma lavoura que tenha comprador aqui na região.' },
-  valor_forragem: { nome: 'Tratar o gado', explicacao: 'Produzir pasto, silagem ou feno para os animais.' }
+  reducao_erosao: { nome: 'Não deixar a chuva levar a terra', explicacao: 'Evita que a enxurrada arraste o solo fértil e abra valetas.' },
+  materia_organica: { nome: 'Deixar a terra mais rica', explicacao: 'Mais palha e raízes no solo, que se transformam em nutrientes para a {safra}.' },
+  fixacao_nitrogenio: { nome: 'Gastar menos adubo', explicacao: 'Plantas que deixam nitrogênio no solo e reduzem o adubo da {safra}.' },
+  uso_agua: { nome: 'Aguentar a seca', explicacao: 'Culturas que exigem pouca água ou ajudam o solo a reter umidade.' },
+  adequacao_mercado: { nome: 'Ter renda até o próximo plantio', explicacao: 'Uma lavoura com compradores na região, que gere receita até o próximo plantio.' },
+  valor_forragem: { nome: 'Tratar o gado', explicacao: 'Produção de pasto, silagem ou feno para alimentar os animais.' }
 };
 
 export const ORDEM_PRIORIDADES: PrioridadeId[] = [
@@ -71,10 +76,10 @@ export const ROTULO_RISCO: Record<Nivel, string> = { nenhum: 'Quase nenhum', bai
 
 export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; maiorEhMelhor: boolean }> = {
   protecao_solo: { nome: 'Segura a terra na chuva', maiorEhMelhor: true },
-  materia_organica: { nome: 'Deixa a terra mais forte', maiorEhMelhor: true },
+  materia_organica: { nome: 'Deixa a terra mais rica', maiorEhMelhor: true },
   fixacao_nitrogenio: { nome: 'Economiza adubo', maiorEhMelhor: true },
   quebra_pragas: { nome: 'Ajuda contra praga', maiorEhMelhor: true },
-  renda_direta: { nome: 'Dá dinheiro na reforma', maiorEhMelhor: true },
+  renda_direta: { nome: 'Dá dinheiro até o próximo plantio', maiorEhMelhor: true },
   demanda_agua: { nome: 'Gasta água', maiorEhMelhor: false },
   trabalho_custo: { nome: 'Dá trabalho e gasto', maiorEhMelhor: false },
   valor_forragem: { nome: 'Dá comida pro gado', maiorEhMelhor: true }
@@ -88,10 +93,10 @@ export const ROTULO_CONFIANCA: Record<Confianca, string> = {
 
 export const ROTULO_COBERTURA: Record<CoberturaSolo, { nome: string; classe: string }> = {
   solo_descoberto: { nome: 'Terra descoberta', classe: 'cobertura-descoberto' },
-  cultura_intermediaria: { nome: 'Lavoura da reforma', classe: 'cobertura-intermediaria' },
+  cultura_intermediaria: { nome: 'Lavoura do intervalo', classe: 'cobertura-intermediaria' },
   adubo_verde: { nome: 'Adubo verde', classe: 'cobertura-adubo' },
   palhada: { nome: 'Palha cobrindo o chão', classe: 'cobertura-palhada' },
-  cultura_principal: { nome: 'Cana', classe: 'cobertura-principal' }
+  cultura_principal: { nome: 'Cultura principal', classe: 'cobertura-principal' }
 };
 
 export const ROTULO_TIPO_DADO: Record<TipoDado, string> = {
@@ -136,3 +141,9 @@ export const PICTO_RELEVO: Record<Relevo, NomePictograma> = { plano: 'plano', su
 const formatoNumero =new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 export const formatarNumero = (valor: number) => formatoNumero.format(valor);
 export const anoDe = (data: string) => data.slice(0, 4);
+
+/** Explicação da prioridade já com a cultura que a pessoa escolheu (ex.: "próxima safra de milho"). */
+export function explicacaoPrioridade(id: PrioridadeId, nomeCultura: string | null): string {
+  const safra = nomeCultura ? `próxima safra de ${nomeCultura.toLocaleLowerCase('pt-BR')}` : 'próxima safra';
+  return ROTULO_PRIORIDADE[id].explicacao.replace('{safra}', safra);
+}

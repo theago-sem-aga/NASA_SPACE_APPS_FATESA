@@ -2,6 +2,7 @@ import type { Analise } from '../../api/tipos';
 import { Icone, type NomeIcone } from '../../components/Icone';
 import { ResumoVisual } from '../../components/ResumoVisual';
 import type { DadosFluxo } from './estadoFluxo';
+import { vocabulario } from './vocabularioCultura';
 
 interface TelaProximosProps {
   dados: DadosFluxo;
@@ -15,7 +16,8 @@ const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
   {
     icone: 'pessoa',
     titulo: 'Mostre ao agrônomo',
-    texto: 'Da usina, da cooperativa ou da Casa da Agricultura.'
+    // Trocado pelo vocabulário da cultura na hora de mostrar.
+    texto: ''
   },
   {
     icone: 'tubo',
@@ -30,6 +32,8 @@ const PASSOS: { icone: NomeIcone; titulo: string; texto: string }[] = [
 ];
 
 export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar, aoAcompanhar }: TelaProximosProps) {
+  const v = vocabulario(dados.cultura_atual_id, dados.nomeCultura);
+  const passos = PASSOS.map(p => (p.icone === 'pessoa' ? { ...p, texto: v.ondeAgronomo } : p));
   return (
     <>
       <h1 tabIndex={-1}>Seu resumo</h1>
@@ -45,7 +49,7 @@ export function TelaProximos({ dados, analise, aoVoltar, aoRecomecar, aoAcompanh
 
       <h2 className="titulo-secao">Antes de bater o martelo</h2>
       <ol className="lista-passos">
-        {PASSOS.map((p, i) => (
+        {passos.map((p, i) => (
           <li key={p.icone} className="passo-item">
             <span className="passo-numero" aria-hidden="true">{i + 1}</span>
             <Icone nome={p.icone} tamanho={28} />

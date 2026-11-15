@@ -1,3 +1,4 @@
+import { NomeCientificoCaminho } from './NomeCientifico';
 import { SINALIZAR_MOCK } from '../api/cliente';
 import type { Analise } from '../api/tipos';
 import type { DadosFluxo } from '../features/fluxo/estadoFluxo';
@@ -42,6 +43,7 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
       {analise.estrategias.map(e => (
         <div key={e.estrategia_id} className="resumo-estrategia">
           <h2>{e.nome}</h2>
+          <p><NomeCientificoCaminho estrategia={e} /></p>
           <p><strong>Pode ganhar:</strong> {e.beneficios.join(' ')}</p>
           <p><strong>Pode dar errado:</strong> {e.riscos.join(' ')}</p>
           <p><strong>Falta saber:</strong> {e.lacunas.join(' ')}</p>

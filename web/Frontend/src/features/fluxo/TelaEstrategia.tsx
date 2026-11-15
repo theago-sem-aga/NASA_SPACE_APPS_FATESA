@@ -1,3 +1,4 @@
+import { NomeCientificoCaminho } from '../../components/NomeCientifico';
 import type { AtributosEstrategia, Estrategia, RequisitoId, Resposta } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { CalendarioCobertura } from '../../components/CalendarioCobertura';
@@ -47,6 +48,7 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, aoVoltar, aoAv
       <AvisoDemonstracao ehMock={ehMock} />
       {e.eh_pratica_atual && <p className="sobretitulo">O jeito mais comum hoje</p>}
       <h1 tabIndex={-1}>{e.nome}</h1>
+      <NomeCientificoCaminho estrategia={e} />
       <FaixaRotacao etapas={e.etapas_rotacao} />
       <p className="texto-grande"><strong>Para quê:</strong> {e.objetivo}</p>
 
@@ -108,7 +110,7 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, aoVoltar, aoAv
           {imagem && <Foto imagem={imagem} classe="foto-faixa" />}
         </Sanfona>
         <Sanfona icone="calendario" titulo="Mês a mês">
-          <CalendarioCobertura calendario={e.calendario} />
+          <CalendarioCobertura calendario={e.calendario} culturaId={e.etapas_rotacao[0]?.cultura_id} />
         </Sanfona>
         <Sanfona icone="alvo" titulo="Todos os pontos" contagem={TODOS.length}>
           <ul className="quatro-pontos">

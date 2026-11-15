@@ -9,11 +9,11 @@ const REQUISITOS: RequisitoId[] = ['maquinas_graos', 'comprador_graos', 'irrigac
 
 /** Mesmos nomes de ROTULO_PRIORIDADE (features/fluxo/rotulos.ts), em minúscula para o meio da frase. */
 const NOME_PRIORIDADE: Record<PrioridadeId, string> = {
-  reducao_erosao: 'segurar o solo',
-  materia_organica: 'deixar a terra mais forte',
+  reducao_erosao: 'não deixar a chuva levar a terra',
+  materia_organica: 'deixar a terra mais rica',
   fixacao_nitrogenio: 'gastar menos adubo',
   uso_agua: 'aguentar a seca',
-  adequacao_mercado: 'ter renda na reforma',
+  adequacao_mercado: 'ter renda até o próximo plantio',
   valor_forragem: 'tratar o gado'
 };
 

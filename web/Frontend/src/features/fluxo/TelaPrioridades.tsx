@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { vocabulario } from './vocabularioCultura';
 import type { PrioridadeId } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Icone } from '../../components/Icone';
 import { Navegacao } from '../../components/Navegacao';
 import { MAX_PRIORIDADES, type DadosFluxo } from './estadoFluxo';
-import { ORDEM_PRIORIDADES, PICTO_PRIORIDADE, ROTULO_PRIORIDADE } from './rotulos';
+import { explicacaoPrioridade, ORDEM_PRIORIDADES, PICTO_PRIORIDADE, ROTULO_PRIORIDADE } from './rotulos';
 
 interface TelaPrioridadesProps {
   dados: DadosFluxo;
@@ -34,7 +35,7 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
 
   return (
     <>
-      <h1 tabIndex={-1}>Nesta reforma, o que é mais importante para você?</h1>
+      <h1 tabIndex={-1}>{vocabulario(dados.cultura_atual_id, dados.nomeCultura).nestePeriodo}, o que é mais importante para você?</h1>
       <fieldset className="grade-escolhas">
         <legend className="texto-apoio">
           Escolha até {MAX_PRIORIDADES}.{' '}
@@ -53,6 +54,7 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
             desabilitado={!dados.prioridades.includes(id) && cheio}
             pictograma={PICTO_PRIORIDADE[id]}
             titulo={ROTULO_PRIORIDADE[id].nome}
+            detalhe={explicacaoPrioridade(id, dados.nomeCultura)}
             aoMudar={() => alternar(id)}
           />
         ))}

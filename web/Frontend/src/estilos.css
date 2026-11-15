@@ -191,6 +191,63 @@ p { margin: 0; }
 .cartao-estrategia-corpo { display: flex; flex-direction: column; gap: 6px; padding: 14px 4px 14px 16px; }
 .cartao-estrategia-nome { font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.3rem; line-height: 1.25; }
 .cartao-estrategia-seta { display: flex; align-items: center; padding: 0 12px; color: var(--cor-mata); }
+/* Uma linha só com as prioridades atendidas, no lugar das etiquetas coloridas. */
+.cartao-estrategia-ajuda { display: flex; align-items: flex-start; gap: 6px; font-size: 0.95rem; color: #1d4a28; }
+.cartao-estrategia-ajuda .icone { color: var(--cor-folha); flex: none; margin-top: 1px; }
+
+/* ---------- nome científico, em itálico embaixo do nome popular ---------- */
+.nome-cientifico { display: block; font-family: var(--fonte-texto); font-size: 0.85rem; font-weight: 400; line-height: 1.3; color: var(--cor-texto-suave); }
+.nome-cientifico i { font-style: italic; }
+.faixa-rotacao-etapa .nome-cientifico { font-size: 0.72rem; }
+.decisao-nome { display: flex; flex-direction: column; }
+.decisao-nome .nome-cientifico { font-size: 0.95rem; }
+.etiqueta + .nome-cientifico { margin-top: 2px; }
+@media print { .nome-cientifico { color: #333; } }
+
+/* ---------- carrossel dos caminhos (um por vez, passa para o lado) ---------- */
+.carrossel { display: flex; flex-direction: column; gap: 10px; }
+.carrossel-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.carrossel-posicao { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 700; color: var(--cor-texto-suave); }
+.carrossel-seta {
+  width: 48px; height: 48px; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 2px solid var(--cor-borda-forte); background: var(--cor-superficie); color: var(--cor-mata);
+}
+.carrossel-seta[aria-disabled='true'] { opacity: 0.35; cursor: default; }
+.carrossel-bolinhas { display: flex; gap: 4px; }
+/* Área de toque de 24px; a bolinha desenhada tem 12px. */
+.carrossel-bolinha { width: 24px; height: 24px; padding: 0; border: 0; background: transparent; display: inline-flex; align-items: center; justify-content: center; }
+.carrossel-bolinha::after { content: ''; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--cor-mata); background: transparent; transition: background 0.2s; }
+.carrossel-bolinha-atual::after { background: var(--cor-mata); }
+.carrossel-trilho {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.carrossel-trilho::-webkit-scrollbar { display: none; }
+.carrossel-item { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; padding: 2px; }
+.carrossel-cartao { height: 100%; }
+.carrossel-cabeca { display: flex; flex-direction: column; gap: 6px; }
+.carrossel-cabeca h2 { margin: 0; }
+.abas { display: flex; flex-wrap: wrap; gap: 6px; }
+.abas::-webkit-scrollbar { display: none; }
+.aba {
+  flex: none; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--cor-borda);
+  background: var(--cor-superficie); color: var(--cor-texto); font-weight: 700; font-size: 0.95rem;
+}
+.aba-atual { background: var(--cor-mata); border-color: var(--cor-mata); color: #fff; }
+.carrossel-painel { display: flex; flex-direction: column; gap: 12px; min-height: 150px; }
+.carrossel-painel p { margin: 0; }
+.lista-cuidados .icone { color: var(--cor-alerta); }
+.carrossel-detalhe { margin-top: auto; }
+/* Galeria de fotos da tela inicial: setas e bolinhas embaixo da foto. */
+.galeria-controles { justify-content: center; gap: 16px; }
+.galeria .carrossel-item { padding: 0; }
+.galeria .foto figcaption { flex-direction: column; justify-content: flex-start; }
+.galeria .foto-legenda { color: var(--cor-texto); }
+.galeria-pausa { align-self: center; font-size: 0.9rem; }
+@media (prefers-reduced-motion: reduce) {
+  .carrossel-trilho { scroll-behavior: auto; }
+  .carrossel-bolinha::after { transition: none; }
+}
 .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .etiqueta { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; align-self: flex-start; }
 .etiqueta-neutra { background: #eceee9; color: var(--cor-texto-suave); }
@@ -451,7 +508,8 @@ p { margin: 0; }
 /* ---------- uma pergunta por tela ---------- */
 .pergunta-unica { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
 .pergunta-unica .texto-apoio { margin: 0; max-width: 34ch; }
-.grade-respostas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+/* Duas respostas (Sim e Não), centralizadas e com largura limitada no computador. */
+.grade-respostas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 440px; margin: 0 auto; }
 .botao-figura { font: inherit; color: var(--cor-texto); width: 100%; }
 .botao-figura[aria-pressed='true'] { border-color: var(--cor-folha); background: var(--cor-folha-clara); box-shadow: 0 0 0 1px var(--cor-folha); }
 .botao-figura[aria-pressed='true'] .cartao-escolha-marca { background: var(--cor-folha); border-color: var(--cor-folha); color: #fff; }
@@ -751,3 +809,21 @@ p { margin: 0; }
 .grafico-chuva-anos-detalhe { margin: 0; min-height: 1.4em; font-size: 0.9rem; }
 .faixa-tendencia-legenda { margin: 0; font-size: 0.8rem; }
 @media print { .grafico-chuva-anos-detalhe { display: none; } }
+
+/* ---------- carrossel do clima da área (geada, chuva forte, chuva ao longo dos anos) ---------- */
+.carrossel-clima { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--cor-borda); }
+.carrossel-clima-titulo { margin: 0; }
+.carrossel-clima-cartao { display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 14px; border: 1px solid var(--cor-borda); border-radius: var(--raio); background: var(--cor-superficie); }
+.carrossel-clima-cabeca { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+.carrossel-clima-cartao > * { margin-top: 0; margin-bottom: 0; }
+/* As notas técnicas ficam recolhidas: abrem ao tocar em "Como ler este dado". */
+.como-ler summary { cursor: pointer; color: var(--cor-ceu); font-size: 0.9rem; font-weight: 600; }
+.como-ler[open] summary { margin-bottom: 6px; }
+/* Cada cartão do clima com a própria altura (sem espaço vazio embaixo dos curtos). */
+.carrossel-clima .carrossel-trilho { align-items: flex-start; }
+.carrossel-clima .carrossel-clima-cartao { height: auto; }
+/* Dentro do carrossel, a chuva forte não precisa de caixa e ícone próprios: o cartão já tem. */
+.carrossel-clima .faixa-chuva-extrema { border: 0; padding: 0; background: none; box-shadow: none; }
+.carrossel-clima .faixa-chuva-extrema-icone { display: none; }
+.carrossel-clima .carrossel-trilho { overflow-y: hidden; transition: height 0.25s ease; }
+@media (prefers-reduced-motion: reduce) { .carrossel-clima .carrossel-trilho { transition: none; } }

@@ -15,3 +15,15 @@ Os créditos também aparecem na interface (componente `Foto`). Ao trocar ou adi
 ## Fotos de satélite (`satelite/`)
 
 Contém dados Copernicus Sentinel-2 modificados (2026). Recorte, composição de cor e quadrado amarelo feitos por `web/Backend/app/pipelines/acompanhamento_sentinel2.py`, a partir do catálogo público Earth Search (Element84/AWS). Licença dos dados Sentinel: uso livre com atribuição (Copernicus).
+
+## Galeria da tela inicial
+
+Obtidas no Wikimedia Commons em 2026-11-14 e reduzidas para no máximo 1280 px de largura, sem outras alterações. Usadas em `src/components/imagens.ts` (`GALERIA_INICIO`).
+
+| Arquivo | Original | Autor / crédito | Licença |
+|---|---|---|---|
+| `lavouras-perdizes-iss.jpg` | [Agricultural Fields near Perdizes, Minas Gerais, Brazil.JPG](https://commons.wikimedia.org/wiki/File:Agricultural_Fields_near_Perdizes,_Minas_Gerais,_Brazil.JPG). Lavouras irrigadas por pivô perto de Perdizes (MG), foto da Estação Espacial Internacional (NASA Earth Observatory) | Tripulação da Expedição 26 da ISS, NASA | Domínio público (obra da NASA) |
+| `colheita-cana-piracicaba.jpg` | [Sugarcane harvest Piracicaba 05 2009 5783.JPG](https://commons.wikimedia.org/wiki/File:Sugarcane_harvest_Piracicaba_05_2009_5783.JPG). Colheita mecanizada de cana, sem queima, em Piracicaba (SP) | Mario Roberto Duran Ortiz (Mariordo) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| `soja-brasnorte.jpg` | [SojaBrasnorte.jpg](https://commons.wikimedia.org/wiki/File:SojaBrasnorte.jpg). Lavoura de soja em Brasnorte, noroeste de Mato Grosso | Marcelo Camargo / Agência Brasil | [CC BY 3.0 BR](https://creativecommons.org/licenses/by/3.0/br/) |
+| `colheita-soja-rondonopolis.jpg` | [Ronodonópolis colheita soja (Roosevelt Pinheiro) 28mar09.jpg](https://commons.wikimedia.org/wiki/File:Ronodon%C3%B3polis_colheita_soja_(Roosevelt_Pinheiro)_28mar09.jpg). Colheita de soja em Rondonópolis (MT) | Roosevelt Pinheiro / Agência Brasil | [CC BY 3.0 BR](https://creativecommons.org/licenses/by/3.0/br/) |
+| `pastagem-cerrado-embrapa.jpg` | [Pastagem no período seco no Cerrado.jpg](https://commons.wikimedia.org/wiki/File:Pastagem_no_per%C3%ADodo_seco_no_Cerrado.jpg). Pastagem na seca, em área de pesquisa em integração lavoura-pecuária da Embrapa Arroz e Feijão | Prof. Dr. Alessandro Samuel-Rosa | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |

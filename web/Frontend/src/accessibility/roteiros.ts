@@ -9,6 +9,7 @@ import {
   NOME_MES, ROTULO_PRIORIDADE, ROTULO_PROBLEMA, ROTULO_RELEVO, ROTULO_REQUISITO, ROTULO_RISCO, ROTULO_TEXTURA
 } from '../features/fluxo/rotulos';
 import { fraseGeada } from '../features/fluxo/FaixaGeada';
+import { vocabulario } from '../features/fluxo/vocabularioCultura';
 import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 import { fraseTendencia } from '../features/fluxo/FaixaTendenciaHidrica';
 
@@ -80,35 +81,36 @@ function roteiroClima(a: Analise, e: Estrategia): string {
 
 export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise | null, estrategia: Estrategia | null): string {
   const aviso = analise?.eh_mock && SINALIZAR_MOCK ? 'Lembrete: estes números são de exemplo, inventados para teste. ' : '';
+  const v = vocabulario(dados.cultura_atual_id, dados.nomeCultura);
   switch (etapa) {
     case 'inicio':
-      return 'Olá. Vai reformar o canavial? A gente mostra o que dá para fazer com a terra até plantar a cana de novo. Para começar, toque no botão verde grande: usar onde estou agora. O celular vai perguntar se pode usar a localização. É só tocar em permitir. Se preferir, toque em: prefiro escrever a cidade.';
+      return 'Olá. Vai trocar ou renovar a lavoura? A gente mostra o que dá para fazer com a terra até o próximo plantio. Para começar, toque no botão verde grande: usar onde estou agora. O celular vai perguntar se pode usar a localização. É só tocar em permitir. Se preferir, toque em: prefiro escrever a cidade.';
     case 'local':
       return dados.modoLocal === 'confirmar' && dados.local
         ? `Pelo celular, você está perto de ${dados.local.municipio}. É aí que fica a plantação? Se for, toque em: sim, é aqui. Se não for, toque em: não, é em outro lugar.`
         : 'Em qual cidade fica a plantação? Escreva o nome no campo. Não precisa de acento. Quando a cidade aparecer embaixo, toque nela.';
     case 'cultura':
-      return 'O que está plantado aí hoje? Toque na figura. Por enquanto, a ferramenta ajuda na reforma da cana.';
+      return 'O que está plantado aí hoje? Toque na figura. As que dizem em breve ainda não estão prontas.';
     case 'maquinas_graos':
     case 'comprador_graos':
     case 'irrigacao':
       return roteiroRecurso(etapa);
     case 'problemas':
-      return `Alguma dessas coisas está acontecendo? ${emFrase(Object.values(ROTULO_PROBLEMA).map(minuscula))}. Pode tocar em mais de uma. Se não for nada disso, toque em: nada disso. Depois toque em continuar.`;
+      return `Alguma dessas coisas está acontecendo? ${emFrase((Object.keys(ROTULO_PROBLEMA) as (keyof typeof ROTULO_PROBLEMA)[]).map(p => minuscula(p === 'solo_cansado' ? v.produzindoMenos : ROTULO_PROBLEMA[p])))}. Pode tocar em mais de uma. Se não for nada disso, toque em: nada disso. Depois toque em continuar.`;
     case 'prioridades':
-      return `Nesta reforma, o que é mais importante para você? Escolha até duas coisas. As opções são: ${emFrase(Object.values(ROTULO_PRIORIDADE).map(p => minuscula(p.nome)))}. Depois toque em: ver os caminhos.`;
+      return `${v.nestePeriodo}, o que é mais importante para você? Escolha até duas coisas. As opções são: ${emFrase(Object.values(ROTULO_PRIORIDADE).map(p => minuscula(p.nome)))}. Depois toque em: ver os caminhos.`;
     case 'estrategias':
       return analise
         ? [
             aviso,
             roteiroTalhao(analise),
-            `Agora, os ${analise.estrategias.length} caminhos para a reforma.`,
+            `Agora, os ${analise.estrategias.length} caminhos para ${v.aPeriodo}.`,
             ...analise.estrategias.map((e, i) => `${ORDINAL[i] ?? 'Outro'}: ${minuscula(e.nome)}.`),
             'Toque num caminho para saber mais, ou em comparar lado a lado.'
           ].join(' ')
         : 'Estou montando os caminhos. Só um instante.';
     case 'comparar':
-      return `${aviso}Aqui os caminhos estão lado a lado. Cada linha é uma coisa que importa na reforma. Os tracinhos verdes são bons. Os laranja pesam contra. No celular, arraste a tabela para o lado para ver tudo.`;
+      return `${aviso}Aqui os caminhos estão lado a lado. Cada linha é uma coisa que importa para ${v.aPeriodo}. Os tracinhos verdes são bons. Os laranja pesam contra. No celular, arraste a tabela para o lado para ver tudo.`;
     case 'estrategia':
       return estrategia ? aviso + roteiroEstrategia(estrategia) : '';
     case 'clima':
@@ -120,6 +122,6 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
       // O roteiro desta tela vem de features/producao/roteiroProducao.ts (depende dos dados carregados).
       return '';
     case 'proximos':
-      return 'Este é o seu resumo. Ele junta a sua área e os caminhos, com as figuras. Antes de decidir, três coisas. Primeiro: mostre este resumo ao agrônomo da usina, da cooperativa ou da Casa da Agricultura. Segundo: faça a análise de solo antes da reforma. Terceiro: confira a melhor época de plantar no aplicativo Plantio Certo. Se quiser, toque em imprimir para levar no papel.';
+      return `Este é o seu resumo. Ele junta a sua área e os caminhos, com as figuras. Antes de decidir, três coisas. Primeiro: mostre este resumo ao agrônomo. ${v.ondeAgronomo} Segundo: faça a análise de solo antes de ${v.aPeriodo}. Terceiro: confira a melhor época de plantar no aplicativo Plantio Certo. Se quiser, toque em imprimir para levar no papel.`;
   }
 }

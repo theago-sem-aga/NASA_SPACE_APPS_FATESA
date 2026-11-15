@@ -112,12 +112,15 @@ export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
       <p className="faixa-geada-detalhe" aria-live="polite">
         {mesAberto ? detalheMes(mesAberto, geada.anos_analisados) : ''}
       </p>
-      <p className="texto-apoio faixa-geada-legenda">
-        Número = em quantos de cada 10 anos geou naquele mês. Toque no mês para ver o detalhe e a faixa provável: com só{' '}
-        {geada.anos_analisados} anos de dados, a conta tem folga para mais ou para menos. Noites com o ar a até{' '}
-        {grau(geada.limiar_c)}, de {geada.periodo_inicio} a {geada.periodo_fim} (NASA POWER). Baixada e beira de rio
-        geiam mais que isso, e essa diferença não entra na faixa.
-      </p>
+      <details className="como-ler">
+        <summary>Como ler este dado</summary>
+        <p className="texto-apoio faixa-geada-legenda">
+          Número = em quantos de cada 10 anos geou naquele mês. Toque no mês para ver o detalhe e a faixa provável: com só{' '}
+          {geada.anos_analisados} anos de dados, a conta tem folga para mais ou para menos. Noites com o ar a até{' '}
+          {grau(geada.limiar_c)}, de {geada.periodo_inicio} a {geada.periodo_fim} (NASA POWER). Baixada e beira de rio
+          geiam mais que isso, e essa diferença não entra na faixa.
+        </p>
+      </details>
     </div>
   );
 }
