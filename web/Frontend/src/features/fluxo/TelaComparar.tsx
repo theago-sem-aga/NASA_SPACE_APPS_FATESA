@@ -62,7 +62,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
           </button>
           {opcoesCriterio.map(c => (
             <button key={c} type="button" className={`ordenar-chip${criterio === c ? ' ativo' : ''}`} aria-pressed={criterio === c} onClick={() => setCriterio(c)}>
-              {c !== 'descoberto' && <Pictograma nome={PICTO_ATRIBUTO[c]} tamanho={20} />}
+              <Pictograma nome={c === 'descoberto' ? 'terra_descoberta' : PICTO_ATRIBUTO[c]} tamanho={20} />
               {nomeCriterio(c)}
             </button>
           ))}
@@ -127,7 +127,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
               <tr>
                 <th scope="row">
                   <span className="comparacao-criterio">
-                    <Pictograma nome="nao_sei" tamanho={28} />
+                    <Pictograma nome="certeza" tamanho={28} />
                     Quanta certeza
                   </span>
                 </th>

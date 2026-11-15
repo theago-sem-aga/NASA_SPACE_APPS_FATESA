@@ -111,7 +111,7 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
       </p>
 
       <div className="sanfonas">
-        <Sanfona icone="pergunta" titulo="Como funciona">
+        <Sanfona icone="lampada" titulo="Como funciona">
           <p>{e.resumo}</p>
           <Lista itens={e.motivos} />
           {imagem && <Foto imagem={imagem} classe="foto-faixa" />}

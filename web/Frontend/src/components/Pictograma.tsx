@@ -370,6 +370,17 @@ const DEFS: Record<string, Def> = {
       </>
     )
   },
+  certeza: {
+    fundo: 'verde',
+    desenho: (
+      <>
+        <path d="M17 30l-4 12 6-3 5 4 2-11M31 30l4 12-6-3-5 4" fill={C.palha} stroke={C.terraEscura} strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="24" cy="20" r="13" fill={C.sol} stroke={C.terraEscura} strokeWidth="2" />
+        <circle cx="24" cy="20" r="8.5" fill="none" stroke={C.terraEscura} strokeWidth="1.2" strokeDasharray="2 2" />
+        <path d="M19.5 20.5l3 3 6-6.5" fill="none" stroke={C.mata} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    )
+  },
   nao_sei: {
     fundo: 'cinza',
     desenho: (
