@@ -315,7 +315,8 @@ class Analise(BaseModel):
     versao_motor: str
     criada_em_utc: str
     fontes_indisponiveis: list[FonteIndisponivel]
-    estado_recomendacoes: Literal["simulacao_beta", "dados_insuficientes"]
+    # catalogo_real = estrategias reais, filtradas pelo ZARC (so cana-de-acucar hoje).
+    estado_recomendacoes: Literal["simulacao_beta", "dados_insuficientes", "catalogo_real"]
 
 
 class ColheitaCultura(BaseModel):

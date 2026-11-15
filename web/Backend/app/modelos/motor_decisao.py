@@ -175,5 +175,88 @@ def gerar_front() -> Path:
     return SAIDA_FRONT
 
 
+# ---------- versao real, pro backend (porta de web/Frontend/src/api/mock/montarEstrategias.ts) ----------
+
+NOME_PRIORIDADE = {
+    "reducao_erosao": "segurar o solo",
+    "materia_organica": "deixar a terra mais forte",
+    "fixacao_nitrogenio": "gastar menos adubo",
+    "uso_agua": "aguentar a seca",
+    "adequacao_mercado": "ter renda na reforma",
+    "valor_forragem": "tratar o gado",
+}
+POR_QUE_FICOU_DE_FORA = {
+    "sem_maquina": "você disse que não tem máquina para grão",
+    "sem_comprador": "você disse que não tem para quem vender grão",
+    "sem_irrigacao": "você disse que não tem irrigação",
+    "fora_zarc": "o zoneamento do Ministério da Agricultura (ZARC) não indica plantar de outubro a dezembro na sua cidade",
+}
+
+
+def _em_frase(itens: list[str]) -> str:
+    if len(itens) <= 1:
+        return itens[0] if itens else ""
+    return f"{', '.join(itens[:-1])} e {itens[-1]}"
+
+
+def _nome_curto(e: dict) -> str:
+    etapas = e["etapas_rotacao"]
+    return etapas[1]["nome"] if len(etapas) > 1 else e["nome"]
+
+
+def _sem_zarc_culturas(e: dict) -> dict:
+    return {k: v for k, v in e.items() if k != "zarc_culturas"}
+
+
+def montar_estrategias_reais(
+    prioridades: list[str], recursos: dict[str, str], codigo_ibge: str | None, municipio: str
+) -> tuple[list[dict], list[str]]:
+    """Mesma regra de web/Frontend/src/api/mock/montarEstrategias.ts, rodando
+    de verdade no backend: chama sugerir() direto (sem tabela pré-computada,
+    que só existia pro front funcionar sem servidor). Retorna (estrategias,
+    limitacoes) já no formato do schema Estrategia."""
+    resultado = sugerir(prioridades, recursos, codigo_ibge)
+    catalogo = {e["estrategia_id"]: e for e in carregar_catalogo()}
+    algum_fora = len(resultado["fora"]) > 0
+
+    estrategias = []
+    for s in resultado["sugeridas"]:
+        base = _sem_zarc_culturas(catalogo[s["estrategia_id"]])
+        base["calendario"] = _calendario(base["calendario"])
+        if base["eh_pratica_atual"]:
+            estrategias.append(base)
+            continue
+        contam = s["prioridades_que_contam"]
+        if contam:
+            motivo = f"Combina com o que você escolheu: {_em_frase([NOME_PRIORIDADE[p] for p in contam])}."
+        elif algum_fora:
+            motivo = "As opções que mais combinavam com o que você escolheu precisam de algo que você não tem. Esta é a melhor entre as que sobraram."
+        else:
+            motivo = "Boa opção para proteger a terra durante a reforma."
+        zarc_evidencia = []
+        if s["zarc_risco_pct"] is not None:
+            zarc_evidencia.append(
+                f"Pelo zoneamento do Ministério da Agricultura (ZARC), dá para plantar "
+                f"{_nome_curto(base).lower()} de outubro a dezembro em {municipio}, "
+                f"com risco de perda de {s['zarc_risco_pct']}%."
+            )
+        estrategias.append({
+            **base,
+            "motivos": [motivo, *base["motivos"]],
+            "evidencias": [*zarc_evidencia, *base["evidencias"]],
+        })
+
+    limitacoes = [
+        f"{_nome_curto(_sem_zarc_culturas(catalogo[f['estrategia_id']]))} ficou de fora porque "
+        f"{POR_QUE_FICOU_DE_FORA.get(f['motivo'], f['motivo'])}."
+        for f in resultado["fora"]
+    ]
+    if not resultado["zarc_conferido"]:
+        limitacoes.append(
+            "Ainda não conferimos o zoneamento (ZARC) da sua cidade -- confira a época de plantar com um técnico local."
+        )
+    return estrategias, limitacoes
+
+
 if __name__ == "__main__":
     gerar_front()

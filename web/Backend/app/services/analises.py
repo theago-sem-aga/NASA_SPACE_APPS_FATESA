@@ -10,16 +10,22 @@ from app.configuracao import configuracao
 from app.domain.motor import VERSAO, caracterizar_talhao, gerar_cenarios
 from app.domain.solo import classificar_textura
 from app.integrations.clima_historico import buscar_clima
+from app.modelos.motor_decisao import montar_estrategias_reais
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.declividade import declividade_do_ponto
 from app.services.geada import risco_geada
+from app.services.locais import buscar_por_codigo
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
 from app.services.risco_seca import resumo_risco_seca
 from app.services.tendencia_hidrica import tendencia_hidrica
 from app.services.estresse_vegetal import estresse_vegetal
 from app.services.solo import buscar_textura_ponto
+
+# Cultura com catalogo real (ZARC), ligado ao backend (ver docs/requisitos-faltantes.md).
+# Outras culturas ainda caem no motor beta generico, simulado.
+CULTURAS_COM_CATALOGO_REAL = {"cana_de_acucar"}
 
 
 def criar_analise(entrada):
@@ -110,6 +116,7 @@ def criar_analise(entrada):
             )
     textura_calculada = classificar_textura(solo["areia_pct"], solo["argila_pct"]) if solo else None
 
+    catalogo_real = entrada.cultura_atual_id in CULTURAS_COM_CATALOGO_REAL
     beta = configuracao()["cenarios_beta"]
     limitacoes = [
         "Dados regionais (grade de satélite/clima) não substituem levantamento do talhão.",
@@ -118,13 +125,18 @@ def criar_analise(entrada):
         "A cultura atual não informa calendário nem manejo: a referência exibida não comprova a prática atual do produtor.",
         "NASA POWER fornece dados históricos em grade; não é medição de estação instalada no talhão nem previsão meteorológica.",
     ]
-    if beta:
+    if catalogo_real:
+        limitacoes.append(
+            "Estratégias do catálogo real de reforma de canavial (ZARC + práticas curadas); níveis de atributo "
+            "ainda pendentes de revisão por um agrônomo."
+        )
+    elif beta:
         limitacoes.append(
             "SIMULAÇÃO BETA: estratégias, níveis e calendário são hipóteses de teste. O clima, quando disponível, é real e tem período próprio."
         )
     else:
         limitacoes.append(
-            "Estratégias não geradas: falta validar o catálogo agronômico. Habilitar o modo beta só para teste explícito."
+            "Estratégias não geradas: só existe catálogo real pra cana-de-açúcar; outras culturas exigem habilitar o modo beta (simulado) pra teste."
         )
     if any(m["precipitacao_acumulada_mm"] is None for m in clima["clima_mensal"]):
         limitacoes.append(
@@ -207,9 +219,25 @@ def criar_analise(entrada):
         bases.append(solo["fonte"])
     if usa_declividade_calculada:
         bases.append(declividade["fonte"])
+
+    if catalogo_real:
+        municipio = buscar_por_codigo(entrada.codigo_ibge) if entrada.codigo_ibge else None
+        nome_municipio = municipio["municipio"] if municipio else "sua região"
+        recursos = {
+            "maquinas_graos": entrada.recursos_disponiveis.maquinas_graos,
+            "comprador_graos": entrada.recursos_disponiveis.comprador_graos,
+            "irrigacao": entrada.recursos_disponiveis.irrigacao,
+        }
+        estrategias, limitacoes_catalogo = montar_estrategias_reais(
+            entrada.prioridades, recursos, entrada.codigo_ibge, nome_municipio
+        )
+        limitacoes.extend(limitacoes_catalogo)
+    else:
+        estrategias = gerar_cenarios(entrada, clima["clima_mensal"]) if beta else []
+
     resultado = Analise(
         analise_id=str(uuid4()),
-        eh_mock=beta,
+        eh_mock=beta and not catalogo_real,
         descricao_local=f"Coordenada {entrada.latitude:.4f}, {entrada.longitude:.4f}",
         talhao=talhao_base.model_copy(
             update={
@@ -229,12 +257,14 @@ def criar_analise(entrada):
         tendencia_hidrica=tendencia,
         estresse_vegetal=estresse,
         risco_seca=risco_seca,
-        estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
+        estrategias=estrategias,
         limitacoes=limitacoes,
         versao_motor=VERSAO,
         criada_em_utc=dt.datetime.now(dt.UTC).isoformat(),
         fontes_indisponiveis=coleta["fontes_indisponiveis"],
-        estado_recomendacoes="simulacao_beta" if beta else "dados_insuficientes",
+        estado_recomendacoes=(
+            "catalogo_real" if catalogo_real else "simulacao_beta" if beta else "dados_insuficientes"
+        ),
     )
     coleta["clima_historico"] = clima
     repositorio.salvar(entrada.model_dump(mode="json"), resultado.model_dump(mode="json"), coleta)
