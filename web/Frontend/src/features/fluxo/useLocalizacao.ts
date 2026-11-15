@@ -51,7 +51,7 @@ export function useLocalizacao({ aoAchar, aoFalhar }: Resultado) {
         } catch (e) {
           aoFalhar(
             e instanceof FalhaApi && e.codigo === 'fora_da_cobertura'
-              ? 'Esse ponto fica fora da área que a gente cobre. Escreva a cidade da plantação.'
+              ? 'Esse ponto fica fora da área que cobrimos. Escreva a cidade da plantação.'
               : 'Achamos o ponto, mas não o nome da cidade. Escreva a cidade.'
           );
         } finally {

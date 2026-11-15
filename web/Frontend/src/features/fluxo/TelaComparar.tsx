@@ -34,7 +34,12 @@ function notaPara(e: Estrategia, c: Criterio): number {
   const v = VALOR[e.atributos[c]];
   return ROTULO_ATRIBUTO[c].maiorEhMelhor ? v : -v;
 }
-const nomeCriterio = (c: Criterio) => (c === 'descoberto' ? 'Menos meses de terra descoberta' : ROTULO_ATRIBUTO[c].nome);
+/** Nome do botão de ordenar: nos pontos em que menos é melhor, diz "menos", para o sentido da ordem ficar claro. */
+const NOME_ORDENAR: Partial<Record<keyof AtributosEstrategia, string>> = {
+  trabalho_custo: 'Dá menos trabalho e gasto',
+  demanda_agua: 'Gasta menos água'
+};
+const nomeCriterio = (c: Criterio) => (c === 'descoberto' ? 'Menos meses de terra descoberta' : NOME_ORDENAR[c] ?? ROTULO_ATRIBUTO[c].nome);
 
 export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCompararProps) {
   const [verTudo, setVerTudo] = useState(false);

@@ -522,7 +522,11 @@ export const PICTOGRAMA_CULTURA: Record<string, NomePictograma> = {
   amendoim: 'amendoim',
   crotalaria: 'crotalaria',
   pousio: 'terra_descoberta',
-  palhada: 'palhada'
+  palhada: 'palhada',
+  // Cenários simulados (beta) do back, para culturas e regiões sem catálogo real.
+  graminea_beta: 'pastagem',
+  leguminosa_beta: 'nitrogenio',
+  referencia_beta: 'terra_descoberta'
 };
 
 export function Pictograma({ nome, tamanho = 48, semFundo = false }: { nome: NomePictograma; tamanho?: number; semFundo?: boolean }) {

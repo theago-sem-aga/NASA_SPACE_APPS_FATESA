@@ -106,8 +106,14 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
         <span className="confianca-medidor" aria-hidden="true">
           {NIVEIS_CONFIANCA.map((n, i) => <span key={n} className={i <= nivelConfianca ? 'cheio' : ''} />)}
         </span>
-        <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
-        <Termo id="confianca">O que isso quer dizer</Termo>
+        {e.confianca === 'baixa' ? (
+          <strong>Baixo volume de dados para referência, averiguar com consultor agrônomo</strong>
+        ) : (
+          <>
+            <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
+            <Termo id="confianca">O que isso quer dizer</Termo>
+          </>
+        )}
       </p>
 
       <div className="sanfonas">
@@ -137,11 +143,11 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
             ))}
           </ul>
         </Sanfona>
-        <Sanfona icone="dados" titulo="Por que a gente diz isso" contagem={e.evidencias.length}>
+        <Sanfona icone="dados" titulo="Por que dizemos isso" contagem={e.evidencias.length}>
           <Lista itens={e.evidencias} />
           <p className="texto-apoio">{e.explicacao_confianca}</p>
         </Sanfona>
-        <Sanfona icone="info" titulo="O que a gente ainda não sabe" contagem={e.lacunas.length}>
+        <Sanfona icone="info" titulo="O que ainda não sabemos" contagem={e.lacunas.length}>
           <Lista itens={e.lacunas} />
         </Sanfona>
         {e.referencias.length > 0 && (
