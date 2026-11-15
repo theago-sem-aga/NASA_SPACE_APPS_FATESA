@@ -19,7 +19,7 @@
 
 ## Faltante
 
-- MODIS — abandonado (GDAL sem driver HDF4)
+- MODIS — retomado pela API do ORNL (NDVI em JSON, sem HDF4; `integrations/modis_ornl.py`); falta só a anomalia (estresse vegetal)
 - Estresse térmico — a variável existe, falta calcular o índice
 - Estresse vegetal / anomalia de NDVI — falta calcular
 - Um único motor de decisão — hoje são dois, desconectados:
