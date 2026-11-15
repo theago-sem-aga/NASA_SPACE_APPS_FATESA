@@ -58,6 +58,35 @@ ele não distribui os rasters brutos. A importação do índice reincorpora os r
 locais de relevo mesmo se o manifesto do bucket ainda não os listar. Nos EUA
 continua o USGS 3DEP.
 
+## NDVI dos pontos usados pela busca municipal
+
+Para preparar ou atualizar a série MOD13Q1 diretamente no ORNL DAAC, fora da
+requisição do agricultor, execute na pasta `web/Backend`:
+
+```powershell
+..\..\.venv\Scripts\python.exe app/pipelines/ingestao_modis_ndvi.py --municipios 3549805 3533908
+..\..\.venv\Scripts\python.exe app/pipelines/ingestao_modis_ndvi.py -20.70 -48.96
+```
+
+O primeiro comando usa os pontos atuais da base municipal de SJRP e Olímpia.
+O segundo cobre também a coordenada do relatório de Olímpia, em outra célula.
+Se a base de municípios mudar, confira as coordenadas e regenere as células
+necessárias. Não substituir uma série pela de outro município/pixel.
+
+A coleta usa o [serviço oficial ORNL](https://modis.ornl.gov/data/modis_webservice.html),
+até dez datas por pedido, recebendo NDVI e confiabilidade juntos e descartando as
+demais bandas. A escala e os filtros de qualidade existentes são preservados.
+As séries ficam em `data/processed/modis_ndvi/<celula>.parquet`; a gravação é atômica,
+sem publicar um arquivo vazio ou parcialmente escrito. O POST apenas lê os arquivos
+preparados, sem iniciar uma coleta histórica. Não exige chave do Google Cloud ou
+Earthdata para esse serviço público.
+
+Atualizações preservam o histórico e buscam datas novas quando o ponto é o mesmo.
+Um ponto diferente na mesma célula exige nova coleta, sem misturar as duas séries.
+Os pontos municipais não identificam automaticamente uma lavoura: a classe pode
+indicar pouca vegetação/área urbana, e a data observada não é a data de consulta.
+Os cálculos de estresse e o ranking não são alterados pela preparação dos dados.
+
 ## Instalação reproduzível
 
 Requisitos: Python compatível com as wheels científicas, Node para o frontend,
