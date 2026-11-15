@@ -383,6 +383,27 @@ const DEFS: Record<string, Def> = {
       </>
     )
   },
+  // Sem dado do back: o assunto em cinza, no lugar do "?".
+  solo_sem_dado: {
+    fundo: 'cinza',
+    desenho: (
+      <>
+        <rect x="7" y="14" width="34" height="7" rx="2" fill="#c9cdc5" />
+        <rect x="7" y="23" width="34" height="7" rx="2" fill="#b3b8ae" />
+        <rect x="7" y="32" width="34" height="7" rx="2" fill="#9ca295" />
+        <path d="M12 17.5h4M22 26.5h5M30 35.5h4" stroke="#eceee9" strokeWidth="1.6" strokeLinecap="round" />
+      </>
+    )
+  },
+  terreno_sem_dado: {
+    fundo: 'cinza',
+    desenho: (
+      <>
+        <path d="M5 38l11-14 7 7 6-10 14 17z" fill="#b3b8ae" />
+        <path d="M5 38l11-14 7 7 6-10 14 17" fill="none" stroke={C.cinza} strokeWidth="1.8" strokeLinejoin="round" strokeDasharray="3 2.5" />
+      </>
+    )
+  },
   certeza: {
     fundo: 'verde',
     desenho: (
