@@ -4,6 +4,7 @@ import { GALERIA_INICIO } from '../../components/imagens';
 import { Pictograma } from '../../components/Pictograma';
 import { DicaPermissao } from '../../components/DicaPermissao';
 import type { SituacaoGps } from './useLocalizacao';
+import { tx } from '../../i18n/idioma';
 
 interface TelaInicioProps {
   situacaoGps: SituacaoGps;
@@ -17,29 +18,41 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
   const ocupado = situacaoGps !== 'parado';
   return (
     <>
-      <h1 tabIndex={-1}>Vai trocar ou renovar a lavoura? Veja o que fazer com a terra até o próximo plantio.</h1>
-      <ul className="tres-pontos" aria-label="O que você vai ver">
-        <li><Pictograma nome="agua" tamanho={48} /> Chuva</li>
-        <li><Pictograma nome="crotalaria" tamanho={48} /> Sugestão de cultura</li>
-        <li><span className="tres-pontos-icone"><Icone nome="pessoa" tamanho={28} /></span> Orientação</li>
+      <h1 tabIndex={-1}>
+        {tx(
+          'Vai trocar ou renovar a lavoura? Veja o que fazer com a terra até o próximo plantio.',
+          'Switching or renewing your crop? See what to do with the land until the next planting.'
+        )}
+      </h1>
+      <ul className="tres-pontos" aria-label={tx('O que você vai ver', 'What you will see')}>
+        <li><Pictograma nome="agua" tamanho={48} /> {tx('Chuva', 'Rain')}</li>
+        <li><Pictograma nome="crotalaria" tamanho={48} /> {tx('Sugestão de cultura', 'Crop suggestion')}</li>
+        <li><span className="tres-pontos-icone"><Icone nome="pessoa" tamanho={28} /></span> {tx('Orientação', 'Guidance')}</li>
       </ul>
 
       <div className="entrada-local">
         <button type="button" className="botao botao-primario botao-gigante" onClick={aoUsarLocalizacao} disabled={ocupado}>
           <Icone nome="local" tamanho={28} />
-          {situacaoGps === 'pedindo' ? 'Procurando onde você está…' : situacaoGps === 'achando_cidade' ? 'Achando a cidade…' : 'Usar onde estou agora'}
+          {situacaoGps === 'pedindo'
+            ? tx('Procurando onde você está…', 'Finding where you are…')
+            : situacaoGps === 'achando_cidade'
+              ? tx('Achando a cidade…', 'Finding the town…')
+              : tx('Usar onde estou agora', 'Use my current location')}
         </button>
         {mostrarDica && <DicaPermissao />}
         <p className="texto-apoio entrada-local-apoio">
-          Se estiver na plantação, melhor ainda: assim vemos a chuva e a terra exatamente desse ponto. A localização só serve para isso.
+          {tx(
+            'Se estiver na plantação, melhor ainda: assim vemos a chuva e a terra exatamente desse ponto. A localização só serve para isso.',
+            'If you are in the field, even better: we look at the rain and the soil right at that spot. Your location is used only for that.'
+          )}
         </p>
         <button type="button" className="link-discreto" onClick={aoDigitarCidade}>
-          Prefiro escrever a cidade
+          {tx('Prefiro escrever a cidade', 'I’d rather type the town')}
         </button>
       </div>
 
 
-      <GaleriaFotos fotos={GALERIA_INICIO} rotulo="Fotos de lavouras no Brasil" />
+      <GaleriaFotos fotos={GALERIA_INICIO} rotulo={tx('Fotos de lavouras no Brasil', 'Photos of farm fields in Brazil')} />
     </>
   );
 }

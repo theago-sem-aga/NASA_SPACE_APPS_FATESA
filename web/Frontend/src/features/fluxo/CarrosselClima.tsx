@@ -2,6 +2,7 @@ import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from '
 import { Icone } from '../../components/Icone';
 import { IconeAnimado, type Animacao } from '../../components/IconeAnimado';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
+import { tx } from '../../i18n/idioma';
 
 /** Itens de clima com ícone animado: chuva com gotas, geada com flocos, calor com raios. */
 const ANIMADOS: Partial<Record<NomePictograma, Animacao>> = { chuva: 'chuva', geada: 'geada', calor: 'calor' };
@@ -56,15 +57,15 @@ export function CarrosselClima({ slides }: { slides: SlideClima[] }) {
 
   return (
     <section className="carrossel carrossel-clima" aria-roledescription="carrossel" aria-labelledby="titulo-chuva-geada">
-      <h2 id="titulo-chuva-geada" className="titulo-secao carrossel-clima-titulo">Chuva, calor e geada</h2>
+      <h2 id="titulo-chuva-geada" className="titulo-secao carrossel-clima-titulo">{tx('Chuva, calor e geada', 'Rain, heat and frost')}</h2>
       {total > 1 && (
         <div className="carrossel-topo">
-          <button type="button" className="carrossel-seta" onClick={() => irPara(atual - 1)} aria-disabled={atual === 0 || undefined} aria-label="Anterior">
+          <button type="button" className="carrossel-seta" onClick={() => irPara(atual - 1)} aria-disabled={atual === 0 || undefined} aria-label={tx('Anterior', 'Previous')}>
             <Icone nome="voltar" />
           </button>
           <div className="carrossel-posicao">
             <span aria-live="polite">
-              {slides[atual].titulo} · {atual + 1} de {total}
+              {slides[atual].titulo} · {atual + 1} {tx('de', 'of')} {total}
             </span>
             <span className="carrossel-bolinhas">
               {slides.map((s, i) => (
@@ -73,20 +74,20 @@ export function CarrosselClima({ slides }: { slides: SlideClima[] }) {
                   type="button"
                   className={`carrossel-bolinha ${i === atual ? 'carrossel-bolinha-atual' : ''}`}
                   onClick={() => irPara(i)}
-                  aria-label={`Ver ${s.titulo}`}
+                  aria-label={`${tx('Ver', 'See')} ${s.titulo}`}
                   aria-current={i === atual || undefined}
                 />
               ))}
             </span>
           </div>
-          <button type="button" className="carrossel-seta" onClick={() => irPara(atual + 1)} aria-disabled={atual === total - 1 || undefined} aria-label="Próximo">
+          <button type="button" className="carrossel-seta" onClick={() => irPara(atual + 1)} aria-disabled={atual === total - 1 || undefined} aria-label={tx('Próximo', 'Next')}>
             <Icone nome="seguir" />
           </button>
         </div>
       )}
       <div ref={trilho} className="carrossel-trilho" onScroll={aoRolar}>
         {slides.map((s, i) => (
-          <div key={s.id} className="carrossel-item" role="group" aria-roledescription="item" aria-label={`${i + 1} de ${total}: ${s.titulo}`}>
+          <div key={s.id} className="carrossel-item" role="group" aria-roledescription="item" aria-label={`${i + 1} ${tx('de', 'of')} ${total}: ${s.titulo}`}>
             <article className="carrossel-clima-cartao">
               <h3 className="carrossel-clima-cabeca">
                 {ANIMADOS[s.pictograma] ? <IconeAnimado tipo={ANIMADOS[s.pictograma]!} tamanho={40} /> : <Pictograma nome={s.pictograma} tamanho={32} />} {s.titulo}

@@ -16,6 +16,8 @@
 - SMAP, GPM, ECOSTRESS, Landsat — indexados, só nos pontos piloto (Fresno, SJRP)
 - NASA POWER, USDA Soil Data Access, OpenET — ao vivo, em qualquer coordenada dentro da cobertura de cada um
 - Busca de município e localização por coordenada — qualquer lugar do Brasil (base real do IBGE)
+- Busca de local nos EUA por nome (cidades, CDPs e condados) e nome para ponto de GPS nos EUA — Gazetteer 2025 do Census Bureau (`pipelines/ingestao_lugares_eua.py`)
+- Site em inglês (principal) e português, pelas bandeiras do cabeçalho; API aceita `idioma` (análise, culturas, colheita)
 - `POST /analises` funciona em qualquer coordenada e cultura (o gate de Fresno/milho foi removido)
 - Painel de colheita dos EUA (geocodificação do Census + NASS QuickStats) e do Brasil (IBGE/SIDRA, qualquer município) — `GET /producao`
 - Catálogo real do ZARC do Matheus conectado no backend para cana-de-açúcar (`estado_recomendacoes=catalogo_real`); as demais culturas seguem no motor beta genérico simulado
@@ -28,7 +30,6 @@
 
 > Ordenado do mais fácil pro mais difícil de implementar (pra quem for pegar tarefa rápida, comece de cima).
 
-- Busca de local nos EUA por nome (digitar cidade/condado) — a tela de localização só busca por nome no Brasil hoje; nos EUA é só GPS ou coordenada digitada. O painel de colheita (`GET /producao`) já geocodifica a coordenada pro condado via Census, mas isso é depois de o usuário já ter um ponto. Dá pra seguir o mesmo padrão da base de municípios do Brasil (IBGE), só que com a lista de condados dos EUA (Census)
 - Conversão do rendimento dos EUA (NASS, em BU/ACRE, LB/ACRE etc.) pra kg/ha — deixado de lado por variar o peso do bushel por cultura; só é seguro de fazer achando uma tabela oficial (USDA/NIST) de peso padrão do bushel por cultura, senão é inventar dado
 - Vulnerabilidade sazonal da cultura atual — não calculado; precisa decidir a fórmula/janela antes de codar
 - Redução de demanda de água calculada (hoje é rótulo estático) — precisa de uma referência real de consumo de água por cultura de cobertura; risco de inventar número sem fonte

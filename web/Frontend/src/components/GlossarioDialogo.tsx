@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { GLOSSARIO } from '../accessibility/glossario';
+import { tx } from '../i18n/idioma';
 import { useNarracao } from '../accessibility/useNarracao';
 import { Icone } from './Icone';
 
@@ -34,7 +35,7 @@ export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFech
       }}
     >
       <div className="glossario-cabeca">
-        <h2 id="glossario-titulo">Glossário</h2>
+        <h2 id="glossario-titulo">{tx('Glossário', 'Glossary')}</h2>
         {narracao.suportado && (
           <button
             type="button"
@@ -43,18 +44,20 @@ export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFech
             onClick={() =>
               narracao.falando
                 ? narracao.parar()
-                : narracao.falar(`Glossário. As palavras da NASA e do campo, em linguagem simples. ${itens.map(i => `${i.termo}. ${i.texto}`).join(' ')}`)
+                : narracao.falar(
+                    `${tx('Glossário. As palavras da NASA e do campo, em linguagem simples.', 'Glossary. NASA and farm words, in plain language.')} ${itens.map(i => `${i.termo}. ${i.texto}`).join(' ')}`
+                  )
             }
           >
             <Icone nome={narracao.falando ? 'parar' : 'ouvir'} tamanho={20} />
-            {narracao.falando ? 'Parar' : 'Ouvir'}
+            {narracao.falando ? tx('Parar', 'Stop') : tx('Ouvir', 'Listen')}
           </button>
         )}
-        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label="Fechar o glossário">
+        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label={tx('Fechar o glossário', 'Close the glossary')}>
           ✕
         </button>
       </div>
-      <p className="glossario-intro">As palavras da NASA e do campo que aparecem no site, em linguagem simples.</p>
+      <p className="glossario-intro">{tx('As palavras da NASA e do campo que aparecem no site, em linguagem simples.', 'NASA and farm words used on the site, in plain language.')}</p>
       <dl className="glossario-lista">
         {itens.map(i => (
           <div key={i.termo}>

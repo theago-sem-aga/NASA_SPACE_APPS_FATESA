@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { GALERIA_INICIO, IMAGENS, type ImagemCreditada } from './imagens';
+import { tx } from '../i18n/idioma';
 
 /**
  * Créditos das fotos numa janela, aberta pelo rodapé (antes abria o CREDITOS.md cru).
@@ -35,13 +36,16 @@ export function CreditosDialogo({ aberto, aoFechar }: { aberto: boolean; aoFecha
       }}
     >
       <div className="glossario-cabeca">
-        <h2 id="creditos-titulo">Créditos das fotos</h2>
-        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label="Fechar os créditos das fotos">
+        <h2 id="creditos-titulo">{tx('Créditos das fotos', 'Photo credits')}</h2>
+        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label={tx('Fechar os créditos das fotos', 'Close the photo credits')}>
           ✕
         </button>
       </div>
       <p className="glossario-intro">
-        Fotos com licença livre, obtidas no Wikimedia Commons em 14/11/2026 e só reduzidas de tamanho.
+        {tx(
+          'Fotos com licença livre, obtidas no Wikimedia Commons em 14/11/2026 e só reduzidas de tamanho.',
+          'Freely licensed photos, taken from Wikimedia Commons on Nov 14, 2026, and only resized.'
+        )}
       </p>
       <ul className="creditos-lista">
         {fotos.map(f => (
@@ -50,18 +54,21 @@ export function CreditosDialogo({ aberto, aoFechar }: { aberto: boolean; aoFecha
             <div>
               <p className="creditos-descricao">{f.legenda ?? f.alt}</p>
               <p className="creditos-dados">
-                <strong>Autor:</strong> {f.credito} · <strong>Licença:</strong> {f.licenca}
+                <strong>{tx('Autor:', 'Author:')}</strong> {f.credito} · <strong>{tx('Licença:', 'License:')}</strong> {f.licenca}
               </p>
               <a href={f.url_origem} target="_blank" rel="noopener noreferrer">
-                Ver a foto original
+                {tx('Ver a foto original', 'See the original photo')}
               </a>
             </div>
           </li>
         ))}
       </ul>
       <p className="glossario-intro creditos-nota">
-        <strong>Fotos de satélite da sua área:</strong> dados Copernicus Sentinel-2 (ESA), modificados pela equipe (recorte, cor e
-        marcação da área). Uso livre com atribuição.
+        <strong>{tx('Fotos de satélite da sua área:', 'Satellite images of your field:')}</strong>{' '}
+        {tx(
+          'dados Copernicus Sentinel-2 (ESA), modificados pela equipe (recorte, cor e marcação da área). Uso livre com atribuição.',
+          'Copernicus Sentinel-2 data (ESA), modified by the team (cropping, color and field marking). Free to use with attribution.'
+        )}
       </p>
     </dialog>
   );

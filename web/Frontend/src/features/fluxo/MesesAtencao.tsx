@@ -2,17 +2,18 @@ import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import type { ClimaMensal, EstresseTermico, RiscoGeada } from '../../api/tipos';
 import { NOME_MES, NOME_MES_CURTO } from './rotulos';
+import { L, traduzivel, tx } from '../../i18n/idioma';
 
 /** Mês com menos chuva que isto aparece como "pouca chuva". Proposta, a validar com a equipe. */
 const POUCA_CHUVA_MM = 50;
 
 type Alerta = 'calor' | 'geada' | 'seca';
 
-const ROTULO: Record<Alerta, string> = { calor: 'Calor forte', geada: 'Geada', seca: 'Pouca chuva' };
+const ROTULO: Record<Alerta, string> = traduzivel({ calor: L('Calor forte', 'Strong heat'), geada: L('Geada', 'Frost'), seca: L('Pouca chuva', 'Little rain') });
 
 const lista = (meses: number[]) => {
-  const nomes = meses.map(m => NOME_MES[m - 1].toLowerCase());
-  return nomes.length <= 1 ? nomes[0] ?? '' : `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
+  const nomes = meses.map(m => tx(NOME_MES[m - 1].toLowerCase(), NOME_MES[m - 1]));
+  return nomes.length <= 1 ? nomes[0] ?? '' : `${nomes.slice(0, -1).join(', ')} ${tx('e', 'and')} ${nomes[nomes.length - 1]}`;
 };
 
 /** Frase para ouvir: quais meses têm calor forte, geada e pouca chuva. */
@@ -22,11 +23,13 @@ export function fraseMesesAtencao(calor: EstresseTermico | null, geada: RiscoGea
     .map(c => c.mes)
     .sort((a, b) => a - b);
   const partes: string[] = [];
-  if (calor?.meses_com_risco.length) partes.push(`calor forte em ${lista(calor.meses_com_risco)}`);
-  if (geada?.meses_com_risco.length) partes.push(`geada em ${lista(geada.meses_com_risco)}`);
-  if (secos.length) partes.push(`pouca chuva em ${lista(secos)}`);
-  if (partes.length === 0) return 'Meses de atenção: nenhum mês com calor forte, geada ou pouca chuva no histórico.';
-  return `Meses de atenção: ${partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join('; ')}; e ${partes[partes.length - 1]}`}.`;
+  if (calor?.meses_com_risco.length) partes.push(tx(`calor forte em ${lista(calor.meses_com_risco)}`, `strong heat in ${lista(calor.meses_com_risco)}`));
+  if (geada?.meses_com_risco.length) partes.push(tx(`geada em ${lista(geada.meses_com_risco)}`, `frost in ${lista(geada.meses_com_risco)}`));
+  if (secos.length) partes.push(tx(`pouca chuva em ${lista(secos)}`, `little rain in ${lista(secos)}`));
+  if (partes.length === 0)
+    return tx('Meses de atenção: nenhum mês com calor forte, geada ou pouca chuva no histórico.', 'Months to watch: no month with strong heat, frost or little rain in the record.');
+  const juntas = partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join('; ')}; ${tx('e', 'and')} ${partes[partes.length - 1]}`;
+  return `${tx('Meses de atenção:', 'Months to watch:')} ${juntas}.`;
 }
 
 /**
@@ -57,15 +60,18 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
   const resumo =
     comAlerta.length === 0
       ? dadosIncompletos
-        ? 'Não há alertas nos dados disponíveis. Faltam dados para avaliar todos os riscos.'
-        : 'Nenhum mês com calor forte, geada ou pouca chuva no histórico.'
-      : `${comAlerta.length} meses pedem atenção. Os mais delicados são os que juntam mais de um problema.`;
+        ? tx('Não há alertas nos dados disponíveis. Faltam dados para avaliar todos os riscos.', 'No alerts in the available data. Data is missing to assess every risk.')
+        : tx('Nenhum mês com calor forte, geada ou pouca chuva no histórico.', 'No month with strong heat, frost or little rain in the record.')
+      : tx(
+          `${comAlerta.length === 1 ? '1 mês pede' : `${comAlerta.length} meses pedem`} atenção. Os mais delicados são os que juntam mais de um problema.`,
+          `${comAlerta.length === 1 ? '1 month needs' : `${comAlerta.length} months need`} attention. The most delicate ones combine more than one problem.`
+        );
 
   return (
     <div className="meses-atencao">
       <p className="faixa-geada-frase">{resumo}</p>
       {dadosIncompletos && comAlerta.length > 0 && (
-        <p className="texto-apoio">Avaliação parcial: os riscos sem dados não estão incluídos.</p>
+        <p className="texto-apoio">{tx('Avaliação parcial: os riscos sem dados não estão incluídos.', 'Partial assessment: risks without data are not included.')}</p>
       )}
       <SeloFonte fonte={calor?.fonte ?? geada?.fonte} />
       <ol className="meses-atencao-lista">
@@ -77,7 +83,7 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
             </span>
             <span className="meses-atencao-alertas">
               {m.alertas.length === 0 ? (
-                <span className="meses-atencao-ok">{m.incompleto ? 'dados incompletos' : 'sem alerta'}</span>
+                <span className="meses-atencao-ok">{m.incompleto ? tx('dados incompletos', 'incomplete data') : tx('sem alerta', 'no alert')}</span>
               ) : (
                 m.alertas.map(a => (
                   <span key={a} className={`etiqueta meses-atencao-${a}`}>
@@ -90,12 +96,13 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
         ))}
       </ol>
       <details className="como-ler">
-        <summary>Como ler este dado</summary>
-        <p className="termos-relacionados">Palavras deste quadro: <Termo id="evapotranspiracao" /> <Termo id="balanco_hidrico" /></p>
+        <summary>{tx('Como ler este dado', 'How to read this')}</summary>
+        <p className="termos-relacionados">{tx('Palavras deste quadro:', 'Words in this box:')} <Termo id="evapotranspiracao" /> <Termo id="balanco_hidrico" /></p>
         <p className="texto-apoio">
-          Calor forte e geada: meses de risco dos itens "Calor" e "Geada". Pouca chuva: mês com menos de {POUCA_CHUVA_MM} mm de chuva
-          em média (NASA POWER). É um retrato do clima da área, não da fase da sua lavoura: a fase mais sensível de cada cultura ainda
-          precisa ser cruzada com isso.
+          {tx(
+            `Calor forte e geada: meses de risco dos itens "Calor" e "Geada". Pouca chuva: mês com menos de ${POUCA_CHUVA_MM} mm de chuva em média (NASA POWER). É um retrato do clima da área, não da fase da sua lavoura: a fase mais sensível de cada cultura ainda precisa ser cruzada com isso.`,
+            `Strong heat and frost: risk months from the "Heat" and "Frost" boxes. Little rain: a month with less than ${POUCA_CHUVA_MM} mm of rain on average (NASA POWER). It is a picture of the area’s climate, not of your crop’s growth stage: the most sensitive stage of each crop still needs to be matched against it.`
+          )}
         </p>
       </details>
     </div>

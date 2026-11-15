@@ -4,6 +4,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { buscarLocalPorCoordenada, FalhaApi, simulacaoPedida } from '../../api/cliente';
 import type { Local } from '../../api/tipos';
+import { tx } from '../../i18n/idioma';
 
 export type SituacaoGps = 'parado' | 'pedindo' | 'achando_cidade';
 
@@ -35,7 +36,7 @@ export function useLocalizacao({ aoAchar, aoFalhar }: Resultado) {
     const vigente = () => pedido === pedidoAtual.current;
 
     if (!navigator.geolocation || simulacaoPedida() === 'sem_gps') {
-      aoFalhar('Este aparelho não informa onde está. Escreva o nome da cidade.');
+      aoFalhar(tx('Este aparelho não informa onde está. Escreva o nome da cidade.', 'This device does not report its location. Type the town name.'));
       return;
     }
     setSituacao('pedindo');
@@ -51,8 +52,8 @@ export function useLocalizacao({ aoAchar, aoFalhar }: Resultado) {
         } catch (e) {
           aoFalhar(
             e instanceof FalhaApi && e.codigo === 'fora_da_cobertura'
-              ? 'Esse ponto fica fora da área que cobrimos. Escreva a cidade da plantação.'
-              : 'Achamos o ponto, mas não o nome da cidade. Escreva a cidade.'
+              ? tx('Esse ponto fica fora da área que cobrimos. Escreva a cidade da plantação.', 'That point is outside the area we cover. Type the town where the field is.')
+              : tx('Achamos o ponto, mas não o nome da cidade. Escreva a cidade.', 'We found the point, but not the town name. Type the town.')
           );
         } finally {
           if (vigente()) setSituacao('parado');
@@ -64,8 +65,8 @@ export function useLocalizacao({ aoAchar, aoFalhar }: Resultado) {
         setSituacao('parado');
         aoFalhar(
           erro.code === erro.PERMISSION_DENIED
-            ? 'Tudo bem, sem a localização também funciona. Só escrever a cidade.'
-            : 'O celular não conseguiu achar onde você está. Escreva a cidade.'
+            ? tx('Tudo bem, sem a localização também funciona. Só escrever a cidade.', 'That’s fine, it works without location too. Just type the town.')
+            : tx('O celular não conseguiu achar onde você está. Escreva a cidade.', 'Your phone could not find where you are. Type the town.')
         );
       },
       { enableHighAccuracy: false, timeout: LIMITE_MS, maximumAge: 10 * 60 * 1000 }

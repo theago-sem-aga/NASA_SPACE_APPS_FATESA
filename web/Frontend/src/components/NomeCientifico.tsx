@@ -1,4 +1,5 @@
 import type { Estrategia } from '../api/tipos';
+import { L, traduzivel, tx } from '../i18n/idioma';
 
 /**
  * Nome científico das plantas, mostrado em itálico embaixo do nome popular.
@@ -25,20 +26,20 @@ export const NOME_CIENTIFICO: Record<string, string> = {
 };
 
 /** Quando o nome do caminho cita mais de uma planta, o nome científico cita todas. */
-const NOME_CIENTIFICO_CAMINHO: Record<string, string> = {
-  crotalaria: 'Crotalaria juncea ou C. spectabilis',
-  mucuna: 'Mucuna aterrima ou Canavalia ensiformis'
-};
+const NOME_CIENTIFICO_CAMINHO: Record<string, string> = traduzivel({
+  crotalaria: L('Crotalaria juncea ou C. spectabilis', 'Crotalaria juncea or C. spectabilis'),
+  mucuna: L('Mucuna aterrima ou Canavalia ensiformis', 'Mucuna aterrima or Canavalia ensiformis')
+});
 
 /** Partes que, pela regra de nomenclatura, não vão em itálico. */
-const SEM_ITALICO = new Set(['spp.', 'sp.', 'ou', 'e']);
+const SEM_ITALICO = new Set(['spp.', 'sp.', 'ou', 'e', 'or', 'and']);
 
 /** Gênero e espécie em itálico; "spp." e "ou" em texto normal. `lang="la"` ajuda o leitor de tela. */
 export function TextoCientifico({ texto }: { texto: string }) {
   const partes = texto.split(/(\s+)/);
   return (
     <span className="nome-cientifico" lang="la">
-      {partes.map((p, i) => (p.trim() && !SEM_ITALICO.has(p) ? <i key={i}>{p}</i> : <span key={i} lang={SEM_ITALICO.has(p) ? 'pt-BR' : undefined}>{p}</span>))}
+      {partes.map((p, i) => (p.trim() && !SEM_ITALICO.has(p) ? <i key={i}>{p}</i> : <span key={i} lang={SEM_ITALICO.has(p) ? tx('pt-BR', 'en') : undefined}>{p}</span>))}
     </span>
   );
 }

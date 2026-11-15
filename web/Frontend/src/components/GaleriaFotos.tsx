@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Foto } from './Foto';
 import { Icone } from './Icone';
 import type { ImagemGaleria } from './imagens';
+import { tx } from '../i18n/idioma';
 
 /**
  * Fotos que passam para o lado (arrastar ou setas), com bolinhas mostrando qual
@@ -91,7 +92,7 @@ export function GaleriaFotos({ fotos, rotulo }: { fotos: ImagemGaleria[]; rotulo
     >
       <div ref={trilho} className="carrossel-trilho" onScroll={aoRolar}>
         {fotos.map((f, i) => (
-          <div key={f.src} className="carrossel-item" role="group" aria-roledescription="foto" aria-label={`${i + 1} de ${total}`}>
+          <div key={f.src} className="carrossel-item" role="group" aria-roledescription={tx('foto', 'photo')} aria-label={`${i + 1} ${tx('de', 'of')} ${total}`}>
             <Foto imagem={f} legenda={f.legenda} classe="foto-destaque" />
           </div>
         ))}
@@ -103,7 +104,7 @@ export function GaleriaFotos({ fotos, rotulo }: { fotos: ImagemGaleria[]; rotulo
         )}
       </div>
       <div className="carrossel-topo galeria-controles">
-        <button type="button" className="carrossel-seta" onClick={anterior} aria-label="Foto anterior">
+        <button type="button" className="carrossel-seta" onClick={anterior} aria-label={tx('Foto anterior', 'Previous photo')}>
           <Icone nome="voltar" />
         </button>
         <span className="carrossel-bolinhas">
@@ -113,17 +114,17 @@ export function GaleriaFotos({ fotos, rotulo }: { fotos: ImagemGaleria[]; rotulo
               type="button"
               className={`carrossel-bolinha ${i === atual ? 'carrossel-bolinha-atual' : ''}`}
               onClick={() => rolarAte(i, true)}
-              aria-label={`Ver foto ${i + 1} de ${total}`}
+              aria-label={tx(`Ver foto ${i + 1} de ${total}`, `See photo ${i + 1} of ${total}`)}
               aria-current={i === atual || undefined}
             />
           ))}
         </span>
-        <button type="button" className="carrossel-seta" onClick={proxima} aria-label="Próxima foto">
+        <button type="button" className="carrossel-seta" onClick={proxima} aria-label={tx('Próxima foto', 'Next photo')}>
           <Icone nome="seguir" />
         </button>
       </div>
       <button type="button" className="link-discreto galeria-pausa" onClick={() => setAutomatico(a => !a)} aria-pressed={!automatico}>
-        {automatico ? 'Pausar as fotos' : 'Passar as fotos sozinhas'}
+        {automatico ? tx('Pausar as fotos', 'Pause the photos') : tx('Passar as fotos sozinhas', 'Play the photos')}
       </button>
     </section>
   );

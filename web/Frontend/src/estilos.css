@@ -1137,3 +1137,24 @@ details.detalhes.cartao[open] > summary { margin-bottom: 10px; }
 .pedir-ponto-linha { display: flex; gap: 8px; flex-wrap: wrap; }
 .pedir-ponto-campo { flex: 1 1 180px; }
 .pedir-ponto-aviso { color: var(--cor-erro); margin: 0; }
+
+/* Seletor de idioma (bandeiras EUA/Brasil) no cabeçalho. */
+.seletor-idioma { display: flex; align-items: center; gap: 4px; }
+.botao-bandeira {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0;
+  border: 2px solid transparent; border-radius: var(--raio-pequeno); background: transparent; cursor: pointer; opacity: 0.55;
+}
+.botao-bandeira svg { border-radius: 2px; box-shadow: 0 0 0 1px var(--cor-borda); }
+.botao-bandeira[aria-pressed='true'] { opacity: 1; border-color: var(--cor-mata); }
+.botao-bandeira:hover { opacity: 1; }
+.botao-bandeira:focus-visible { outline: 3px solid var(--cor-ceu); outline-offset: 1px; }
+@media (max-width: 420px) {
+  .botao-bandeira { min-width: 38px; }
+  .seletor-idioma { gap: 2px; }
+}
+
+/* Aviso de que o aparelho não tem voz no idioma da tela (narração). */
+.aviso-voz {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-top: 8px; padding-bottom: 10px;
+  font-size: 0.9rem; color: var(--cor-texto); background: var(--cor-alerta-clara); border-top: 1px solid var(--cor-borda);
+}

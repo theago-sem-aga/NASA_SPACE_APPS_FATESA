@@ -7,6 +7,7 @@ import { Icone } from '../../components/Icone';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from '../../components/Pictograma';
 import { FRASE_CHUVA, FRASE_CHUVA_MES, FRASE_COLHEITA, FRASE_PREVISAO_CALOR, FRASE_PREVISAO_CHUVA, fraseCalor, fraseChuvaAno } from './frases';
 import { roteiroProducao } from './roteiroProducao';
+import { tx, useIdioma } from '../../i18n/idioma';
 
 interface TelaProducaoProps {
   /** Local escolhido no fluxo. null = abre com a cidade de exemplo. */
@@ -58,7 +59,7 @@ function LinhaCultura({ c, sua }: { c: ColheitaCultura; sua: boolean }) {
         <strong className="producao-nome">{c.nome}</strong>
         <NomeCientifico culturaId={c.cultura_id} />
         <span>{frase}</span>
-        {sua && <span className="etiqueta etiqueta-positiva">Sua lavoura</span>}
+        {sua && <span className="etiqueta etiqueta-positiva">{tx('Sua lavoura', 'Your crop')}</span>}
       </span>
       <Seta rumo={rumoDaColheita(c.situacao)} />
     </li>
@@ -70,10 +71,15 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
   return (
     <section className="producao-bloco" aria-labelledby="t-previsao">
       <div className="producao-titulo-linha">
-        <h2 id="t-previsao" className="producao-titulo">Previsão para os próximos meses</h2>
-        <span className="etiqueta etiqueta-atencao">Previsão</span>
+        <h2 id="t-previsao" className="producao-titulo">{tx('Previsão para os próximos meses', 'Forecast for the coming months')}</h2>
+        <span className="etiqueta etiqueta-atencao">{tx('Previsão', 'Forecast')}</span>
       </div>
-      <p className="texto-apoio">De {pv.periodo}, para a {pv.abrangencia.charAt(0).toLowerCase() + pv.abrangencia.slice(1)}. Previsão pode mudar.</p>
+      <p className="texto-apoio">
+        {tx(
+          `De ${pv.periodo}, para a ${pv.abrangencia.charAt(0).toLowerCase() + pv.abrangencia.slice(1)}. Previsão pode mudar.`,
+          `For ${pv.periodo}, covering ${pv.abrangencia}. Forecasts can change.`
+        )}
+      </p>
 
       <div className="producao-previsao-resumo">
         <div className="producao-cartao">
@@ -92,7 +98,7 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
         </div>
       </div>
 
-      <ol className="producao-meses" aria-label="Chuva mês a mês">
+      <ol className="producao-meses" aria-label={tx('Chuva mês a mês', 'Rain month by month')}>
         {pv.meses.map(m => (
           <li key={m.mes} className={`producao-mes producao-mes-${m.chuva}`}>
             <strong>{m.nome}</strong>
@@ -102,7 +108,7 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
         ))}
       </ol>
 
-      <h3 className="producao-subtitulo">O que fazer</h3>
+      <h3 className="producao-subtitulo">{tx('O que fazer', 'What to do')}</h3>
       <ul className="producao-dicas">
         {pv.dicas.map(d => (
           <li key={d.frase}>
@@ -112,7 +118,7 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
           </li>
         ))}
       </ul>
-      <p className="texto-apoio producao-fonte">Fonte: {pv.fonte}.</p>
+      <p className="texto-apoio producao-fonte">{tx('Fonte:', 'Source:')} {pv.fonte}.</p>
     </section>
   );
 }
@@ -126,16 +132,18 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   // verdade -- nunca mostra o número de outra cidade no lugar.
   const ehExemplo = local === null;
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
+  // Os nomes e textos do painel vêm da API no idioma da tela: troca a bandeira, recarrega.
+  const idioma = useIdioma();
 
   const carregar = useCallback(async () => {
     setEstado({ situacao: 'carregando' });
     try {
       setEstado({ situacao: 'sucesso', painel: await buscarPainelProducao(local) });
     } catch (e) {
-      const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
+      const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', tx('Algo deu errado.', 'Something went wrong.'));
       setEstado({ situacao: 'falha', codigo: f.codigo, mensagem: f.message });
     }
-  }, [local]);
+  }, [local, idioma]);
 
   useEffect(() => {
     void carregar();
@@ -143,14 +151,14 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
 
   const painel = estado.situacao === 'sucesso' ? estado.painel : null;
   useEffect(() => {
-    aoMudarRoteiro(painel ? roteiroProducao(painel, ehExemplo, culturaAtualId) : 'Buscando os números da colheita.');
+    aoMudarRoteiro(painel ? roteiroProducao(painel, ehExemplo, culturaAtualId) : tx('Buscando os números da colheita.', 'Fetching the harvest numbers.'));
   }, [painel, ehExemplo, culturaAtualId, aoMudarRoteiro]);
 
   if (estado.situacao === 'carregando') {
     return (
       <>
-        <h1 tabIndex={-1}>Como foi a colheita</h1>
-        <EstadoCarregando mensagem="Buscando os números da cidade…" />
+        <h1 tabIndex={-1}>{tx('Como foi a colheita', 'How the harvest went')}</h1>
+        <EstadoCarregando mensagem={tx('Buscando os números da cidade…', 'Fetching the numbers for the town…')} />
       </>
     );
   }
@@ -158,11 +166,11 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
     const semDados = estado.codigo === 'dados_insuficientes';
     return (
       <>
-        <h1 tabIndex={-1}>Como foi a colheita</h1>
+        <h1 tabIndex={-1}>{tx('Como foi a colheita', 'How the harvest went')}</h1>
         <EstadoFalha
-          titulo={semDados ? 'Sem números dessa cidade' : 'Deu um problema'}
+          titulo={semDados ? tx('Sem números dessa cidade', 'No numbers for this town') : tx('Deu um problema', 'Something went wrong')}
           mensagem={estado.mensagem}
-          acaoRotulo={semDados ? 'Continuar' : 'Tentar de novo'}
+          acaoRotulo={semDados ? tx('Continuar', 'Continue') : tx('Tentar de novo', 'Try again')}
           aoAgir={semDados ? aoContinuar : () => void carregar()}
         />
         {!semDados && (
@@ -188,16 +196,16 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   return (
     <>
       <div className="producao-topo">
-        <h1 tabIndex={-1}>Como foi a colheita</h1>
+        <h1 tabIndex={-1}>{tx('Como foi a colheita', 'How the harvest went')}</h1>
         <p className="texto-apoio">
-          {ehExemplo ? 'Exemplo: ' : ''}
-          {nomeLocal} · números da {p.municipio ? 'cidade' : 'região'} toda
+          {ehExemplo ? tx('Exemplo: ', 'Example: ') : ''}
+          {nomeLocal} · {p.municipio ? tx('números da cidade toda', 'numbers for the whole town') : tx('números da região toda', 'numbers for the whole region')}
         </p>
       </div>
 
       <div className="producao-grade">
         <section className="producao-bloco" aria-labelledby="t-colheita">
-          <h2 id="t-colheita" className="producao-titulo">A colheita de {ano}</h2>
+          <h2 id="t-colheita" className="producao-titulo">{tx(`A colheita de ${ano}`, `The ${ano} harvest`)}</h2>
           {sua && (
             <ul className="producao-culturas">
               <LinhaCultura c={sua} sua />
@@ -205,7 +213,11 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
           )}
           {outras.length > 0 && (
             <div className="producao-outras">
-              <span className="texto-apoio">{sua ? 'Outras lavouras da cidade' : 'Lavouras da cidade'}</span>
+              <span className="texto-apoio">
+                {p.municipio
+                  ? sua ? tx('Outras lavouras da cidade', 'Other crops in the town') : tx('Lavouras da cidade', 'Crops in the town')
+                  : sua ? tx('Outras lavouras do condado', 'Other crops in the county') : tx('Lavouras do condado', 'Crops in the county')}
+              </span>
               <ul className="producao-outras-lista">
                 {outras.map(c => (
                   <li key={c.cultura_id}>
@@ -220,7 +232,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
         </section>
 
         <section className="producao-bloco" aria-labelledby="t-tempo">
-          <h2 id="t-tempo" className="producao-titulo">{p.clima ? `O tempo em ${p.clima.ano}` : 'O tempo'}</h2>
+          <h2 id="t-tempo" className="producao-titulo">{p.clima ? tx(`O tempo em ${p.clima.ano}`, `The weather in ${p.clima.ano}`) : tx('O tempo', 'The weather')}</h2>
           {p.clima && calor ? (
             <div className={`producao-cartao ${alerta ? 'producao-cartao-alerta' : ''}`}>
               <div className="producao-cartao-cab">
@@ -239,26 +251,26 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
               </div>
             </div>
           ) : (
-            <p className="texto-apoio">Ainda não há dado de clima para esta região.</p>
+            <p className="texto-apoio">{tx('Ainda não há dado de clima para esta região.', 'No climate data for this region yet.')}</p>
           )}
         </section>
       </div>
 
       <details className="detalhes cartao">
-        <summary>De onde vêm esses números</summary>
+        <summary>{tx('De onde vêm esses números', 'Where these numbers come from')}</summary>
         <ul>
           {p.fontes.map(f => <li key={f}>{f}</li>)}
           {p.limitacoes.map(l => <li key={l}>{l}</li>)}
-          <li>Calculado em {p.gerado_em.split('-').reverse().join('/')}.</li>
+          <li>{tx('Calculado em', 'Calculated on')} {tx(p.gerado_em.split('-').reverse().join('/'), p.gerado_em)}.</li>
         </ul>
       </details>
 
       <div className="navegacao">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
         <button type="button" className="botao botao-primario" onClick={aoContinuar}>
-          Continuar <Icone nome="seguir" />
+          {tx('Continuar', 'Continue')} <Icone nome="seguir" />
         </button>
       </div>
     </>

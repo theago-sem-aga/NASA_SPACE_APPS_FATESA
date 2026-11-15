@@ -8,6 +8,7 @@ import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA } from '../../components/Pictograma';
 import { PICTO_ATRIBUTO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA } from './rotulos';
+import { L, traduzivel, tx } from '../../i18n/idioma';
 
 interface TelaCompararProps {
   analise: Analise;
@@ -35,11 +36,12 @@ function notaPara(e: Estrategia, c: Criterio): number {
   return ROTULO_ATRIBUTO[c].maiorEhMelhor ? v : -v;
 }
 /** Nome do botão de ordenar: nos pontos em que menos é melhor, diz "menos", para o sentido da ordem ficar claro. */
-const NOME_ORDENAR: Partial<Record<keyof AtributosEstrategia, string>> = {
-  trabalho_custo: 'Dá menos trabalho e gasto',
-  demanda_agua: 'Gasta menos água'
-};
-const nomeCriterio = (c: Criterio) => (c === 'descoberto' ? 'Menos meses de terra descoberta' : NOME_ORDENAR[c] ?? ROTULO_ATRIBUTO[c].nome);
+const NOME_ORDENAR: Partial<Record<keyof AtributosEstrategia, string>> = traduzivel({
+  trabalho_custo: L('Dá menos trabalho e gasto', 'Less work and cost'),
+  demanda_agua: L('Gasta menos água', 'Uses less water')
+});
+const nomeCriterio = (c: Criterio) =>
+  c === 'descoberto' ? tx('Menos meses de terra descoberta', 'Fewer months of bare soil') : NOME_ORDENAR[c] ?? ROTULO_ATRIBUTO[c].nome;
 
 export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCompararProps) {
   const [verTudo, setVerTudo] = useState(false);
@@ -63,14 +65,16 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
   return (
     <>
       <AvisoDemonstracao ehMock={analise.eh_mock} />
-      <h1 tabIndex={-1}>Lado a lado</h1>
+      <h1 tabIndex={-1}>{tx('Lado a lado', 'Side by side')}</h1>
       <LegendaMedidor menosEhMelhor />
 
       <div className="ordenar-por" role="group" aria-labelledby="ordenar-por-titulo">
-        <p id="ordenar-por-titulo" className="ordenar-por-titulo">O que mais importa para você? Toque e os caminhos se reorganizam:</p>
+        <p id="ordenar-por-titulo" className="ordenar-por-titulo">
+          {tx('O que mais importa para você? Toque e os caminhos se reorganizam:', 'What matters most to you? Tap and the options reorder:')}
+        </p>
         <div className="ordenar-por-opcoes">
           <button type="button" className={`ordenar-chip${criterio === null ? ' ativo' : ''}`} aria-pressed={criterio === null} onClick={() => setCriterio(null)}>
-            Ordem sugerida
+            {tx('Ordem sugerida', 'Suggested order')}
           </button>
           {opcoesCriterio.map(c => (
             <button key={c} type="button" className={`ordenar-chip${criterio === c ? ' ativo' : ''}`} aria-pressed={criterio === c} onClick={() => setCriterio(c)}>
@@ -80,30 +84,41 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
           ))}
           {!maisOpcoes && (
             <button type="button" className="ordenar-chip ordenar-chip-mais" onClick={() => setMaisOpcoes(true)}>
-              + mais pontos
+              {tx('+ mais pontos', '+ more criteria')}
             </button>
           )}
         </div>
         <p className="ordenar-por-estado" aria-live="polite">
           {criterio
             ? ninguemAjuda
-              ? `Nenhum destes caminhos ajuda em "${nomeCriterio(criterio).toLowerCase()}".`
-              : `Melhor em "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' e ')}.`
-            : 'Na ordem sugerida pelas suas escolhas; o jeito de hoje fica por último, para comparar.'}
+              ? tx(
+                  `Nenhum destes caminhos ajuda em "${nomeCriterio(criterio).toLowerCase()}".`,
+                  `None of these options helps with "${nomeCriterio(criterio).toLowerCase()}".`
+                )
+              : tx(
+                  `Melhor em "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' e ')}.`,
+                  `Best at "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' and ')}.`
+                )
+            : tx(
+                'Na ordem sugerida pelas suas escolhas; o jeito de hoje fica por último, para comparar.',
+                'In the order suggested by your choices; today’s practice is last, for comparison.'
+              )}
         </p>
       </div>
 
       <div className="rolagem-horizontal cartao tabela-comparacao-moldura">
         <table className="tabela tabela-comparacao">
-          <caption className="visualmente-oculto">Comparação entre os caminhos. Toque no nome para ver o caminho.</caption>
+          <caption className="visualmente-oculto">
+            {tx('Comparação entre os caminhos. Toque no nome para ver o caminho.', 'Comparison of the options. Tap a name to see the option.')}
+          </caption>
           <thead>
             <tr>
-              <th scope="col"><span className="visualmente-oculto">Ponto</span></th>
+              <th scope="col"><span className="visualmente-oculto">{tx('Ponto', 'Criterion')}</span></th>
               {estrategias.map(e => {
                 const meio = e.etapas_rotacao[1];
                 return (
                   <th key={e.estrategia_id} scope="col" className={ehMelhor(e) ? 'comparacao-melhor' : undefined}>
-                    {ehMelhor(e) && <span className="selo-melhor">★ Melhor nisso</span>}
+                    {ehMelhor(e) && <span className="selo-melhor">★ {tx('Melhor nisso', 'Best at this')}</span>}
                     <button type="button" className="comparacao-cabeca" onClick={() => aoAbrir(e.estrategia_id)}>
                       {meio && <Pictograma nome={PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei'} tamanho={40} />}
                       <span className="comparacao-nome">{nomeCurto(e)}</span>
@@ -135,7 +150,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
               <th scope="row">
                 <span className="comparacao-criterio">
                   <Pictograma nome="terra_descoberta" tamanho={28} />
-                  Meses de terra descoberta
+                  {tx('Meses de terra descoberta', 'Months of bare soil')}
                 </span>
               </th>
               {estrategias.map(e => (
@@ -147,7 +162,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
                 <th scope="row">
                   <span className="comparacao-criterio">
                     <Pictograma nome="certeza" tamanho={28} />
-                    Quanta certeza
+                    {tx('Quanta certeza', 'How sure')}
                   </span>
                 </th>
                 {estrategias.map(e => <td key={e.estrategia_id}>{ROTULO_CONFIANCA[e.confianca]}</td>)}
@@ -162,7 +177,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
           <section key={a} className={`comparacao-item${criterio === a ? ' ativo' : ''}`}>
             <h3 className="comparacao-item-titulo">
               <Pictograma nome={a === 'descoberto' ? 'terra_descoberta' : PICTO_ATRIBUTO[a]} tamanho={28} />
-              {a === 'descoberto' ? 'Meses de terra descoberta' : ROTULO_ATRIBUTO[a].nome}
+              {a === 'descoberto' ? tx('Meses de terra descoberta', 'Months of bare soil') : ROTULO_ATRIBUTO[a].nome}
             </h3>
             <ul>
               {estrategias.map(e => (
@@ -172,7 +187,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
                     {nomeCurto(e)}
                   </span>
                   {a === 'descoberto' ? (
-                    <strong>{mesesDescobertos(e)} {mesesDescobertos(e) === 1 ? 'mês' : 'meses'}</strong>
+                    <strong>{mesesDescobertos(e)} {mesesDescobertos(e) === 1 ? tx('mês', 'month') : tx('meses', 'months')}</strong>
                   ) : (
                     <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
                   )}
@@ -183,11 +198,11 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
         ))}
       </div>
       <button type="button" className="link-discreto" aria-expanded={verTudo} onClick={() => setVerTudo(v => !v)}>
-        {verTudo ? 'Mostrar menos' : `Ver mais ${EXTRAS.length + 1} pontos`}
+        {verTudo ? tx('Mostrar menos', 'Show less') : tx(`Ver mais ${EXTRAS.length + 1} pontos`, `See ${EXTRAS.length + 1} more criteria`)}
       </button>
 
       <fieldset className="grade-escolhas decisao-opcoes">
-        <legend className="titulo-secao">Qual caminho você escolhe?</legend>
+        <legend className="titulo-secao">{tx('Qual caminho você escolhe?', 'Which option do you choose?')}</legend>
         {estrategias.map(e => {
           const meio = e.etapas_rotacao[1];
           return (
@@ -195,7 +210,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
               key={e.estrategia_id}
               pictograma={meio ? PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei' : 'nao_sei'}
               titulo={nomeCurto(e)}
-              detalhe={e.eh_pratica_atual ? 'O jeito de hoje' : undefined}
+              detalhe={e.eh_pratica_atual ? tx('O jeito de hoje', 'Today’s practice') : undefined}
               escolhido={false}
               aoTocar={() => aoEscolher(e.estrategia_id)}
             />
@@ -205,7 +220,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
 
       <div className="navegacao navegacao-unica">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
       </div>
     </>

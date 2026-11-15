@@ -30,6 +30,7 @@ import { vocabulario } from './features/fluxo/vocabularioCultura';
 import { TelaProducao } from './features/producao/TelaProducao';
 import { TelaAcompanhamento } from './features/acompanhamento/TelaAcompanhamento';
 import { TelaDecisao } from './features/fluxo/TelaDecisao';
+import { tx, useIdioma } from './i18n/idioma';
 
 /** Pausa curta depois de um toque, para a pessoa ver o ✓ antes de trocar de tela. */
 const PAUSA_TOQUE_MS = 250;
@@ -42,6 +43,8 @@ export function App() {
   const [analise, setAnalise] = useState<SituacaoAnalise>({ situacao: 'ociosa' });
   const [confirmandoInicio, setConfirmandoInicio] = useState(false);
   const [glossarioAberto, setGlossarioAberto] = useState(false);
+  // Ler o idioma aqui faz a árvore toda redesenhar quando a bandeira muda.
+  const idioma = useIdioma();
   const [creditosAbertos, setCreditosAbertos] = useState(false);
   const narracao = useNarracao();
   const principal = useRef<HTMLElement>(null);
@@ -138,12 +141,21 @@ export function App() {
         const estrategias = [...resultado.estrategias.filter(e => !e.eh_pratica_atual), ...resultado.estrategias.filter(e => e.eh_pratica_atual)];
         setAnalise({ situacao: 'sucesso', analise: { ...resultado, estrategias } });
       } catch (e) {
-        const falha = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
+        const falha = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', tx('Algo deu errado.', 'Something went wrong.'));
         setAnalise({ situacao: 'falha', codigo: falha.codigo, mensagem: falha.message });
       }
     },
     [dados]
   );
+
+  // Os textos dos caminhos e das limitações vêm do backend no idioma pedido: ao trocar a
+  // bandeira com a análise pronta, pede de novo no idioma novo.
+  const idiomaDaAnalise = useRef(idioma);
+  useEffect(() => {
+    if (idiomaDaAnalise.current === idioma) return;
+    idiomaDaAnalise.current = idioma;
+    if (analise.situacao === 'sucesso' || analise.situacao === 'falha') void pedirAnalise();
+  }, [idioma, analise.situacao, pedirAnalise]);
 
   const corrigirTalhao = (parcial: CorrecoesTalhao) => {
     const correcoes = { ...dados.correcoes, ...parcial };
@@ -250,8 +262,8 @@ export function App() {
     if (analise.situacao === 'carregando' || analise.situacao === 'ociosa') {
       return (
         <>
-          <h1 tabIndex={-1}>Montando os caminhos</h1>
-          <EstadoCarregando mensagem="Olhando a chuva dos últimos 30 anos e a terra daí…" />
+          <h1 tabIndex={-1}>{tx('Montando os caminhos', 'Building your options')}</h1>
+          <EstadoCarregando mensagem={tx('Olhando a chuva dos últimos 30 anos e a terra daí…', 'Looking at 30 years of rain and at your land…')} />
         </>
       );
     }
@@ -259,11 +271,13 @@ export function App() {
       const insuficiente = analise.codigo === 'dados_insuficientes';
       return (
         <>
-          <h1 tabIndex={-1}>{insuficiente ? 'Faltam dados para esse lugar' : 'Não deu para montar os caminhos'}</h1>
+          <h1 tabIndex={-1}>
+            {insuficiente ? tx('Faltam dados para esse lugar', 'Not enough data for this place') : tx('Não deu para montar os caminhos', 'We could not build the options')}
+          </h1>
           <EstadoFalha
-            titulo={insuficiente ? 'Sem dados suficientes' : 'Deu um problema'}
-            mensagem={insuficiente ? `${analise.mensagem} Tente uma cidade vizinha.` : analise.mensagem}
-            acaoRotulo={insuficiente ? 'Escolher outra cidade' : 'Tentar de novo'}
+            titulo={insuficiente ? tx('Sem dados suficientes', 'Not enough data') : tx('Deu um problema', 'Something went wrong')}
+            mensagem={insuficiente ? `${analise.mensagem} ${tx('Tente uma cidade vizinha.', 'Try a nearby town.')}` : analise.mensagem}
+            acaoRotulo={insuficiente ? tx('Escolher outra cidade', 'Choose another town') : tx('Tentar de novo', 'Try again')}
             aoAgir={insuficiente ? irParaBusca : () => void pedirAnalise()}
           />
         </>
@@ -351,7 +365,7 @@ export function App() {
 
   return (
     <>
-      <a className="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+      <a className="pular-conteudo" href="#conteudo">{tx('Pular para o conteúdo', 'Skip to content')}</a>
       <Cabecalho
         progresso={indicePergunta >= 0 ? { atual: indicePergunta + 1, total: PERGUNTAS.length } : null}
         tituloPasso={TITULO_ETAPA[etapa]}
@@ -363,7 +377,9 @@ export function App() {
             narracao.falar(
               etapa === 'producao' || etapa === 'acompanhamento' ? roteiroDaPropriaTela.current : roteiroDaTela(etapa, dados, analisePronta, estrategia)
             ),
-          aoParar: narracao.parar
+          aoParar: narracao.parar,
+          aviso: narracao.aviso,
+          aoFecharAviso: narracao.fecharAviso
         }}
       />
       <main id="conteudo" ref={principal} className="conteudo principal">
@@ -371,7 +387,7 @@ export function App() {
         {etapa !== 'inicio' && etapa !== 'proximos' && (
           <div className="voltar-menu">
             <button type="button" className="botao-menu-inicial" onClick={() => setConfirmandoInicio(true)}>
-              <Icone nome="casa" tamanho={20} /> Voltar ao menu inicial
+              <Icone nome="casa" tamanho={20} /> {tx('Voltar ao menu inicial', 'Back to the start')}
             </button>
           </div>
         )}
@@ -390,16 +406,26 @@ export function App() {
       <footer className="rodape">
         <div className="conteudo">
           <p>
-            Feito pela equipe FATESA no NASA Space Apps Challenge 2026. Ajuda a pensar, mas não substitui o agrônomo.
+            {tx(
+              'Feito pela equipe FATESA no NASA Space Apps Challenge 2026. Ajuda a pensar, mas não substitui o agrônomo.',
+              'Made by team FATESA at the NASA Space Apps Challenge 2026. It helps you think, but it does not replace an agronomist.'
+            )}
           </p>
           <p>
-            {USANDO_MOCK && SINALIZAR_MOCK ? 'Dados de exemplo. ' : analisePronta?.eh_mock ? 'Clima: NASA POWER. Caminhos: simulação de teste (sem conferência de agrônomo). ' : 'Clima: NASA POWER. '}
+            {USANDO_MOCK && SINALIZAR_MOCK
+              ? tx('Dados de exemplo. ', 'Sample data. ')
+              : analisePronta?.eh_mock
+                ? tx(
+                    'Clima: NASA POWER. Caminhos: simulação de teste (sem conferência de agrônomo). ',
+                    'Climate: NASA POWER. Options: test simulation (not checked by an agronomist). '
+                  )
+                : tx('Clima: NASA POWER. ', 'Climate: NASA POWER. ')}
             <button type="button" className="link-rodape" onClick={() => setCreditosAbertos(true)}>
-              Créditos das fotos
+              {tx('Créditos das fotos', 'Photo credits')}
             </button>
             {' · '}
             <button type="button" className="link-rodape" onClick={() => setGlossarioAberto(true)}>
-              Glossário
+              {tx('Glossário', 'Glossary')}
             </button>
           </p>
         </div>

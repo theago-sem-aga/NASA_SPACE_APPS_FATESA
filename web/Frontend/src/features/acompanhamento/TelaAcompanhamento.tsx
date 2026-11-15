@@ -12,6 +12,7 @@ import { SecaoPrevisao } from '../producao/TelaProducao';
 import { NOME_MES, ROTULO_COBERTURA } from '../fluxo/rotulos';
 import { dataPorExtenso, FRASE_ESTADO } from './frases';
 import { roteiroAcompanhamento } from './roteiroAcompanhamento';
+import { tx } from '../../i18n/idioma';
 
 interface TelaAcompanhamentoProps {
   local: Local;
@@ -63,7 +64,7 @@ export function planoDoMes(estrategia: Estrategia | null, mes: number): Cobertur
 function CartaoFoto({ foto, destaque }: { foto: FotoSatelite; destaque: boolean }) {
   return (
     <figure className={`satelite-foto ${destaque ? 'satelite-foto-grande' : ''}`}>
-      <img src={/^https?:/.test(foto.imagem) ? foto.imagem : `${import.meta.env.BASE_URL}${foto.imagem}`} alt={`Foto do satélite da área em ${dataPorExtenso(foto.data)}: ${FRASE_ESTADO[foto.estado].toLowerCase()}.`} loading="lazy" />
+      <img src={/^https?:/.test(foto.imagem) ? foto.imagem : `${import.meta.env.BASE_URL}${foto.imagem}`} alt={tx(`Foto do satélite da área em ${dataPorExtenso(foto.data)}: ${FRASE_ESTADO[foto.estado].toLowerCase()}.`, `Satellite image of the field on ${dataPorExtenso(foto.data)}: ${FRASE_ESTADO[foto.estado].toLowerCase()}.`)} loading="lazy" />
       <figcaption>
         <strong>{destaque ? dataPorExtenso(foto.data) : foto.data.split('-').reverse().slice(0, 2).join('/')}</strong>
         <span className={`satelite-estado satelite-${foto.estado}`}>{FRASE_ESTADO[foto.estado]}</span>
@@ -88,7 +89,7 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
     try {
       setEstado({ situacao: 'sucesso', dados: await buscarAcompanhamento(local, origem) });
     } catch (e) {
-      const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
+      const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', tx('Algo deu errado.', 'Something went wrong.'));
       setEstado({ situacao: 'falha', codigo: f.codigo, mensagem: f.message });
     }
   }, [local, origem]);
@@ -113,18 +114,18 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
   const dados = estado.situacao === 'sucesso' ? estado.dados : null;
 
   useEffect(() => {
-    aoMudarRoteiro(dados ? roteiroAcompanhamento(dados, estrategia, plano, mesAtual, local, previsao) : 'Buscando as fotos do satélite.');
+    aoMudarRoteiro(dados ? roteiroAcompanhamento(dados, estrategia, plano, mesAtual, local, previsao) : tx('Buscando as fotos do satélite.', 'Fetching the satellite images.'));
   }, [dados, estrategia, plano, mesAtual, local, previsao, aoMudarRoteiro]);
 
   if (estado.situacao === 'carregando') {
     return (
       <>
-        <h1 tabIndex={-1}>Acompanhar a área</h1>
+        <h1 tabIndex={-1}>{tx('Acompanhar a área', 'Follow the field')}</h1>
         <EstadoCarregando
           mensagem={
             origem === 'gps'
-              ? 'Buscando as fotos do satélite do seu ponto… Na primeira vez pode levar até 1 minuto.'
-              : 'Buscando as fotos do satélite…'
+              ? tx('Buscando as fotos do satélite do seu ponto… Na primeira vez pode levar até 1 minuto.', 'Fetching satellite images of your point… The first time can take up to 1 minute.')
+              : tx('Buscando as fotos do satélite…', 'Fetching satellite images…')
           }
         />
       </>
@@ -140,7 +141,7 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
           <PedirPonto local={localDaCidade} aoEscolher={setPontoProprio} />
           {aoVerResumo && (
             <button type="button" className="botao botao-secundario botao-largo" onClick={aoVerResumo}>
-              Pular e ver meu resumo <Icone nome="seguir" />
+              {tx('Pular e ver meu resumo', 'Skip and see my summary')} <Icone nome="seguir" />
             </button>
           )}
         </>
@@ -148,17 +149,17 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
     }
     return (
       <>
-        <h1 tabIndex={-1}>Acompanhar a área</h1>
+        <h1 tabIndex={-1}>{tx('Acompanhar a área', 'Follow the field')}</h1>
         <EstadoFalha
-          titulo={semDados ? 'Sem fotos dessa área' : 'Deu um problema'}
+          titulo={semDados ? tx('Sem fotos dessa área', 'No images of this area') : tx('Deu um problema', 'Something went wrong')}
           mensagem={estado.mensagem}
-          acaoRotulo={semDados ? 'Voltar' : 'Tentar de novo'}
+          acaoRotulo={semDados ? tx('Voltar', 'Back') : tx('Tentar de novo', 'Try again')}
           aoAgir={semDados ? aoVoltar : () => void carregar()}
         />
         {/* Sem fotos a pesquisa termina aqui do mesmo jeito: o resumo não pode ficar inacessível. */}
         {aoVerResumo && (
           <button type="button" className="botao botao-primario botao-largo" onClick={aoVerResumo}>
-            Ver meu resumo <Icone nome="seguir" />
+            {tx('Ver meu resumo', 'See my summary')} <Icone nome="seguir" />
           </button>
         )}
       </>
@@ -172,25 +173,29 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
   return (
     <>
       <div className="producao-topo">
-        <h1 tabIndex={-1}>Acompanhar a área</h1>
+        <h1 tabIndex={-1}>{tx('Acompanhar a área', 'Follow the field')}</h1>
         {estrategia && (
           <p className="acompanhamento-caminho">
-            <span className="texto-apoio">Seu caminho:</span>
+            <span className="texto-apoio">{tx('Seu caminho:', 'Your option:')}</span>
             <span className="etiqueta etiqueta-positiva">{estrategia.etapas_rotacao[1]?.nome ?? estrategia.nome}</span>
             <NomeCientificoCaminho estrategia={estrategia} />
           </p>
         )}
         <p className="texto-apoio">
-          {d.ponto_exemplo ? `Exemplo: uma área perto de ${local.municipio}` : 'A sua área'} · fotos do satélite
+          {d.ponto_exemplo ? tx(`Exemplo: uma área perto de ${local.municipio}`, `Example: an area near ${local.municipio}`) : tx('A sua área', 'Your field')} ·{' '}
+          {tx('fotos do satélite', 'satellite images')}
         </p>
         <p className="texto-apoio">
-          {d.ponto_exemplo ? 'Ponto do exemplo' : 'Seu ponto'}: <span className="numero">{formatarCoordenada(d.latitude, d.longitude)}</span>
-          {!d.ponto_exemplo && origem === 'gps' && ' (o mesmo que o celular pegou no início)'}
+          {d.ponto_exemplo ? tx('Ponto do exemplo', 'Example point') : tx('Seu ponto', 'Your point')}: <span className="numero">{formatarCoordenada(d.latitude, d.longitude)}</span>
+          {!d.ponto_exemplo && origem === 'gps' && tx(' (o mesmo que o celular pegou no início)', ' (the same one your phone got at the start)')}
         </p>
         {d.ponto_exemplo && origem === 'gps' && (
           <p className="destaque destaque-neutro">
             <Icone nome="info" tamanho={24} />
-            Para ver as fotos do seu ponto ({formatarCoordenada(local.latitude, local.longitude)}), o servidor precisa estar ligado.
+            {tx(
+              `Para ver as fotos do seu ponto (${formatarCoordenada(local.latitude, local.longitude)}), o servidor precisa estar ligado.`,
+              `To see the images of your point (${formatarCoordenada(local.latitude, local.longitude)}), the server must be running.`
+            )}
           </p>
         )}
       </div>
@@ -198,26 +203,27 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
       {!ultima ? (
         <p className="destaque destaque-atencao">
           <Icone nome="alerta" tamanho={24} />
-          Nos últimos meses as nuvens cobriram a área em todas as fotos. Tente de novo daqui a uns dias.
+          {tx('Nos últimos meses as nuvens cobriram a área em todas as fotos. Tente de novo daqui a uns dias.', 'In recent months, clouds covered the area in every image. Try again in a few days.')}
         </p>
       ) : (
         <div className="acompanhamento-grade">
           <section className="producao-bloco" aria-labelledby="t-foto">
-            <h2 id="t-foto" className="producao-titulo">Última foto</h2>
+            <h2 id="t-foto" className="producao-titulo">{tx('Última foto', 'Latest image')}</h2>
             <CartaoFoto foto={ultima} destaque />
             <p className="texto-apoio acompanhamento-legenda">
-              <span className="acompanhamento-quadrado" aria-hidden="true" /> O quadrado amarelo é a área ({d.lado_talhao_m} m de lado).
+              <span className="acompanhamento-quadrado" aria-hidden="true" />{' '}
+              {tx(`O quadrado amarelo é a área (${d.lado_talhao_m} m de lado).`, `The yellow square is the field (${d.lado_talhao_m} m per side).`)}
             </p>
           </section>
 
           <section className="producao-bloco" aria-labelledby="t-agora">
-            <h2 id="t-agora" className="producao-titulo">Como está agora</h2>
+            <h2 id="t-agora" className="producao-titulo">{tx('Como está agora', 'How it looks now')}</h2>
 
             <div className="producao-cartao">
               <div className="producao-cartao-cab">
                 <Pictograma nome={FIGURA_ESTADO[ultima.estado]} tamanho={64} />
                 <span>
-                  <span className="texto-apoio">O satélite viu</span>
+                  <span className="texto-apoio">{tx('O satélite viu', 'The satellite saw')}</span>
                   <strong className="producao-nome">{FRASE_ESTADO[ultima.estado]}</strong>
                   <Medidor nivel={VERDOR[ultima.estado]} bom />
                 </span>
@@ -229,7 +235,7 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
                 <div className="producao-cartao-cab">
                   <Pictograma nome={figuraDoPlano(plano, estrategia)} tamanho={64} />
                   <span>
-                    <span className="texto-apoio">O plano para {NOME_MES[mesAtual - 1]}</span>
+                    <span className="texto-apoio">{tx('O plano para', 'The plan for')} {NOME_MES[mesAtual - 1]}</span>
                     <strong className="producao-nome">{ROTULO_COBERTURA[plano].nome}</strong>
                     {estrategia && <span className="texto-apoio">{estrategia.nome}</span>}
                   </span>
@@ -240,19 +246,22 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
             {confere === true && (
               <p className="destaque destaque-positivo acompanhamento-veredito">
                 <Icone nome="ok" tamanho={32} />
-                <span><strong>Está como o plano.</strong> Siga acompanhando.</span>
+                <span><strong>{tx('Está como o plano.', 'It matches the plan.')}</strong> {tx('Siga acompanhando.', 'Keep following it.')}</span>
               </p>
             )}
             {confere === false && (
               <p className="destaque destaque-atencao acompanhamento-veredito">
                 <Icone nome="alerta" tamanho={32} />
-                <span><strong>Está diferente do plano.</strong> Vá ver a área ou fale com o técnico.</span>
+                <span>
+                  <strong>{tx('Está diferente do plano.', 'It differs from the plan.')}</strong>{' '}
+                  {tx('Vá ver a área ou fale com o técnico.', 'Go see the field or talk to your advisor.')}
+                </span>
               </p>
             )}
             {!plano && (
               <p className="destaque destaque-neutro">
                 <Icone nome="info" tamanho={24} />
-                Escolha um caminho para comparar a foto com o plano.
+                {tx('Escolha um caminho para comparar a foto com o plano.', 'Choose an option to compare the image with the plan.')}
               </p>
             )}
           </section>
@@ -263,7 +272,7 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
 
       {anteriores.length > 0 && (
         <section className="producao-bloco" aria-labelledby="t-antes">
-          <h2 id="t-antes" className="producao-titulo">Fotos de antes</h2>
+          <h2 id="t-antes" className="producao-titulo">{tx('Fotos de antes', 'Earlier images')}</h2>
           <ol className="satelite-linha">
             {anteriores.map(f => (
               <li key={f.data}><CartaoFoto foto={f} destaque={false} /></li>
@@ -274,16 +283,17 @@ export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidad
 
       <SeloFonte fonte={d.fonte} />
       <p className="texto-apoio producao-fonte">
-        Fotos: {d.fonte}. {d.atribuicao}. O satélite passa a cada 5 dias; foto com nuvem em cima da área fica de fora.
+        {tx('Fotos:', 'Images:')} {d.fonte}. {d.atribuicao}.{' '}
+        {tx('O satélite passa a cada 5 dias; foto com nuvem em cima da área fica de fora.', 'The satellite passes every 5 days; images with clouds over the area are left out.')}
       </p>
 
       <div className={`navegacao ${aoVerResumo ? '' : 'navegacao-unica'}`}>
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
         {aoVerResumo && (
           <button type="button" className="botao botao-primario" onClick={aoVerResumo}>
-            Ver meu resumo <Icone nome="seguir" />
+            {tx('Ver meu resumo', 'See my summary')} <Icone nome="seguir" />
           </button>
         )}
       </div>
@@ -298,7 +308,7 @@ function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { loc
   const [buscandoGps, setBuscandoGps] = useState(false);
   const usarGps = () => {
     if (!('geolocation' in navigator)) {
-      setAviso('Este aparelho não informa a localização. Digite a coordenada.');
+      setAviso(tx('Este aparelho não informa a localização. Digite a coordenada.', 'This device does not share its location. Type the coordinates.'));
       return;
     }
     setBuscandoGps(true);
@@ -310,7 +320,7 @@ function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { loc
       },
       () => {
         setBuscandoGps(false);
-        setAviso('Não foi possível pegar a localização. Confira a permissão do navegador ou digite a coordenada.');
+        setAviso(tx('Não foi possível pegar a localização. Confira a permissão do navegador ou digite a coordenada.', 'Could not get your location. Check the browser permission or type the coordinates.'));
       },
       { enableHighAccuracy: true, timeout: 20000 }
     );
@@ -318,7 +328,7 @@ function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { loc
   const usarCoordenada = () => {
     const c = parseCoordenada(texto);
     if (!c) {
-      setAviso('Não entendi a coordenada. Use o formato latitude, longitude. Exemplo: -20.70, -48.96');
+      setAviso(tx('Não entendi a coordenada. Use o formato latitude, longitude. Exemplo: -20.70, -48.96', 'I could not read the coordinates. Use latitude, longitude. Example: 42.10, -93.65'));
       return;
     }
     // Sem código e UF: o cliente trata como coordenada digitada (ponto real, não o centro da cidade).
@@ -327,18 +337,20 @@ function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { loc
   return (
     <section className="cartao pedir-ponto" aria-labelledby="pedir-ponto-titulo">
       <h2 id="pedir-ponto-titulo" className="titulo-secao">
-        <Icone nome="local" /> Falta o ponto exato da plantação
+        <Icone nome="local" /> {tx('Falta o ponto exato da plantação', 'We need the exact spot of your field')}
       </h2>
       <p>
-        As fotos do satélite mostram um quadrado pequeno, de poucos metros. Com só a cidade ({local.municipio}), a foto cairia no
-        centro dela, em casas e ruas. Diga onde fica a sua lavoura:
+        {tx(
+          `As fotos do satélite mostram um quadrado pequeno, de poucos metros. Com só a cidade (${local.municipio}), a foto cairia no centro dela, em casas e ruas. Diga onde fica a sua lavoura:`,
+          `Satellite images show a small square, a few meters wide. With only the city (${local.municipio}), the image would land on its center, on houses and streets. Tell us where your field is:`
+        )}
       </p>
       <button type="button" className="botao botao-primario" onClick={usarGps} disabled={buscandoGps}>
-        <Icone nome="local" /> {buscandoGps ? 'Pegando a localização…' : 'Usar onde estou agora'}
+        <Icone nome="local" /> {buscandoGps ? tx('Pegando a localização…', 'Getting your location…') : tx('Usar onde estou agora', 'Use my current location')}
       </button>
-      <p className="texto-apoio">Funciona melhor se você estiver na plantação.</p>
+      <p className="texto-apoio">{tx('Funciona melhor se você estiver na plantação.', 'Works best if you are standing in the field.')}</p>
       <label className="pedir-ponto-rotulo" htmlFor="pedir-ponto-coordenada">
-        Ou digite a coordenada da plantação
+        {tx('Ou digite a coordenada da plantação', 'Or type the coordinates of your field')}
       </label>
       <div className="pedir-ponto-linha">
         <span className="campo pedir-ponto-campo">
@@ -354,7 +366,7 @@ function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { loc
         />
         </span>
         <button type="button" className="botao botao-secundario" onClick={usarCoordenada}>
-          Ver as fotos
+          {tx('Ver as fotos', 'See the images')}
         </button>
       </div>
       {aviso && (

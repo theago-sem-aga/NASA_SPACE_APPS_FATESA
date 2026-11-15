@@ -3,6 +3,7 @@ import { BotaoFigura } from '../../components/BotaoFigura';
 import { Icone } from '../../components/Icone';
 import { Pictograma } from '../../components/Pictograma';
 import { PICTO_REQUISITO, ROTULO_REQUISITO, ROTULO_RESPOSTA } from './rotulos';
+import { tx } from '../../i18n/idioma';
 
 interface TelaRecursoProps {
   recurso: RequisitoId;
@@ -43,7 +44,7 @@ export function TelaRecurso({ recurso, resposta, aoResponder, aoVoltar }: TelaRe
       </div>
       <div className="navegacao navegacao-unica">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
       </div>
     </>

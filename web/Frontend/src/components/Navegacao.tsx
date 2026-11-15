@@ -1,4 +1,5 @@
 import { Icone } from './Icone';
+import { tx } from '../i18n/idioma';
 
 interface NavegacaoProps {
   aoVoltar: () => void;
@@ -8,11 +9,11 @@ interface NavegacaoProps {
   idAjuda?: string;
 }
 
-export function Navegacao({ aoVoltar, aoAvancar, rotuloAvancar = 'Continuar', avancarDesabilitado, idAjuda }: NavegacaoProps) {
+export function Navegacao({ aoVoltar, aoAvancar, rotuloAvancar, avancarDesabilitado, idAjuda }: NavegacaoProps) {
   return (
     <div className="navegacao">
       <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-        <Icone nome="voltar" /> Voltar
+        <Icone nome="voltar" /> {tx('Voltar', 'Back')}
       </button>
       <button
         type="button"
@@ -21,7 +22,7 @@ export function Navegacao({ aoVoltar, aoAvancar, rotuloAvancar = 'Continuar', av
         aria-disabled={avancarDesabilitado || undefined}
         aria-describedby={avancarDesabilitado ? idAjuda : undefined}
       >
-        {rotuloAvancar} <Icone nome="seguir" />
+        {rotuloAvancar ?? tx('Continuar', 'Continue')} <Icone nome="seguir" />
       </button>
     </div>
   );

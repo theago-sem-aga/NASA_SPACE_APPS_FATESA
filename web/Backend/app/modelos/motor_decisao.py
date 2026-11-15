@@ -36,6 +36,12 @@ import pandas as pd
 RAIZ = Path(__file__).resolve().parents[4]
 PROCESSADOS = RAIZ / "data" / "processed"
 CATALOGO = PROCESSADOS / "estrategias" / "catalogo_reforma_cana.json"
+# Textos em inglês do mesmo catálogo (mesmos estrategia_id); níveis e regras vêm do português.
+CATALOGO_EN = PROCESSADOS / "estrategias" / "catalogo_reforma_cana.en.json"
+CAMPOS_TEXTO = (
+    "nome", "resumo", "objetivo", "motivos", "evidencias", "beneficios", "riscos", "lacunas",
+    "explicacao_confianca", "pergunta_especialista", "referencias",
+)
 SAIDA_FRONT = RAIZ / "web" / "Frontend" / "src" / "api" / "mock" / "estrategiasMotor.ts"
 
 NIVEL = {"nenhum": 0, "baixo": 1, "medio": 2, "alto": 3}
@@ -60,6 +66,23 @@ NIVEL_QUE_CONTA = 2
 @lru_cache(maxsize=1)
 def carregar_catalogo() -> tuple[dict, ...]:
     return tuple(json.loads(CATALOGO.read_text(encoding="utf-8"))["estrategias"])
+
+
+@lru_cache(maxsize=2)
+def catalogo_no_idioma(idioma: str = "pt") -> tuple[dict, ...]:
+    """Catálogo com os textos no idioma pedido. Em inglês, troca só os campos de texto
+    (e o nome de cada etapa da rotação) pelos do catalogo_reforma_cana.en.json."""
+    base = carregar_catalogo()
+    if idioma != "en":
+        return base
+    en = json.loads(CATALOGO_EN.read_text(encoding="utf-8"))["estrategias"]
+    saida = []
+    for e in base:
+        traducao = en[e["estrategia_id"]]
+        novo = {**e, **{k: traducao[k] for k in CAMPOS_TEXTO}}
+        novo["etapas_rotacao"] = [{**etapa, "nome": nome} for etapa, nome in zip(e["etapas_rotacao"], traducao["etapas"])]
+        saida.append(novo)
+    return tuple(saida)
 
 
 @lru_cache(maxsize=64)
@@ -157,14 +180,20 @@ def gerar_front() -> Path:
                     "s": [[s["estrategia_id"], s["prioridades_que_contam"], s["zarc_risco_pct"]] for s in r["sugeridas"]],
                     "f": [[f["estrategia_id"], f["motivo"]] for f in r["fora"]],
                 }
-    catalogo = {e["estrategia_id"]: {**{k: v for k, v in e.items() if k != "zarc_culturas"}, "calendario": _calendario(e["calendario"])}
-                for e in carregar_catalogo()}
+    def para_front(itens):
+        return {e["estrategia_id"]: {**{k: v for k, v in e.items() if k != "zarc_culturas"}, "calendario": _calendario(e["calendario"])}
+                for e in itens}
+
+    catalogo = para_front(carregar_catalogo())
+    catalogo_en = para_front(catalogo_no_idioma("en"))
     SAIDA_FRONT.write_text(
         "// GERADO por web/Backend/app/modelos/motor_decisao.py -- nao editar a mao.\n"
         "// Catálogo de caminhos + escolha do motor para TODAS as combinações de prioridades\n"
         "// e recursos (o front só consulta; as regras ficam no backend). Textos a conferir.\n"
         "import type { Estrategia, PrioridadeId } from '../tipos';\n\n"
         f"export const CATALOGO_ESTRATEGIAS: Record<string, Estrategia> = {json.dumps(catalogo, ensure_ascii=False)};\n\n"
+        "/** Mesmo catálogo com os textos em inglês (data/processed/estrategias/catalogo_reforma_cana.en.json). */\n"
+        f"export const CATALOGO_ESTRATEGIAS_EN: Record<string, Estrategia> = {json.dumps(catalogo_en, ensure_ascii=False)};\n\n"
         f"export const CODIGOS_COM_ZARC: string[] = {json.dumps(codigos_zarc)};\n\n"
         "/** chave = 'prioridades+ordenadas|sss|codigo ou -'; s = [id, prioridades que contaram, risco ZARC %]; f = [id, motivo de ficar de fora]. */\n"
         "export const SUGESTOES: Record<string, { s: [string, PrioridadeId[], number | null][]; f: [string, string][] }> = "
@@ -191,12 +220,26 @@ POR_QUE_FICOU_DE_FORA = {
     "sem_irrigacao": "você disse que não tem irrigação",
     "fora_zarc": "o zoneamento do Ministério da Agricultura (ZARC) não indica plantar de outubro a dezembro na sua cidade",
 }
+NOME_PRIORIDADE_EN = {
+    "reducao_erosao": "hold the soil",
+    "materia_organica": "make the soil stronger",
+    "fixacao_nitrogenio": "spend less on fertilizer",
+    "uso_agua": "handle drought",
+    "adequacao_mercado": "earn income during the renewal",
+    "valor_forragem": "feed livestock",
+}
+POR_QUE_FICOU_DE_FORA_EN = {
+    "sem_maquina": "you said you do not have grain machinery",
+    "sem_comprador": "you said you do not have a grain buyer",
+    "sem_irrigacao": "you said you do not have irrigation",
+    "fora_zarc": "Brazil's Ministry of Agriculture zoning (ZARC) does not recommend planting from October to December in your town",
+}
 
 
-def _em_frase(itens: list[str]) -> str:
+def _em_frase(itens: list[str], idioma: str = "pt") -> str:
     if len(itens) <= 1:
         return itens[0] if itens else ""
-    return f"{', '.join(itens[:-1])} e {itens[-1]}"
+    return f"{', '.join(itens[:-1])} {'and' if idioma == 'en' else 'e'} {itens[-1]}"
 
 
 def _nome_curto(e: dict) -> str:
@@ -209,14 +252,17 @@ def _sem_zarc_culturas(e: dict) -> dict:
 
 
 def montar_estrategias_reais(
-    prioridades: list[str], recursos: dict[str, str], codigo_ibge: str | None, municipio: str
+    prioridades: list[str], recursos: dict[str, str], codigo_ibge: str | None, municipio: str, idioma: str = "pt"
 ) -> tuple[list[dict], list[str]]:
     """Mesma regra de web/Frontend/src/api/mock/montarEstrategias.ts, rodando
     de verdade no backend: chama sugerir() direto (sem tabela pré-computada,
     que só existia pro front funcionar sem servidor). Retorna (estrategias,
     limitacoes) já no formato do schema Estrategia."""
     resultado = sugerir(prioridades, recursos, codigo_ibge)
-    catalogo = {e["estrategia_id"]: e for e in carregar_catalogo()}
+    catalogo = {e["estrategia_id"]: e for e in catalogo_no_idioma(idioma)}
+    en = idioma == "en"
+    nomes_prioridade = NOME_PRIORIDADE_EN if en else NOME_PRIORIDADE
+    por_que = POR_QUE_FICOU_DE_FORA_EN if en else POR_QUE_FICOU_DE_FORA
     algum_fora = len(resultado["fora"]) > 0
 
     estrategias = []
@@ -228,15 +274,23 @@ def montar_estrategias_reais(
             continue
         contam = s["prioridades_que_contam"]
         if contam:
-            motivo = f"Combina com o que você escolheu: {_em_frase([NOME_PRIORIDADE[p] for p in contam])}."
+            lista = _em_frase([nomes_prioridade[p] for p in contam], idioma)
+            motivo = f"Matches what you chose: {lista}." if en else f"Combina com o que você escolheu: {lista}."
         elif algum_fora:
-            motivo = "As opções que mais combinavam com o que você escolheu precisam de algo que você não tem. Esta é a melhor entre as que sobraram."
+            motivo = (
+                "The options that best matched your choices need something you do not have. This is the best of the rest."
+                if en
+                else "As opções que mais combinavam com o que você escolheu precisam de algo que você não tem. Esta é a melhor entre as que sobraram."
+            )
         else:
-            motivo = "Boa opção para proteger a terra durante a reforma."
+            motivo = "A good option to protect the soil during the renewal." if en else "Boa opção para proteger a terra durante a reforma."
         zarc_evidencia = []
         if s["zarc_risco_pct"] is not None:
             zarc_evidencia.append(
-                f"Pelo zoneamento do Ministério da Agricultura (ZARC), dá para plantar "
+                f"According to Brazil's Ministry of Agriculture zoning (ZARC), {_nome_curto(base).lower()} can be planted "
+                f"from October to December in {municipio}, with a {s['zarc_risco_pct']}% risk of loss."
+                if en
+                else f"Pelo zoneamento do Ministério da Agricultura (ZARC), dá para plantar "
                 f"{_nome_curto(base).lower()} de outubro a dezembro em {municipio}, "
                 f"com risco de perda de {s['zarc_risco_pct']}%."
             )
@@ -247,13 +301,16 @@ def montar_estrategias_reais(
         })
 
     limitacoes = [
-        f"{_nome_curto(_sem_zarc_culturas(catalogo[f['estrategia_id']]))} ficou de fora porque "
-        f"{POR_QUE_FICOU_DE_FORA.get(f['motivo'], f['motivo'])}."
+        f"{_nome_curto(_sem_zarc_culturas(catalogo[f['estrategia_id']]))} "
+        f"{'was left out because' if en else 'ficou de fora porque'} "
+        f"{por_que.get(f['motivo'], f['motivo'])}."
         for f in resultado["fora"]
     ]
     if not resultado["zarc_conferido"]:
         limitacoes.append(
-            "Ainda não conferimos o zoneamento (ZARC) da sua cidade -- confira a época de plantar com um técnico local."
+            "We have not checked the planting zoning (ZARC) for your town yet -- confirm the planting window with a local advisor."
+            if en
+            else "Ainda não conferimos o zoneamento (ZARC) da sua cidade -- confira a época de plantar com um técnico local."
         )
     return estrategias, limitacoes
 

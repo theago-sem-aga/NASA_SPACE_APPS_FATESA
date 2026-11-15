@@ -1,0 +1,103 @@
+{
+  "_comentario": "English text for catalogo_reforma_cana.json (same estrategia_id). Only text fields; levels, calendar and rules come from the Portuguese catalog. Translated on 2026-11-15; like the original, the texts are PLACEHOLDERS to be checked with an agronomist.",
+  "estrategias": {
+    "pousio": {
+      "nome": "Leave the field idle until planting",
+      "resumo": "What many growers do today: after the last harvest, prepare the soil and wait for the season to plant 18-month cane.",
+      "objetivo": "Spend as little as possible on the renewal and have the field free at planting time.",
+      "motivos": ["It is here because it is the most common way to renew a cane field today. It is the baseline to compare the other two."],
+      "evidencias": ["In the region's record, the field is bare from October to February, exactly when most of the year's rain falls.", "Harrowed soil with no straw is what summer rain carries off the most, especially on slopes."],
+      "beneficios": ["No seed or harvest costs in the middle of the renewal.", "Time to apply lime and gypsum and repair terraces without hurry."],
+      "riscos": ["Rills and gullies after storms, especially on sandy soil.", "The soil loses organic matter and leftover fertilizer can wash away with the rain.", "Weeds grow and will need herbicide or another harrowing before planting."],
+      "lacunas": ["We do not know how much soil your field has already lost in earlier renewals.", "We do not know if your terraces are sized for heavy rain."],
+      "explicacao_confianca": "It is what already happens on the farm. The erosion risk of bare soil in summer is well known.",
+      "pergunta_especialista": "With the slope and soil of this field, can my terraces handle the summer with bare soil?",
+      "referencias": ["CATI (São Paulo extension) — guidance on soil conservation and terracing", "Embrapa Solos — erosion on sandy soils of western São Paulo"],
+      "etapas": ["Old cane", "Idle land", "New cane"]
+    },
+    "amendoim": {
+      "nome": "Plant peanuts during the renewal",
+      "resumo": "Very common in inland São Paulo: plant peanuts in October, harvest in February and plant cane right after.",
+      "objetivo": "Make the field earn money during the renewal instead of sitting idle.",
+      "motivos": ["The peanut cycle, about 4 months, fits between the last cane harvest and cane planting."],
+      "evidencias": ["The region's rains settle in October, which allows planting without irrigation in most years.", "Peanut is a legume: part of the nitrogen it fixes stays in the soil for the cane."],
+      "beneficios": ["Income in the period when the field would sit idle. It often pays for the renewal.", "Soil covered for much of the summer.", "Helps break the cycle of some cane pests and diseases."],
+      "riscos": ["Rain at harvest delays digging and raises the risk of aflatoxin, which lowers the price.", "Digging turns the soil. Between harvest and cane planting, the soil is exposed in the middle of February.", "If October rain is late, the harvest is late and pushes back cane planting."],
+      "lacunas": ["We do not know if you have a digger and a picker, or a partner with the machinery.", "We do not know the peanut price in your region this season.", "We do not know if your field's nematode history helps or hurts peanuts."],
+      "explicacao_confianca": "The practice is well known in São Paulo, but the result depends on machinery, a buyer and rain at harvest, which the tool does not know.",
+      "pergunta_especialista": "Is there a buyer and a partner with peanut machinery nearby? Is it worth it at this year's price?",
+      "referencias": ["IAC — recommendations for peanuts in cane renewal areas", "ZARC/MAPA (Brazil) — peanut planting window for the municipality"],
+      "etapas": ["Old cane", "Peanuts", "New cane"]
+    },
+    "crotalaria": {
+      "nome": "Plant sunn hemp to fertilize and protect",
+      "resumo": "Plant sunn hemp with the first rains, let it grow until it flowers, roll it and plant the cane on top of the straw.",
+      "objetivo": "Protect the soil in summer and make it stronger for the next 5 or 6 cane harvests.",
+      "motivos": ["It is one of the options that keeps the soil covered longest in the months of heavy rain."],
+      "evidencias": ["Sunn hemp covers the soil from October to December and its straw protects it until planting in March.", "It is a legume and fixes nitrogen from the air. Part of it stays for the cane.", "Some species, such as Crotalaria spectabilis, are used to lower nematode populations."],
+      "beneficios": ["Soil covered for almost all of the summer.", "More organic matter and roots opening paths in the soil, which helps water soak in.", "May reduce nitrogen fertilizer spending at cane planting."],
+      "riscos": ["It earns no money right away. The return comes in the yield of the following harvests.", "Seed may run short or get expensive near planting time.", "If it goes past the right point, the sunn hemp gets tough and is hard to roll or work in."],
+      "lacunas": ["We do not know which nematode is in the field. That changes which sunn hemp species to use.", "We do not know how the cane will respond on your soil. The gain varies a lot from field to field."],
+      "explicacao_confianca": "The soil-protection effect is known. The gain in cane yield depends on the soil and management of each field.",
+      "pergunta_especialista": "Which sunn hemp is best for my field, juncea or spectabilis? Should I run a nematode test first?",
+      "referencias": ["Embrapa — green manure with sunn hemp in cane renewal", "IAC — Bulletin 100, fertilizer and lime recommendations for São Paulo"],
+      "etapas": ["Old cane", "Sunn hemp", "Straw", "New cane"]
+    },
+    "soja": {
+      "nome": "Plant soybeans during the renewal",
+      "resumo": "Plant short-cycle soybeans with the first rains, harvest in February and plant cane right after.",
+      "objetivo": "Earn income during the renewal and leave nitrogen in the soil for the cane.",
+      "motivos": ["Short-cycle soybeans, about 4 months, fit between the last cane harvest and cane planting."],
+      "evidencias": ["It is a legume: it fixes nitrogen from the air and part of it stays for the cane.", "Soybeans are widely planted in cane renewal in inland São Paulo, with buyers in most regions."],
+      "beneficios": ["Income in the period when the field would sit idle.", "Soil covered for much of the summer.", "Less nitrogen fertilizer at cane planting."],
+      "riscos": ["A dry spell at flowering cuts yield.", "Rust and stink bugs require spraying, which raises costs.", "Some nematodes multiply on soybeans and then attack the cane. It is worth choosing a resistant variety.", "If harvest is late, it pushes back cane planting."],
+      "lacunas": ["We do not know if you have a planter and a combine, or a partner with the machinery.", "We do not know the soybean price in your region this season.", "We do not know which nematode is in the field."],
+      "explicacao_confianca": "The practice is common in São Paulo. The result depends on machinery, a buyer, rain at flowering and nematodes, which the tool does not know.",
+      "pergunta_especialista": "Which short-cycle soybean variety does well here and resists the nematodes in my field?",
+      "referencias": ["Embrapa Soja — soybeans in cane renewal areas", "ZARC/MAPA (Brazil) — soybean planting window for the municipality"],
+      "etapas": ["Old cane", "Soybeans", "New cane"]
+    },
+    "milheto": {
+      "nome": "Plant pearl millet to cover the soil",
+      "resumo": "Plant pearl millet with the first rains. It grows fast, handles drought and leaves a lot of straw. It can be grazed before rolling.",
+      "objetivo": "Cover the soil fast, even with little rain, and leave straw to protect it until cane planting.",
+      "motivos": ["Pearl millet closes the soil in a few weeks and handles dry spells better than the other options."],
+      "evidencias": ["It is one of the most used cover crops in the Cerrado precisely because it handles little rain.", "Its deep roots help loosen the soil and help water soak in."],
+      "beneficios": ["Soil covered fast at the start of the rains.", "A lot of straw protecting the soil until planting.", "It can become pasture or silage for livestock.", "Cheap seed and simple planting."],
+      "riscos": ["It does not fix nitrogen. The straw may even tie up some nitrogen early in the cane.", "If it goes to seed, the seeds become weeds in the cane.", "It earns no money right away, except as feed for livestock."],
+      "lacunas": ["We do not know if you have livestock to graze the millet.", "We do not know how long the straw will last on your soil until March."],
+      "explicacao_confianca": "Its soil cover is well known. The effect on cane yield depends on straw and nitrogen management.",
+      "pergunta_especialista": "Is it worth grazing the millet before rolling it? Do I need to adjust the cane's nitrogen because of the straw?",
+      "referencias": ["Embrapa — pearl millet as a cover crop", "ZARC/MAPA (Brazil) — pearl millet planting window for the municipality"],
+      "etapas": ["Old cane", "Pearl millet", "Straw", "New cane"]
+    },
+    "sorgo_forrageiro": {
+      "nome": "Plant sorghum for livestock",
+      "resumo": "Plant forage sorghum with the first rains and cut it for silage or feed in January and February.",
+      "objetivo": "Produce livestock feed during the renewal with a plant that handles drought.",
+      "motivos": ["Sorghum handles dry spells and gives plenty of mass for silage during the renewal."],
+      "evidencias": ["Sorghum is used for silage precisely where rain is uncertain, because it handles drought better than corn.", "It fits between the last cane harvest and cane planting."],
+      "beneficios": ["Feed for livestock in the next dry season (silage).", "Soil covered for much of the summer.", "Uses less water than corn."],
+      "riscos": ["For silage, the mass leaves the field: little straw is left to protect the soil after cutting.", "It needs cutting machinery and a place to store the silage.", "Sorghum regrowth can become a weed if not controlled before the cane."],
+      "lacunas": ["We do not know if you have a forage harvester or a partner who can cut it.", "We do not know how many animals will eat the silage."],
+      "explicacao_confianca": "Forage sorghum is well known. The gain depends on having livestock and machinery to cut and store it.",
+      "pergunta_especialista": "Is sorghum silage worth it during the renewal? How do I keep regrowth from hurting the cane?",
+      "referencias": ["Embrapa Milho e Sorgo — forage sorghum for silage", "ZARC/MAPA (Brazil) — forage sorghum planting window for the municipality"],
+      "etapas": ["Old cane", "Sorghum", "New cane"]
+    },
+    "mucuna": {
+      "nome": "Plant velvet bean or jack bean to fertilize",
+      "resumo": "Plant velvet bean or jack bean with the first rains, let it grow, roll it and plant the cane on top of the straw.",
+      "objetivo": "Leave nitrogen and organic matter in the soil and protect it in summer.",
+      "motivos": ["It is a legume like sunn hemp: it fixes nitrogen and covers the soil well."],
+      "evidencias": ["Velvet bean and jack bean are traditional green manures that fix nitrogen from the air.", "Black velvet bean is cited for reducing some nematodes."],
+      "beneficios": ["Soil covered and protected in summer.", "More organic matter and nitrogen for the cane.", "It handles poor soil better than many crops."],
+      "riscos": ["It earns no money right away.", "It is not for livestock: the seed and the plant can harm animals.", "Velvet bean is a climber and can wrap around fences and anything nearby."],
+      "lacunas": ["We do not know if seed is sold near you.", "We do not know which nematode is in the field."],
+      "explicacao_confianca": "The green-manure effect is known, but there are fewer studies in cane renewal in São Paulo than for sunn hemp.",
+      "pergunta_especialista": "Velvet bean or jack bean: which does better on my soil, and where do I buy seed?",
+      "referencias": ["Embrapa — green manure with legumes (velvet bean, jack bean)", "IAC — green manures for São Paulo state"],
+      "etapas": ["Old cane", "Velvet bean", "Straw", "New cane"]
+    }
+  }
+}

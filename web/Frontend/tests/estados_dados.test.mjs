@@ -6,11 +6,19 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const require = createRequire(import.meta.url);
+// Os textos verificados aqui são os em português; o site abre em inglês por padrão.
+// O componente e o módulo de idioma vão no mesmo pacote, para a troca valer para ele.
 async function componente(caminho, nome) {
-  const r = await build({ entryPoints: [caminho], bundle: true, write: false,
-    platform: 'node', format: 'cjs', packages: 'external', jsx: 'automatic' });
+  const r = await build({
+    stdin: {
+      contents: `export { ${nome} } from './${caminho}'; export { mudarIdioma } from './src/i18n/idioma';`,
+      resolveDir: process.cwd(), loader: 'ts'
+    },
+    bundle: true, write: false, platform: 'node', format: 'cjs', packages: 'external', jsx: 'automatic'
+  });
   const modulo = { exports: {} };
   new Function('require', 'module', 'exports', r.outputFiles[0].text)(require, modulo, modulo.exports);
+  modulo.exports.mudarIdioma('pt');
   return modulo.exports[nome];
 }
 const MesesAtencao = await componente('src/features/fluxo/MesesAtencao.tsx', 'MesesAtencao');

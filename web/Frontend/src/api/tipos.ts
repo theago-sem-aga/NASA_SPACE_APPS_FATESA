@@ -96,6 +96,8 @@ export interface AnaliseEntrada {
   prioridades: PrioridadeId[];
   /** BACKEND: quando vier preenchido, usar no lugar do valor dos mapas e devolver a fonte como 'informado_produtor'. */
   correcoes: CorrecoesTalhao;
+  /** Idioma dos textos da resposta (caminhos, limitações). O cliente preenche com o idioma da tela. */
+  idioma?: 'pt' | 'en';
 }
 
 /** Atributos usados na comparação lado a lado. */

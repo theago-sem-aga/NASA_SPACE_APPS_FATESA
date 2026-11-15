@@ -1,4 +1,5 @@
 import type { Analise, CorrecoesTalhao, Local, OrigemLocal, PrioridadeId, ProblemaId, RequisitoId, Resposta } from '../../api/tipos';
+import { L, traduzivel } from '../../i18n/idioma';
 
 export const ETAPAS = [
   'inicio', 'local', 'cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades',
@@ -9,24 +10,24 @@ export type Etapa = (typeof ETAPAS)[number];
 /** Telas de pergunta (uma por tela), na ordem. As bolinhas de progresso contam só estas. */
 export const PERGUNTAS: Etapa[] = ['cultura', 'maquinas_graos', 'comprador_graos', 'irrigacao', 'problemas', 'prioridades'];
 
-export const TITULO_ETAPA: Record<Etapa, string> = {
-  inicio: 'Início',
-  local: 'Onde fica',
-  cultura: 'O que está plantado',
-  maquinas_graos: 'Máquina',
-  comprador_graos: 'Para quem vender',
-  irrigacao: 'Irrigação',
-  problemas: 'O que incomoda',
-  prioridades: 'O que importa',
-  estrategias: 'Caminhos',
-  comparar: 'Comparar',
-  estrategia: 'Detalhe',
-  clima: 'Chuva',
-  proximos: 'Resumo',
-  producao: 'Colheita',
-  decisao: 'Caminho escolhido',
-  acompanhamento: 'Acompanhar'
-};
+export const TITULO_ETAPA: Record<Etapa, string> = traduzivel({
+  inicio: L('Início', 'Start'),
+  local: L('Onde fica', 'Location'),
+  cultura: L('O que está plantado', 'What is planted'),
+  maquinas_graos: L('Máquina', 'Machinery'),
+  comprador_graos: L('Para quem vender', 'Grain buyer'),
+  irrigacao: L('Irrigação', 'Irrigation'),
+  problemas: L('O que incomoda', 'What bothers you'),
+  prioridades: L('O que importa', 'What matters'),
+  estrategias: L('Caminhos', 'Options'),
+  comparar: L('Comparar', 'Compare'),
+  estrategia: L('Detalhe', 'Detail'),
+  clima: L('Chuva', 'Rain'),
+  proximos: L('Resumo', 'Summary'),
+  producao: L('Colheita', 'Harvest'),
+  decisao: L('Caminho escolhido', 'Chosen option'),
+  acompanhamento: L('Acompanhar', 'Follow up')
+});
 
 /** Para onde o botão Voltar leva em cada tela (o fluxo tem desvios). */
 export const VOLTAR_PARA: Record<Etapa, Etapa> = {

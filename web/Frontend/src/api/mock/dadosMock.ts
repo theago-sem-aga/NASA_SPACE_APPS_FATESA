@@ -14,14 +14,15 @@ import { ESTRATEGIAS_PADRAO } from './montarEstrategias';
 import { PRECIPITACAO_EXTREMA_SJRP } from './precipitacaoExtremaMock';
 import { TENDENCIA_SJRP } from './tendenciaHidricaMock';
 import { ESTRESSE_SJRP } from './estresseVegetalMock';
+import { L, traduzivel } from '../../i18n/idioma';
 
-export const CULTURAS_MOCK: Cultura[] = [
-  { cultura_id: 'cana_de_acucar', nome: 'Cana-de-açúcar', tem_demonstracao: true },
-  { cultura_id: 'soja', nome: 'Soja', tem_demonstracao: false },
-  { cultura_id: 'milho', nome: 'Milho', tem_demonstracao: false },
-  { cultura_id: 'trigo', nome: 'Trigo', tem_demonstracao: false },
-  { cultura_id: 'pastagem', nome: 'Pasto', tem_demonstracao: false }
-];
+export const CULTURAS_MOCK: Cultura[] = traduzivel([
+  { cultura_id: 'cana_de_acucar', nome: L('Cana-de-açúcar', 'Sugarcane'), tem_demonstracao: true },
+  { cultura_id: 'soja', nome: L('Soja', 'Soybeans'), tem_demonstracao: false },
+  { cultura_id: 'milho', nome: L('Milho', 'Corn'), tem_demonstracao: false },
+  { cultura_id: 'trigo', nome: L('Trigo', 'Wheat'), tem_demonstracao: false },
+  { cultura_id: 'pastagem', nome: L('Pasto', 'Pasture'), tem_demonstracao: false }
+]);
 
 // Municípios para a busca e para o "Você está perto de…" no mock. Coordenadas
 // aproximadas do centro e códigos IBGE só ilustrativos: o back usa a malha oficial.
@@ -91,10 +92,10 @@ export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   // Caminhos: vêm do catálogo do backend (data/processed/estrategias/catalogo_reforma_cana.json),
   // escolhidos pelo motor de decisão conforme as prioridades. Ver ./montarEstrategias.ts.
   estrategias: ESTRATEGIAS_PADRAO,
-  limitacoes: [
-    'Os dados de satélite mostram a média de uma área de vários quilômetros, não o seu talhão exato.',
-    'A chuva mostrada é a média dos anos passados. Um ano pode fugir bastante da média.',
-    'A ferramenta não visitou o talhão: não conhece a análise de solo, os terraços nem o histórico de pragas.',
-    'Preço e mercado mudam a cada safra e não entram no cálculo.'
-  ]
+  limitacoes: traduzivel([
+    L('Os dados de satélite mostram a média de uma área de vários quilômetros, não o seu talhão exato.', 'Satellite data shows the average of an area several kilometers wide, not your exact field.'),
+    L('A chuva mostrada é a média dos anos passados. Um ano pode fugir bastante da média.', 'The rain shown is the average of past years. A single year can differ a lot from the average.'),
+    L('A ferramenta não visitou o talhão: não conhece a análise de solo, os terraços nem o histórico de pragas.', 'The tool has not visited the field: it does not know the soil test, the terraces or the pest history.'),
+    L('Preço e mercado mudam a cada safra e não entram no cálculo.', 'Prices and markets change every season and are not in the calculation.')
+  ])
 };

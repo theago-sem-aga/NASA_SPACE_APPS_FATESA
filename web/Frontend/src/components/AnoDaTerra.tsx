@@ -3,6 +3,7 @@ import type { ClimaMensal, CoberturaSolo, Estrategia } from '../api/tipos';
 import { NOME_MES, NOME_MES_CURTO, ROTULO_COBERTURA } from '../features/fluxo/rotulos';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from './Pictograma';
 import { SeloFonte } from './SeloFonte';
+import { tx } from '../i18n/idioma';
 
 /**
  * "O ano da sua terra": o talhão mês a mês, com a chuva de cada mês (NASA POWER) caindo em cima.
@@ -24,12 +25,12 @@ function pictogramaDoMes(cobertura: CoberturaSolo, e: Estrategia): NomePictogram
 }
 
 function fraseDoMes(cobertura: CoberturaSolo, mm: number | null): string {
-  const chuva = mm === null ? 'sem dado de chuva' : `${Math.round(mm)} mm de chuva em média`;
+  const chuva = mm === null ? tx('sem dado de chuva', 'no rain data') : tx(`${Math.round(mm)} mm de chuva em média`, `${Math.round(mm)} mm of rain on average`);
   if (cobertura === 'solo_descoberto' && mm !== null && mm >= CHUVA_FORTE_MM) {
-    return `Terra descoberta com ${chuva}: é quando a enxurrada mais leva terra.`;
+    return tx(`Terra descoberta com ${chuva}: é quando a enxurrada mais leva terra.`, `Bare soil with ${chuva}: this is when runoff carries off the most soil.`);
   }
-  if (cobertura === 'solo_descoberto') return `Terra descoberta, ${chuva}.`;
-  return `${ROTULO_COBERTURA[cobertura].nome} protegendo o chão, ${chuva}.`;
+  if (cobertura === 'solo_descoberto') return tx(`Terra descoberta, ${chuva}.`, `Bare soil, ${chuva}.`);
+  return tx(`${ROTULO_COBERTURA[cobertura].nome} protegendo o chão, ${chuva}.`, `${ROTULO_COBERTURA[cobertura].nome} protecting the ground, ${chuva}.`);
 }
 
 export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: Estrategia; clima: ClimaMensal[]; fonteClima?: string }) {
@@ -70,13 +71,16 @@ export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: E
 
   return (
     <section className="ano-terra cartao" aria-labelledby="ano-terra-titulo">
-      <h2 id="ano-terra-titulo" className="ano-terra-titulo">O ano da sua terra</h2>
+      <h2 id="ano-terra-titulo" className="ano-terra-titulo">{tx('O ano da sua terra', 'Your field’s year')}</h2>
       <p className="ano-terra-resumo">
         {descobertosSemChuva
-          ? 'Faltam dados de chuva em meses de terra descoberta. Não dá para avaliar todo o calendário.'
+          ? tx('Faltam dados de chuva em meses de terra descoberta. Não dá para avaliar todo o calendário.', 'Rain data is missing for some bare-soil months. The whole calendar cannot be assessed.')
           : perigosos.length === 0
-          ? 'Neste caminho, a terra não fica descoberta em nenhum mês de chuva forte.'
-          : `Neste caminho, a terra fica descoberta em ${perigosos.length === 1 ? '1 mês' : `${perigosos.length} meses`} de chuva forte (${perigosos.map(m => NOME_MES[m.mes - 1].toLowerCase()).join(', ')}).`}
+          ? tx('Neste caminho, a terra não fica descoberta em nenhum mês de chuva forte.', 'With this option, the soil is never bare in a month of heavy rain.')
+          : tx(
+              `Neste caminho, a terra fica descoberta em ${perigosos.length === 1 ? '1 mês' : `${perigosos.length} meses`} de chuva forte (${perigosos.map(m => NOME_MES[m.mes - 1].toLowerCase()).join(', ')}).`,
+              `With this option, the soil is bare in ${perigosos.length === 1 ? '1 month' : `${perigosos.length} months`} of heavy rain (${perigosos.map(m => NOME_MES[m.mes - 1]).join(', ')}).`
+            )}
       </p>
       <SeloFonte fonte={fonteClima} />
 
@@ -99,10 +103,10 @@ export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: E
 
       <div className="ano-terra-controles">
         <button type="button" className="botao botao-primario ano-terra-play" onClick={tocar} aria-pressed={tocando}>
-          {tocando ? '⏸ Pausar' : i >= meses.length - 1 ? '↻ Ver de novo' : '▶ Ver o ano passar'}
+          {tocando ? tx('⏸ Pausar', '⏸ Pause') : i >= meses.length - 1 ? tx('↻ Ver de novo', '↻ Watch again') : tx('▶ Ver o ano passar', '▶ Watch the year go by')}
         </button>
       </div>
-      <ol className="ano-terra-linha" aria-label="Escolha o mês">
+      <ol className="ano-terra-linha" aria-label={tx('Escolha o mês', 'Choose the month')}>
         {meses.map((m, k) => {
           const risco = m.cobertura === 'solo_descoberto' && (chuvaDo(m.mes) ?? 0) >= CHUVA_FORTE_MM;
           return (
@@ -123,7 +127,10 @@ export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: E
         })}
       </ol>
       <p className="texto-apoio ano-terra-nota">
-        Chuva: média de cada mês no histórico da NASA. O destaque vermelho marca terra descoberta em mês com {CHUVA_FORTE_MM} mm ou mais, uma referência da equipe que ainda precisa ser validada por um agrônomo.
+        {tx(
+          `Chuva: média de cada mês no histórico da NASA. O destaque vermelho marca terra descoberta em mês com ${CHUVA_FORTE_MM} mm ou mais, uma referência da equipe que ainda precisa ser validada por um agrônomo.`,
+          `Rain: average for each month in NASA’s record. The red highlight marks bare soil in a month with ${CHUVA_FORTE_MM} mm or more, a team reference that still needs to be validated by an agronomist.`
+        )}
       </p>
     </section>
   );

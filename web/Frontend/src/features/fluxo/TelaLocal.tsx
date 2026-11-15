@@ -5,6 +5,7 @@ import { Icone } from '../../components/Icone';
 import { DicaPermissao } from '../../components/DicaPermissao';
 import { type DadosFluxo, descreverLocal, formatarCoordenada, parseCoordenada } from './estadoFluxo';
 import type { SituacaoGps } from './useLocalizacao';
+import { tx } from '../../i18n/idioma';
 
 interface TelaLocalProps {
   dados: DadosFluxo;
@@ -25,26 +26,26 @@ export function TelaLocal(props: TelaLocalProps) {
         <div className="local-confirmar">
           <span className="local-alfinete" aria-hidden="true"><Icone nome="local" tamanho={56} /></span>
           <h1 tabIndex={-1}>
-            Você está perto de <span className="local-nome">{descreverLocal(dados.local)}</span>
+            {tx('Você está perto de', 'You are near')} <span className="local-nome">{descreverLocal(dados.local)}</span>
           </h1>
-          <p className="texto-grande">É aqui que fica a plantação?</p>
+          <p className="texto-grande">{tx('É aqui que fica a plantação?', 'Is this where the field is?')}</p>
           {dados.origem_local === 'gps' && (
             <p className="texto-apoio local-coordenada">
-              Seu ponto: <span className="numero">{formatarCoordenada(dados.local.latitude, dados.local.longitude)}</span>
+              {tx('Seu ponto:', 'Your point:')} <span className="numero">{formatarCoordenada(dados.local.latitude, dados.local.longitude)}</span>
             </p>
           )}
         </div>
         <div className="respostas-grandes">
           <button type="button" className="botao botao-primario botao-gigante" onClick={props.aoConfirmar}>
-            <Icone nome="ok" tamanho={28} /> Sim, é aqui
+            <Icone nome="ok" tamanho={28} /> {tx('Sim, é aqui', 'Yes, it’s here')}
           </button>
           <button type="button" className="botao botao-secundario botao-gigante" onClick={props.aoTrocarParaBusca}>
-            Não, é em outro lugar
+            {tx('Não, é em outro lugar', 'No, it’s somewhere else')}
           </button>
         </div>
         <div className="navegacao navegacao-unica">
           <button type="button" className="botao botao-secundario" onClick={props.aoVoltar}>
-            <Icone nome="voltar" /> Voltar
+            <Icone nome="voltar" /> {tx('Voltar', 'Back')}
           </button>
         </div>
       </>
@@ -87,7 +88,7 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
 
   return (
     <>
-      <h1 tabIndex={-1}>Em qual cidade fica a plantação?</h1>
+      <h1 tabIndex={-1}>{tx('Em qual cidade fica a plantação?', 'Which town is the field in?')}</h1>
       {dados.motivoBusca && (
         <p className="caixa-porque">
           <Icone nome="info" tamanho={20} />
@@ -96,25 +97,28 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
       )}
 
       <div className="campo">
-        <label htmlFor={`${id}-busca`}>Nome da cidade</label>
+        <label htmlFor={`${id}-busca`}>{tx('Nome da cidade', 'Town name')}</label>
         <input
           id={`${id}-busca`}
           type="search"
           inputMode="search"
           autoComplete="off"
-          placeholder="Comece a escrever, ex.: Olímpia"
+          placeholder={tx('Comece a escrever, ex.: Olímpia', 'Start typing, e.g. Fresno')}
           value={texto}
           aria-describedby={`${id}-ajuda`}
           aria-controls={`${id}-lista`}
           onChange={e => setTexto(e.target.value)}
         />
         <span id={`${id}-ajuda`} className="texto-apoio">
-          Não precisa de acento. Toque na cidade quando ela aparecer, ou digite uma coordenada (ex.: 35.47, -97.52).
+          {tx(
+            'Busca cidades do Brasil e cidades e condados dos EUA. Não precisa de acento. Toque na cidade quando ela aparecer, ou digite uma coordenada (ex.: 35.47, -97.52).',
+            'Search towns and counties in the US or Brazil (e.g. Fresno, Fresno County). Tap the place when it shows up, or type a coordinate (e.g. 35.47, -97.52).'
+          )}
         </span>
       </div>
 
       {coordenadaDigitada && (
-        <ul className="lista-municipios" aria-label="Coordenada digitada">
+        <ul className="lista-municipios" aria-label={tx('Coordenada digitada', 'Typed coordinate')}>
           <li>
             <button
               type="button"
@@ -130,22 +134,24 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
               }
             >
               <Icone nome="local" tamanho={22} />
-              <span className="municipio-nome">Usar o ponto {formatarCoordenada(coordenadaDigitada.latitude, coordenadaDigitada.longitude)}</span>
+              <span className="municipio-nome">{tx('Usar o ponto', 'Use the point')} {formatarCoordenada(coordenadaDigitada.latitude, coordenadaDigitada.longitude)}</span>
             </button>
           </li>
         </ul>
       )}
 
       <div aria-live="polite">
-        {falhou && <p className="mensagem-erro"><Icone nome="alerta" tamanho={20} /> Não deu para buscar agora. Veja a internet e tente de novo.</p>}
+        {falhou && <p className="mensagem-erro"><Icone nome="alerta" tamanho={20} /> {tx('Não deu para buscar agora. Veja a internet e tente de novo.', 'Could not search right now. Check your internet and try again.')}</p>}
         {buscou && !falhou && resultados.length === 0 && (
-          <p className="texto-apoio">Não achamos "{texto.trim()}". Confira se o nome está escrito certo.</p>
+          <p className="texto-apoio">
+            {tx(`Não achamos "${texto.trim()}". Confira se o nome está escrito certo.`, `We did not find "${texto.trim()}". Check the spelling.`)}
+          </p>
         )}
       </div>
       {resultados.length > 0 && (
-        <ul id={`${id}-lista`} className="lista-municipios" aria-label="Cidades encontradas">
+        <ul id={`${id}-lista`} className="lista-municipios" aria-label={tx('Cidades encontradas', 'Towns found')}>
           {resultados.map(m => (
-            <li key={m.codigo_ibge}>
+            <li key={`${m.codigo_ibge}|${m.municipio}|${m.uf}|${m.latitude}`}>
               <button type="button" className="municipio-opcao" onClick={() => aoEscolherMunicipio(m)}>
                 <Icone nome="local" tamanho={22} />
                 <span className="municipio-nome">{m.municipio}</span>
@@ -159,12 +165,12 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
       {mostrarDica && <DicaPermissao />}
       <div className="acoes-discretas">
         <button type="button" className="link-discreto" onClick={aoTentarGps} disabled={situacaoGps !== 'parado'}>
-          <Icone nome="local" tamanho={18} /> {situacaoGps === 'parado' ? 'Usar onde estou agora' : 'Procurando…'}
+          <Icone nome="local" tamanho={18} /> {situacaoGps === 'parado' ? tx('Usar onde estou agora', 'Use my current location') : tx('Procurando…', 'Searching…')}
         </button>
       </div>
       <div className="navegacao navegacao-unica">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
       </div>
     </>

@@ -1,4 +1,6 @@
+import { tx } from '../i18n/idioma';
 import { Icone } from './Icone';
+import { SeletorIdioma } from './SeletorIdioma';
 
 interface CabecalhoProps {
   /** Só nas telas de pergunta. null = sem bolinhas (início, local e resultados). */
@@ -6,7 +8,7 @@ interface CabecalhoProps {
   tituloPasso: string;
   /** Subtítulo da marca, conforme a cultura escolhida (vocabularioCultura). */
   subtitulo: string;
-  narracao: { suportado: boolean; falando: boolean; aoOuvir: () => void; aoParar: () => void };
+  narracao: { suportado: boolean; falando: boolean; aoOuvir: () => void; aoParar: () => void; aviso?: string | null; aoFecharAviso?: () => void };
 }
 
 export function Cabecalho({ progresso, tituloPasso, subtitulo, narracao }: CabecalhoProps) {
@@ -20,22 +22,33 @@ export function Cabecalho({ progresso, tituloPasso, subtitulo, narracao }: Cabec
           </svg>
           <span>
             {/* Nome do produto ainda não definido pela equipe (convenção §10) */}
-            <span className="marca-nome">Rotação de culturas</span>
+            <span className="marca-nome">{tx('Rotação de culturas', 'Crop rotation')}</span>
             <span className="marca-sub">{subtitulo}</span>
           </span>
         </div>
-        {narracao.suportado && (
-          <button
-            type="button"
-            className="botao-ouvir"
-            onClick={narracao.falando ? narracao.aoParar : narracao.aoOuvir}
-            aria-pressed={narracao.falando}
-          >
-            <Icone nome={narracao.falando ? 'parar' : 'ouvir'} tamanho={20} />
-            {narracao.falando ? 'Parar' : 'Ouvir'}
-          </button>
-        )}
+        <div className="cabecalho-acoes">
+          <SeletorIdioma />
+          {narracao.suportado && (
+            <button
+              type="button"
+              className="botao-ouvir"
+              onClick={narracao.falando ? narracao.aoParar : narracao.aoOuvir}
+              aria-pressed={narracao.falando}
+            >
+              <Icone nome={narracao.falando ? 'parar' : 'ouvir'} tamanho={20} />
+              {narracao.falando ? tx('Parar', 'Stop') : tx('Ouvir', 'Listen')}
+            </button>
+          )}
+        </div>
       </div>
+      {narracao.aviso && (
+        <div className="conteudo aviso-voz" role="status">
+          <span>{narracao.aviso}</span>
+          <button type="button" className="link-discreto" onClick={narracao.aoFecharAviso}>
+            {tx('Fechar', 'Close')}
+          </button>
+        </div>
+      )}
       {progresso && (
         <div className="conteudo progresso">
           <ol className="bolinhas" aria-hidden="true">
@@ -44,8 +57,8 @@ export function Cabecalho({ progresso, tituloPasso, subtitulo, narracao }: Cabec
             ))}
           </ol>
           <p className="progresso-texto">
-            {progresso.atual} de {progresso.total}
-            <span className="visualmente-oculto"> perguntas · {tituloPasso}</span>
+            {progresso.atual} {tx('de', 'of')} {progresso.total}
+            <span className="visualmente-oculto"> {tx('perguntas', 'questions')} · {tituloPasso}</span>
           </p>
         </div>
       )}

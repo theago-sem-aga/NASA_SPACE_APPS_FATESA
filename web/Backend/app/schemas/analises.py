@@ -70,6 +70,8 @@ class AnaliseEntrada(EntradaEstrita):
     recursos_disponiveis: Recursos
     prioridades: list[Prioridade] = Field(min_length=1, max_length=2)
     correcoes: Correcoes = Field(default_factory=Correcoes)
+    # Idioma dos textos da resposta (caminhos, limitações). Sem o campo, português.
+    idioma: Literal["pt", "en"] = "pt"
 
     @model_validator(mode="after")
     def sem_duplicatas(self):

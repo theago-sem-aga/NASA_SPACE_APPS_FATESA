@@ -22,6 +22,7 @@ import { TENDENCIA_FRESNO, TENDENCIA_SJRP } from './mock/tendenciaHidricaMock';
 import { ESTRESSE_FRESNO, ESTRESSE_SJRP } from './mock/estresseVegetalMock';
 import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
+import { idiomaAtual, tx } from '../i18n/idioma';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'api';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';
@@ -54,7 +55,9 @@ function esperar(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const MENSAGEM_SEM_CONEXAO = 'Não deu para falar com o servidor. Veja se a internet está ligada e tente de novo.';
+const mensagemSemConexao = () =>
+  tx('Não deu para falar com o servidor. Veja se a internet está ligada e tente de novo.', 'Could not reach the server. Check your internet connection and try again.');
+const algoErrado = () => tx('Algo deu errado do nosso lado.', 'Something went wrong on our side.');
 
 async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
   let resposta: Response;
@@ -66,13 +69,13 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
       headers: init?.body ? { 'Content-Type': 'application/json', ...init.headers } : init?.headers
     });
   } catch {
-    throw new FalhaApi('sem_conexao', MENSAGEM_SEM_CONEXAO);
+    throw new FalhaApi('sem_conexao', mensagemSemConexao());
   }
   if (!resposta.ok) {
     // Erro no formato da convenção ({ erro: {...} }). O 422 de validação do FastAPI
     // vem como { detail: [...] } e cai na mensagem genérica.
     const corpo = (await resposta.json().catch(() => null)) as Partial<ErroApi> | null;
-    throw new FalhaApi(corpo?.erro?.codigo ?? 'erro_inesperado', corpo?.erro?.mensagem ?? 'Algo deu errado do nosso lado.');
+    throw new FalhaApi(corpo?.erro?.codigo ?? 'erro_inesperado', corpo?.erro?.mensagem ?? algoErrado());
   }
   return (await resposta.json()) as T;
 }
@@ -94,9 +97,9 @@ function carregarRotas(): Promise<Set<string>> {
     try {
       resposta = await fetch(URL_OPENAPI);
     } catch {
-      throw new FalhaApi('sem_conexao', MENSAGEM_SEM_CONEXAO);
+      throw new FalhaApi('sem_conexao', mensagemSemConexao());
     }
-    if (!resposta.ok) throw new FalhaApi('erro_inesperado', 'O servidor respondeu, mas não mostrou o que sabe fazer.');
+    if (!resposta.ok) throw new FalhaApi('erro_inesperado', tx('O servidor respondeu, mas não mostrou o que sabe fazer.', 'The server answered but did not list what it can do.'));
     const contrato = (await resposta.json()) as { paths?: Record<string, Record<string, unknown>> };
     const rotas = new Set<string>();
     for (const [caminho, metodos] of Object.entries(contrato.paths ?? {})) {
@@ -115,7 +118,7 @@ function carregarRotas(): Promise<Set<string>> {
 async function backendTem(metodo: 'GET' | 'POST', caminho: string): Promise<boolean> {
   if (USANDO_MOCK) return false;
   if (!(await carregarRotas()).has(`${metodo} ${caminho}`)) {
-    throw new FalhaApi('rota_indisponivel', `O servidor não disponibiliza ${metodo} ${caminho}. Reinicie a versão atual da API.`);
+    throw new FalhaApi('rota_indisponivel', tx(`O servidor não disponibiliza ${metodo} ${caminho}. Reinicie a versão atual da API.`, `The server does not offer ${metodo} ${caminho}. Restart the current API version.`));
   }
   return true;
 }
@@ -132,7 +135,7 @@ function normalizar(texto: string) {
  * BACKEND: lista fixa por enquanto; ordem = ordem de exibição.
  */
 export async function listarCulturas(): Promise<Cultura[]> {
-  if (await backendTem('GET', '/culturas')) return requisitar<Cultura[]>('/culturas');
+  if (await backendTem('GET', '/culturas')) return requisitar<Cultura[]>(`/culturas?idioma=${idiomaAtual()}`);
   if (USANDO_MOCK) await esperar(300);
   return CULTURAS_MOCK;
 }
@@ -202,7 +205,7 @@ export function coletarVariaveis(latitude: number, longitude: number): Promise<R
 
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
   // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
-  const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
+  const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || tx('sua cidade', 'your town'));
   // Geada, chuva extrema e tendência da chuva REAIS da NASA POWER (congeladas).
   // ?simular=fresno (ou o antigo ?simular=geada) mostra Fresno: geia todo inverno,
   // chove mais fora do padrão em novembro e a chuva do ano não tem tendência.
@@ -237,13 +240,13 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
  */
 export async function criarAnalise(entrada: AnaliseEntrada, descricaoLocal: string): Promise<Analise> {
   if (await backendTem('POST', '/analises')) {
-    return requisitar<Analise>('/analises', { method: 'POST', body: JSON.stringify(entrada) });
+    return requisitar<Analise>('/analises', { method: 'POST', body: JSON.stringify({ ...entrada, idioma: idiomaAtual() }) });
   }
   const simular = simulacaoPedida();
   await esperar(simular === 'lento' ? 4000 : 900);
-  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', algoErrado());
   if (simular === 'dados_insuficientes') {
-    throw new FalhaApi('dados_insuficientes', 'Ainda não temos dados de satélite bons o bastante para esse lugar.');
+    throw new FalhaApi('dados_insuficientes', tx('Ainda não temos dados de satélite bons o bastante para esse lugar.', 'We do not have good enough satellite data for this place yet.'));
   }
   return analiseMock(entrada, descricaoLocal);
 }
@@ -264,21 +267,21 @@ export const CODIGO_IBGE_EXEMPLO = '3549805';
  */
 export async function buscarPainelProducao(local: Local | null): Promise<PainelProducao> {
   if (!USANDO_MOCK && local === null) {
-    throw new FalhaApi('local_nao_informado', 'Escolha a localização da plantação para consultar a API.');
+    throw new FalhaApi('local_nao_informado', tx('Escolha a localização da plantação para consultar a API.', 'Choose the location of the field to query the API.'));
   }
   const codigoIbge = local?.codigo_ibge || (local === null ? CODIGO_IBGE_EXEMPLO : '');
   if (await backendTem('GET', '/producao')) {
     if (codigoIbge) {
-      return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+      return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}&idioma=${idiomaAtual()}`);
     }
-    return requisitar<PainelProducao>(`/producao?latitude=${local!.latitude.toFixed(5)}&longitude=${local!.longitude.toFixed(5)}`);
+    return requisitar<PainelProducao>(`/producao?latitude=${local!.latitude.toFixed(5)}&longitude=${local!.longitude.toFixed(5)}&idioma=${idiomaAtual()}`);
   }
   const simular = simulacaoPedida();
   if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
-  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', algoErrado());
   const painel = codigoIbge ? PAINEIS_PRODUCAO[codigoIbge] : undefined;
   if (!painel || simular === 'dados_insuficientes') {
-    throw new FalhaApi('dados_insuficientes', 'Ainda não temos os números da colheita dessa cidade.');
+    throw new FalhaApi('dados_insuficientes', tx('Ainda não temos os números da colheita dessa cidade.', 'We do not have harvest numbers for this town yet.'));
   }
   return painel;
 }
@@ -308,20 +311,26 @@ export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | n
   const coordenadaDigitada = origem === 'municipio' && !local.codigo_ibge && !local.uf;
   const pontoReal = origem === 'gps' || coordenadaDigitada;
   if (!USANDO_MOCK && !pontoReal) {
-    throw new FalhaApi('dados_insuficientes', 'As fotos precisam da coordenada da plantação. Use o GPS no local ou digite a coordenada; o centro da cidade não identifica o seu talhão.');
+    throw new FalhaApi(
+      'dados_insuficientes',
+      tx(
+        'As fotos precisam da coordenada da plantação. Use o GPS no local ou digite a coordenada; o centro da cidade não identifica o seu talhão.',
+        'The photos need the coordinates of the field. Use GPS on site or type the coordinate; the town center does not identify your field.'
+      )
+    );
   }
   if (pontoReal && (USANDO_MOCK ? await backendTemSemFalhar('GET', '/acompanhamento') : await backendTem('GET', '/acompanhamento'))) {
     return requisitar<Acompanhamento>(`/acompanhamento?latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`);
   }
   const simular = simulacaoPedida();
   if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
-  if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
+  if (simular === 'erro') throw new FalhaApi('erro_inesperado', algoErrado());
   const copia = ACOMPANHAMENTOS[local.codigo_ibge];
   if (!copia && pontoReal) {
-    throw new FalhaApi('dados_insuficientes', `Para ver as fotos do seu ponto (${local.latitude.toFixed(5)}, ${local.longitude.toFixed(5)}), o servidor precisa estar ligado.`);
+    throw new FalhaApi('dados_insuficientes', tx(`Para ver as fotos do seu ponto (${local.latitude.toFixed(5)}, ${local.longitude.toFixed(5)}), o servidor precisa estar ligado.`, `To see the photos of your point (${local.latitude.toFixed(5)}, ${local.longitude.toFixed(5)}), the server must be running.`));
   }
   if (!copia || simular === 'dados_insuficientes') {
-    throw new FalhaApi('dados_insuficientes', 'Ainda não temos fotos de satélite dessa área.');
+    throw new FalhaApi('dados_insuficientes', tx('Ainda não temos fotos de satélite dessa área.', 'We do not have satellite photos of this area yet.'));
   }
   return { ...copia, ponto_exemplo: true };
 }

@@ -210,8 +210,11 @@ def test_municipios_cobrem_o_brasil_real_fora_dele_404(cliente):
     assert local["municipio"] == "São José do Rio Preto"
     assert local["uf"] == "SP"
 
-    # Fresno, CA (EUA): fora do Brasil, sem reconhecimento ainda.
-    assert cliente.get("/api/v1/locais?latitude=36.6&longitude=-119.7").status_code == 404
+    # Fresno, CA (EUA): cidade mais perto pela base do Census (lugares_eua.parquet).
+    eua = cliente.get("/api/v1/locais?latitude=36.6&longitude=-119.7").json()
+    assert eua["uf"] == "CA" and eua["codigo_ibge"] == ""
+    # No meio do oceano: nem Brasil nem EUA.
+    assert cliente.get("/api/v1/locais?latitude=0&longitude=-30").status_code == 404
 
 
 def test_openapi_rotas_e_snake_case(cliente):
