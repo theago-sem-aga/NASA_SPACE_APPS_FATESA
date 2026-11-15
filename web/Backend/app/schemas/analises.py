@@ -198,7 +198,7 @@ class FotoNdvi(BaseModel):
 class EstresseVegetal(BaseModel):
     # Regra em app/domain/estresse_vegetal.py: NDVI MODIS da foto mais recente
     # vs. os anos anteriores no mesmo período de 16 dias. NDVI baixo também é
-    # colheita ou preparo do solo; cortes estatísticos pendentes de revisão.
+    # colheita ou preparo do solo; cortes e limiar escolhidos sem fonte, pendentes de revisão.
     situacao: Literal["normal", "abaixo", "muito_abaixo", "acima", "sem_vegetacao"]
     data_foto: str
     ndvi_atual: float

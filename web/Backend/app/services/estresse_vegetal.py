@@ -1,7 +1,8 @@
 """Estresse vegetal do ponto, a partir da série de NDVI do MODIS guardada por célula.
 
 Só cópia local pré-processada (data/processed/modis_ndvi/<celula>.parquet):
-a série longa no ORNL leva horas (ver integrations/modis_ornl.py), então não
+a série longa no ORNL levou de 8 a 20 min por ponto (20 min com 4 pedidos em paralelo; 8 a 14 min com 8;
+ver integrations/modis_ornl.py), então não
 cabe na requisição do usuário — mesma regra das outras fontes de satélite
 (docs/convencao_programacao.md, seção 7). Sem arquivo para a célula, levanta
 LookupError e a análise segue sem o bloco, listando a fonte como indisponível.

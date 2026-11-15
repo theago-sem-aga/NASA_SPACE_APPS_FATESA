@@ -154,8 +154,8 @@ def criar_analise(entrada):
         limitacoes.append(
             f"Estresse vegetal: {estresse['metodo']}, foto de {estresse['data_foto']}, pixel de 250 m "
             f"a {estresse['distancia_pixel_km']:g} km do ponto. NDVI baixo também é colheita, preparo do solo "
-            "ou troca de cultura, não só estresse: quem conhece o talhão confirma. Cortes estatísticos, "
-            "pendentes de revisão agronômica."
+            "ou troca de cultura, não só estresse: quem conhece o talhão confirma. Os cortes (10%, 25%, 90%) e o "
+            "limiar de 0,20 para \"sem planta\" foram escolhidos sem fonte agronômica: pendentes de revisão."
         )
     else:
         limitacoes.append(

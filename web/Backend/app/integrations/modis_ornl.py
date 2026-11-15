@@ -11,8 +11,9 @@ Limites do servico (medidos em 2026-11-15):
     lista de datas (/dates), reparte em blocos de 10, faz um pedido por bloco
     e concatena;
   - as vezes responde 502 depois de ~60 s: cada bloco tem novas tentativas.
-  - a serie toda (2000 ate hoje) sao ~62 blocos por banda: e lenta para a
-    requisicao do usuario. Quem usa a serie longa deve guardar em parquet
+  - a serie toda (2000 ate hoje, 614 datas) sao 62 blocos por banda. Tempo
+    medido por ponto: 20 min com 4 pedidos em paralelo; 8 e 14 min com 8.
+    Lenta demais para a requisicao do usuario. Quem usa a serie longa deve guardar em parquet
     (pipelines/ingestao_modis_ndvi.py) e so buscar ao vivo o que falta.
 
 Valores: NDVI bruto vai de -2000 a 10000 com fator 0,0001; -3000 e ausencia.
