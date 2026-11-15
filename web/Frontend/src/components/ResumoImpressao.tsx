@@ -7,6 +7,7 @@ import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 import { NOME_MES } from '../features/fluxo/rotulos';
 import { ResumoVisual } from './ResumoVisual';
 import { fraseTendencia, linhaTecnicaTendencia } from '../features/fluxo/FaixaTendenciaHidrica';
+import { fraseEstresse, linhaTecnicaEstresse } from '../features/fluxo/FaixaEstresseVegetal';
 
 /** Folha para levar ao agrônomo. Escondida na tela; só aparece na impressão / PDF. */
 export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise: Analise }) {
@@ -37,6 +38,12 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
         <p>
           <strong>Chuva ao longo dos anos:</strong> {fraseTendencia(analise.tendencia_hidrica)}{' '}
           ({linhaTecnicaTendencia(analise.tendencia_hidrica)} NASA POWER é reanálise em grade, não pluviômetro.)
+        </p>
+      )}
+      {analise.estresse_vegetal && (
+        <p>
+          <strong>Verdor da planta:</strong> {fraseEstresse(analise.estresse_vegetal)}{' '}
+          ({linhaTecnicaEstresse(analise.estresse_vegetal)} NDVI baixo também é colheita ou preparo do solo; confirmar no campo.)
         </p>
       )}
 

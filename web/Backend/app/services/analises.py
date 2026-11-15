@@ -18,13 +18,14 @@ from app.services.geada import risco_geada
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
 from app.services.risco_seca import resumo_risco_seca
 from app.services.tendencia_hidrica import tendencia_hidrica
+from app.services.estresse_vegetal import estresse_vegetal
 from app.services.solo import buscar_textura_ponto
 
 
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=9) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -35,6 +36,7 @@ def criar_analise(entrada):
         )
         solo_pendente = executor.submit(buscar_textura_ponto, entrada.latitude, entrada.longitude)
         tendencia_pendente = executor.submit(tendencia_hidrica, entrada.latitude, entrada.longitude)
+        estresse_pendente = executor.submit(estresse_vegetal, entrada.latitude, entrada.longitude)
         declividade_pendente = executor.submit(declividade_do_ponto, entrada.latitude, entrada.longitude)
         risco_seca_pendente = executor.submit(resumo_risco_seca, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
@@ -58,6 +60,18 @@ def criar_analise(entrada):
             tendencia = None
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_tendencia_hidrica", "motivo": "falha_fonte"}
+            )
+        try:
+            estresse = estresse_pendente.result()
+        except LookupError:
+            estresse = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "modis_ndvi_estresse_vegetal", "motivo": "sem_historico_pre_processado"}
+            )
+        except (ValueError, KeyError, OSError):
+            estresse = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "modis_ndvi_estresse_vegetal", "motivo": "falha_fonte"}
             )
         try:
             solo = solo_pendente.result()
@@ -136,6 +150,17 @@ def criar_analise(entrada):
         )
     else:
         limitacoes.append("Tendência da chuva sem dado: faltam anos completos na série de chuva.")
+    if estresse:
+        limitacoes.append(
+            f"Estresse vegetal: {estresse['metodo']}, foto de {estresse['data_foto']}, pixel de 250 m "
+            f"a {estresse['distancia_pixel_km']:g} km do ponto. NDVI baixo também é colheita, preparo do solo "
+            "ou troca de cultura, não só estresse: quem conhece o talhão confirma. Cortes estatísticos, "
+            "pendentes de revisão agronômica."
+        )
+    else:
+        limitacoes.append(
+            "Estresse vegetal sem dado: ainda não há série de NDVI do MODIS guardada para esta região."
+        )
     if precipitacao_extrema:
         limitacoes.append(
             f"Precipitação extrema: {precipitacao_extrema['metodo']}. Grade regional da NASA POWER, "
@@ -202,6 +227,7 @@ def criar_analise(entrada):
         geada=geada,
         precipitacao_extrema=precipitacao_extrema,
         tendencia_hidrica=tendencia,
+        estresse_vegetal=estresse,
         risco_seca=risco_seca,
         estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
         limitacoes=limitacoes,

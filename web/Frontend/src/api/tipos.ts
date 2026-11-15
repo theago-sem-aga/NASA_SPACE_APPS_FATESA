@@ -295,6 +295,50 @@ export interface TendenciaHidrica {
   tipo_acesso: TipoAcesso;
 }
 
+export interface FotoNdvi {
+  data: string;
+  ndvi: number;
+  /** Normal da mesma época nos anos anteriores; null quando há poucos anos. */
+  normal_mediana: number | null;
+  normal_p10: number | null;
+  normal_p90: number | null;
+}
+
+/**
+ * A planta está tão verde quanto costuma estar nesta época? (REAL, calculado no backend em
+ * app/domain/estresse_vegetal.py: NDVI do MODIS da foto mais recente vs. os anos anteriores
+ * no mesmo período de 16 dias.) O front só exibe.
+ */
+export interface EstresseVegetal {
+  /** 'sem_vegetacao' = o pixel quase nunca tem planta (cidade, água): não dá para medir. */
+  situacao: 'normal' | 'abaixo' | 'muito_abaixo' | 'acima' | 'sem_vegetacao';
+  data_foto: string;
+  ndvi_atual: number;
+  normal_mediana: number;
+  normal_p10: number;
+  normal_p25: number;
+  normal_p75: number;
+  normal_p90: number;
+  anomalia_pct: number;
+  /** Fração dos anos anteriores com NDVI menor que o de agora (0..1). */
+  posicao: number;
+  anos_mais_verdes: number;
+  anos_comparados: number;
+  ndvi_mediano_geral: number;
+  limiar_sem_vegetacao: number;
+  /** Último ano de fotos válidas, com o normal de cada época (para o gráfico). */
+  ultimas_fotos: FotoNdvi[];
+  periodo_inicio: number;
+  periodo_fim: number;
+  metodo: string;
+  latitude_pixel: number;
+  longitude_pixel: number;
+  distancia_pixel_km: number;
+  fonte: string;
+  produto: string;
+  tipo_acesso: TipoAcesso;
+}
+
 export interface Analise {
   analise_id: string;
   /** true = dados fictícios de demonstração. A UI deve deixar isso visível. */
@@ -312,6 +356,8 @@ export interface Analise {
   precipitacao_extrema: RiscoPrecipitacaoExtrema | null;
   /** null = faltam anos completos na série de chuva, ou a fonte não respondeu. */
   tendencia_hidrica: TendenciaHidrica | null;
+  /** null = ainda não há série de NDVI do MODIS guardada para esta região. */
+  estresse_vegetal: EstresseVegetal | null;
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];

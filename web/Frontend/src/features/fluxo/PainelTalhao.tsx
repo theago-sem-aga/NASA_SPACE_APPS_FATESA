@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import type { ClimaMensal, EstresseTermico, CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
+import type { ClimaMensal, EstresseTermico, EstresseVegetal, CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
 import { CarrosselClima } from './CarrosselClima';
@@ -8,6 +8,7 @@ import { MesesAtencao } from './MesesAtencao';
 import { FaixaGeada, nivelComFaixa } from './FaixaGeada';
 import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { FaixaTendenciaHidrica, ROTULO_TENDENCIA } from './FaixaTendenciaHidrica';
+import { FaixaEstresseVegetal, ROTULO_ESTRESSE } from './FaixaEstresseVegetal';
 import { PICTO_RELEVO, PICTO_TEXTURA, ROTULO_RELEVO, ROTULO_RISCO, ROTULO_TEXTURA } from './rotulos';
 
 interface PainelTalhaoProps {
@@ -22,6 +23,8 @@ interface PainelTalhaoProps {
   precipitacaoExtrema: RiscoPrecipitacaoExtrema | null;
   /** A chuva do ano vem caindo, subindo ou estável; null = sem dado. */
   tendenciaHidrica: TendenciaHidrica | null;
+  /** A planta está tão verde quanto costuma estar nesta época; null = sem dado. */
+  estresseVegetal: EstresseVegetal | null;
   aoCorrigir: (correcoes: CorrecoesTalhao) => void;
 }
 
@@ -48,7 +51,7 @@ const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
  * A pessoa pode discordar: em "Não é bem assim" ela marca a terra, o terreno ou os
  * dois, e só ao tocar em "Confirmar mudanças" a análise é refeita com a correção.
  */
-export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoExtrema, tendenciaHidrica, aoCorrigir }: PainelTalhaoProps) {
+export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoExtrema, tendenciaHidrica, estresseVegetal, aoCorrigir }: PainelTalhaoProps) {
   const id = useId();
   const [corrigindo, setCorrigindo] = useState(false);
   /** O que a pessoa marcou e ainda não confirmou. Começa igual ao que os mapas mostraram. */
@@ -104,6 +107,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
           rotulo="Chuva ao longo dos anos"
           valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : 'Sem dado'}
         />
+        <Item pictograma="planta" rotulo="Verdor da planta" valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : 'Sem dado'} />
       </ul>
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
@@ -183,6 +187,9 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
             : []),
           ...(tendenciaHidrica
             ? [{ id: 'chuva-anos', titulo: 'Chuva ao longo dos anos', pictograma: 'chuva' as const, conteudo: <FaixaTendenciaHidrica tendencia={tendenciaHidrica} /> }]
+            : []),
+          ...(estresseVegetal
+            ? [{ id: 'verdor', titulo: 'A planta está verde?', pictograma: 'planta' as const, conteudo: <FaixaEstresseVegetal estresse={estresseVegetal} /> }]
             : [])
         ]}
       />

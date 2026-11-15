@@ -7,6 +7,7 @@
 - Geada (risco de geada, NASA POWER) — qualquer coordenada do mundo
 - Precipitação extrema (percentil 95 da chuva diária do mês) — qualquer coordenada
 - Tendência hídrica de longo prazo (Mann-Kendall + inclinação de Sen, chuva anual) — qualquer coordenada
+- Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP e Fresno): a série longa leva de minutos a horas no ORNL
 - GRACE/GRACE-FO (armazenamento de água) — só nos pontos já ingeridos (Fresno, SJRP)
 - Textura do solo (USDA nos EUA, SoilGrids no Brasil) — conectada no relatório
 - SMAP, GPM, SRTM, ECOSTRESS, Landsat — indexados, só nos pontos piloto (Fresno, SJRP)
@@ -19,9 +20,7 @@
 
 ## Faltante
 
-- MODIS — retomado pela API do ORNL (NDVI em JSON, sem HDF4; `integrations/modis_ornl.py`); falta só a anomalia (estresse vegetal)
 - Estresse térmico — a variável existe, falta calcular o índice
-- Estresse vegetal / anomalia de NDVI — falta calcular
 - Um único motor de decisão — hoje são dois, desconectados:
   - motor beta genérico (no ar, mas sempre o mesmo texto simulado)
   - catálogo real do ZARC do Matheus (mais rigoroso, mas só gera mock pro front, nunca foi chamado pelo backend)

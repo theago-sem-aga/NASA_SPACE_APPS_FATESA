@@ -13,6 +13,7 @@ import { fraseGeada } from '../features/fluxo/FaixaGeada';
 import { vocabulario } from '../features/fluxo/vocabularioCultura';
 import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 import { fraseTendencia } from '../features/fluxo/FaixaTendenciaHidrica';
+import { fraseEstresse } from '../features/fluxo/FaixaEstresseVegetal';
 
 const ORDINAL = ['O primeiro', 'O segundo', 'O terceiro', 'O quarto', 'O quinto'];
 
@@ -41,6 +42,7 @@ function roteiroTalhao(a: Analise): string {
   if (a.geada) partes.push(fraseGeada(a.geada));
   if (a.precipitacao_extrema) partes.push(fraseChuvaExtrema(a.precipitacao_extrema));
   if (a.tendencia_hidrica) partes.push(fraseTendencia(a.tendencia_hidrica));
+  if (a.estresse_vegetal) partes.push(fraseEstresse(a.estresse_vegetal));
   if (partes.length) partes.push('Se não for bem assim, toque em: não é bem assim.');
   return partes.join(' ');
 }
