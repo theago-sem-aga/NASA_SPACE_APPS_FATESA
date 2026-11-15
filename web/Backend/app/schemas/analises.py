@@ -225,6 +225,20 @@ class EstresseVegetal(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class RiscoSeca(BaseModel):
+    # Regra em app/domain/risco_seca.py: chuva dos últimos 90 dias vs. média
+    # do mesmo período do ano, sobre o histórico real da NASA POWER.
+    nivel: Nivel
+    chuva_recente_mm: float
+    chuva_normal_mm: float
+    proporcao_normal_pct: float | None = None
+    data_referencia: str
+    metodo: str
+    fonte: str
+    variavel: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -293,6 +307,8 @@ class Analise(BaseModel):
     tendencia_hidrica: TendenciaHidrica | None = None
     # None = sem série de NDVI pré-processada para a célula (ver services/estresse_vegetal.py).
     estresse_vegetal: EstresseVegetal | None = None
+    # None = série diária de chuva sem medição suficiente para o ponto.
+    risco_seca: RiscoSeca | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

@@ -13,8 +13,10 @@ from app.integrations.clima_historico import buscar_clima
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
+from app.services.declividade import declividade_do_ponto
 from app.services.geada import risco_geada
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
+from app.services.risco_seca import resumo_risco_seca
 from app.services.tendencia_hidrica import tendencia_hidrica
 from app.services.estresse_vegetal import estresse_vegetal
 from app.services.solo import buscar_textura_ponto
@@ -23,7 +25,7 @@ from app.services.solo import buscar_textura_ponto
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=7) as executor:
+    with ThreadPoolExecutor(max_workers=9) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -35,6 +37,8 @@ def criar_analise(entrada):
         solo_pendente = executor.submit(buscar_textura_ponto, entrada.latitude, entrada.longitude)
         tendencia_pendente = executor.submit(tendencia_hidrica, entrada.latitude, entrada.longitude)
         estresse_pendente = executor.submit(estresse_vegetal, entrada.latitude, entrada.longitude)
+        declividade_pendente = executor.submit(declividade_do_ponto, entrada.latitude, entrada.longitude)
+        risco_seca_pendente = executor.submit(resumo_risco_seca, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -75,6 +79,16 @@ def criar_analise(entrada):
             solo = None
             coleta["fontes_indisponiveis"].append({"fonte": "textura_solo", "motivo": "falha_fonte"})
         try:
+            declividade = declividade_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            declividade = None
+            coleta["fontes_indisponiveis"].append({"fonte": "declividade_usgs_3dep", "motivo": "falha_fonte"})
+        try:
+            risco_seca = risco_seca_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            risco_seca = None
+            coleta["fontes_indisponiveis"].append({"fonte": "nasa_power_risco_seca", "motivo": "falha_fonte"})
+        try:
             clima = clima_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
             config = configuracao()
@@ -99,7 +113,7 @@ def criar_analise(entrada):
     beta = configuracao()["cenarios_beta"]
     limitacoes = [
         "Dados regionais (grade de satélite/clima) não substituem levantamento do talhão.",
-        "Elevação agregada não permite calcular declividade; riscos de erosão e seca não têm regra validada e ficam sem dado.",
+        "Risco de erosão ainda não tem regra validada e fica sem dado.",
         "Umidade superficial do SMAP não foi transformada em um índice de água na zona das raízes.",
         "A cultura atual não informa calendário nem manejo: a referência exibida não comprova a prática atual do produtor.",
         "NASA POWER fornece dados históricos em grade; não é medição de estação instalada no talhão nem previsão meteorológica.",
@@ -167,15 +181,32 @@ def criar_analise(entrada):
             "Textura do solo sem dado: fonte indisponível, unidade de mapeamento ambígua, ou "
             "ponto fora da cobertura do USDA Soil Data Access e do SoilGrids."
         )
+    if declividade:
+        limitacoes.append(
+            "Terreno: declividade calculada a partir de 5 pontos de elevação (USGS 3DEP) ao redor "
+            "da coordenada, não um levantamento topográfico do talhão; só cobre os EUA hoje."
+        )
+    else:
+        limitacoes.append("Terreno sem dado: fonte de elevação indisponível ou ponto fora da cobertura do USGS 3DEP (fora dos EUA).")
+    if risco_seca:
+        limitacoes.append(
+            f"Risco de seca: {risco_seca['metodo']}. Grade regional da NASA POWER, não substitui "
+            "previsão meteorológica nem umidade do solo medida no talhão."
+        )
+    else:
+        limitacoes.append("Risco de seca sem dado: a série diária de chuva não respondeu.")
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
     talhao_base = caracterizar_talhao(entrada)
     usa_textura_calculada = talhao_base.textura_solo is None and textura_calculada is not None
+    usa_declividade_calculada = talhao_base.relevo is None and declividade is not None
     bases = []
     if geada:
         bases.append("NASA POWER")
     if usa_textura_calculada:
         bases.append(solo["fonte"])
+    if usa_declividade_calculada:
+        bases.append(declividade["fonte"])
     resultado = Analise(
         analise_id=str(uuid4()),
         eh_mock=beta,
@@ -183,7 +214,11 @@ def criar_analise(entrada):
         talhao=talhao_base.model_copy(
             update={
                 "risco_geada": geada["nivel"] if geada else None,
+                "risco_seca": risco_seca["nivel"] if risco_seca else talhao_base.risco_seca,
                 "textura_solo": textura_calculada if usa_textura_calculada else talhao_base.textura_solo,
+                "relevo": declividade["relevo"] if usa_declividade_calculada else talhao_base.relevo,
+                "fonte_relevo": "mapas" if usa_declividade_calculada else talhao_base.fonte_relevo,
+                "declividade_pct": declividade["declividade_pct"] if usa_declividade_calculada else talhao_base.declividade_pct,
                 "bases": bases,
             }
         ),
@@ -193,6 +228,7 @@ def criar_analise(entrada):
         precipitacao_extrema=precipitacao_extrema,
         tendencia_hidrica=tendencia,
         estresse_vegetal=estresse,
+        risco_seca=risco_seca,
         estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
         limitacoes=limitacoes,
         versao_motor=VERSAO,
