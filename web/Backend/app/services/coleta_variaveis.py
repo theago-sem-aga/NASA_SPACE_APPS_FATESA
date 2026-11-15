@@ -11,11 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.configuracao import configuracao
 from app.integrations import nasa_power, openet, usda_soil_data_access
-from app.modelos import precipitacao_extrema
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
+from app.services.precipitacao_extrema import precipitacao_extrema_do_ponto
 
-FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace", "precipitacao_extrema")
+FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace")
 CAMPOS = {
     "nasa_power": set(nasa_power._MAPA_PARAMETROS.values()),
     "usda_soil_data_access": {
@@ -78,10 +78,9 @@ def _buscar(fonte, lat, lon):
         fim = (hoje.replace(day=1) - dt.timedelta(days=1)).replace(day=1) - dt.timedelta(days=1)
         return openet.buscar_et_ponto(lat, lon, fim.replace(day=1), fim, timeout_s=timeout)
     if fonte == "precipitacao_extrema":
-        # Derivado do historico da NASA POWER (ingestao_power_historico.py),
-        # nao e uma fonte ingerida por si -- sem o cache dessa celula, indisponivel.
-        historico = buscar_celula("nasa_power", lat, lon)
-        return None if historico is None else precipitacao_extrema.calcular(historico["serie"])
+        # Multi-regional: usa o cache local se existir (pontos piloto), senao
+        # busca ao vivo na NASA POWER o recorte necessario (ver services/precipitacao_extrema.py).
+        return precipitacao_extrema_do_ponto(lat, lon)
     return buscar_celula(fonte, lat, lon)
 
 
@@ -106,9 +105,8 @@ def _coletar_fonte(fonte, lat, lon):
             serie = componentes if len(componentes) == 1 else []
         else:
             serie = resultado.get("serie", [])
-        valores = _variaveis_de_serie(
-            serie, fonte, "pre_processado" if fonte in FONTES_INDEXADAS else "ao_vivo"
-        )
+        tipo_acesso = resultado.get("tipo_acesso") or ("pre_processado" if fonte in FONTES_INDEXADAS else "ao_vivo")
+        valores = _variaveis_de_serie(serie, fonte, tipo_acesso)
         motivo_ausencia = (
             "componentes_solo_ambiguos"
             if fonte == "usda_soil_data_access" and len(componentes) > 1
@@ -143,7 +141,7 @@ def _coletar_fonte(fonte, lat, lon):
 
 
 def coletar_variaveis(latitude, longitude, incluir_evidencias=False):
-    fontes = ("nasa_power", "usda_soil_data_access", "openet", *FONTES_INDEXADAS)
+    fontes = ("nasa_power", "usda_soil_data_access", "openet", "precipitacao_extrema", *FONTES_INDEXADAS)
     with ThreadPoolExecutor(max_workers=8) as executor:
         resultados = list(executor.map(lambda f: _coletar_fonte(f, latitude, longitude), fontes))
     resposta = {
