@@ -8,6 +8,7 @@ import type { DadosFluxo, Etapa } from '../features/fluxo/estadoFluxo';
 import {
   NOME_MES, ROTULO_PRIORIDADE, ROTULO_PROBLEMA, ROTULO_RELEVO, ROTULO_REQUISITO, ROTULO_RISCO, ROTULO_TEXTURA
 } from '../features/fluxo/rotulos';
+import { fraseCalor } from '../features/fluxo/FaixaCalor';
 import { fraseGeada } from '../features/fluxo/FaixaGeada';
 import { vocabulario } from '../features/fluxo/vocabularioCultura';
 import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
@@ -36,6 +37,7 @@ function roteiroTalhao(a: Analise): string {
   if (t.risco_erosao) partes.push(`O risco de a chuva levar terra é ${minuscula(ROTULO_RISCO[t.risco_erosao])}.`);
   if (t.risco_seca) partes.push(`O risco de seca é ${minuscula(ROTULO_RISCO[t.risco_seca])}.`);
   if (t.risco_geada) partes.push(`O risco de geada é ${minuscula(ROTULO_RISCO[t.risco_geada])}.`);
+  if (a.estresse_termico) partes.push(fraseCalor(a.estresse_termico));
   if (a.geada) partes.push(fraseGeada(a.geada));
   if (a.precipitacao_extrema) partes.push(fraseChuvaExtrema(a.precipitacao_extrema));
   if (a.tendencia_hidrica) partes.push(fraseTendencia(a.tendencia_hidrica));

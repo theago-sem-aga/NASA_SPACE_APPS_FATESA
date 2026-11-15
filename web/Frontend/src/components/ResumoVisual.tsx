@@ -1,3 +1,4 @@
+import { LegendaMedidor } from './LegendaMedidor';
 import { NomeCientificoCaminho } from './NomeCientifico';
 import { vocabulario } from '../features/fluxo/vocabularioCultura';
 import { useId } from 'react';
@@ -110,13 +111,14 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
 
       <section aria-labelledby={`${id}-caminhos`}>
         <h2 id={`${id}-caminhos`} className="titulo-secao">Os caminhos</h2>
+        <LegendaMedidor />
         <ol className="resumo-caminhos">
           {analise.estrategias.map(e => (
             <li key={e.estrategia_id} className="resumo-caminho">
               <p className="resumo-caminho-nome">
                 {e.nome}
                 <NomeCientificoCaminho estrategia={e} />
-                {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">Mais comum</span>}
+                {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">O jeito de hoje, para comparar</span>}
               </p>
               <FaixaRotacao etapas={e.etapas_rotacao} tamanho={compacto ? 28 : 36} />
               <ul className="resumo-criterios">
@@ -129,6 +131,22 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
                   </li>
                 ))}
               </ul>
+              {(e.beneficios[0] || e.riscos[0]) && (
+                <dl className="resumo-motivos">
+                  {e.beneficios[0] && (
+                    <div className="resumo-motivo resumo-motivo-bom">
+                      <dt>Por que pode dar certo</dt>
+                      <dd>{e.beneficios[0]}</dd>
+                    </div>
+                  )}
+                  {e.riscos[0] && (
+                    <div className="resumo-motivo resumo-motivo-risco">
+                      <dt>O que pode dar errado</dt>
+                      <dd>{e.riscos[0]}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
               {!compacto && (<>
               <p className="resumo-pergunta">
                 <Icone nome="pessoa" tamanho={20} /> <span><strong>Pergunte:</strong> {e.pergunta_especialista}</span>

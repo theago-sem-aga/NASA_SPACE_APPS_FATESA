@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import { useState } from 'react';
 import type { GeadaMensal, RiscoGeada } from '../../api/tipos';
 import { Pictograma } from '../../components/Pictograma';
@@ -78,6 +79,9 @@ export function linhaTecnicaGeada(g: RiscoGeada): string {
  * Os 12 meses com um floco de neve onde costuma gear e o número de anos (em cada 10).
  * Tocar num mês mostra quantas vezes geou e a faixa provável.
  */
+/** Cor do mês pela menor mínima registrada: quanto mais frio, mais azul. */
+const tomFrio = (c: number | null) => (c === null ? 'temp-neutra' : c <= 2 ? 'temp-frio-3' : c <= 5 ? 'temp-frio-2' : c <= 10 ? 'temp-frio-1' : 'temp-neutra');
+
 export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
   const comRisco = new Set(geada.meses_com_risco);
   const [aberto, setAberto] = useState<number | null>(null);
@@ -85,38 +89,51 @@ export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
   return (
     <div className="faixa-geada">
       <p className="faixa-geada-frase">{fraseGeada(geada)}</p>
-      <ol className="faixa-geada-meses" aria-label="Geada mês a mês. Toque num mês para ver o detalhe.">
+      <SeloFonte fonte={geada.fonte} />
+      <div className="tabela-temperatura" role="group" aria-label="Geada mês a mês. Toque num mês para ver o detalhe.">
+        <span className="tabela-temperatura-rotulo" aria-hidden="true" />
         {geada.meses.map(m => {
           const risco = comRisco.has(m.mes);
           return (
-            <li key={m.mes}>
-              <button
-                type="button"
-                className={`faixa-geada-mes${risco ? ' com-risco' : ''}${aberto === m.mes ? ' aberto' : ''}`}
-                aria-label={detalheMes(m, geada.anos_analisados)}
-                aria-pressed={aberto === m.mes}
-                onClick={() => setAberto(aberto === m.mes ? null : m.mes)}
-              >
-                <span className="faixa-geada-nome" aria-hidden="true">{NOME_MES_CURTO[m.mes - 1]}</span>
-                <span className="faixa-geada-icone" aria-hidden="true">
-                  {risco ? <Pictograma nome="geada" tamanho={26} /> : <span className="faixa-geada-vazio" />}
-                </span>
-                <span className="faixa-geada-numero" aria-hidden="true">
-                  {m.anos_com_geada === 0 ? '–' : Math.max(emCada10(m.probabilidade_geada), 1)}
-                </span>
-              </button>
-            </li>
+            <button
+              key={m.mes}
+              type="button"
+              className={`tabela-temperatura-mes${risco ? ' com-risco' : ''}${aberto === m.mes ? ' aberto' : ''}`}
+              aria-label={detalheMes(m, geada.anos_analisados)}
+              aria-pressed={aberto === m.mes}
+              onClick={() => setAberto(aberto === m.mes ? null : m.mes)}
+            >
+              <span aria-hidden="true">{NOME_MES_CURTO[m.mes - 1]}</span>
+              <span className="tabela-temperatura-sol" aria-hidden="true">{risco ? <Pictograma nome="geada" tamanho={18} /> : null}</span>
+            </button>
           );
         })}
-      </ol>
+        <span className="tabela-temperatura-rotulo" aria-hidden="true">Mínima</span>
+        {geada.meses.map(m => (
+          <span key={m.mes} className={`tabela-temperatura-valor ${tomFrio(m.menor_minima_c)}`} aria-hidden="true">
+            {m.menor_minima_c === null ? '–' : `${Math.round(m.menor_minima_c)}°`}
+          </span>
+        ))}
+      </div>
+      <p className="faixa-temperatura-legenda">
+        <span>
+          <strong>Mínima</strong> = a temperatura mais baixa já medida em cada mês, de {geada.periodo_inicio} a {geada.periodo_fim}. Não é a média.
+        </span>
+        <span className="escala-temperatura escala-fria" aria-hidden="true">
+          <span className="temp-neutra">acima de 10°</span>
+          <span className="temp-frio-1">até 10°</span>
+          <span className="temp-frio-2">até 5°</span>
+          <span className="temp-frio-3">até 2°</span>
+        </span>
+      </p>
       <p className="faixa-geada-detalhe" aria-live="polite">
         {mesAberto ? detalheMes(mesAberto, geada.anos_analisados) : ''}
       </p>
       <details className="como-ler">
         <summary>Como ler este dado</summary>
         <p className="texto-apoio faixa-geada-legenda">
-          Número = em quantos de cada 10 anos geou naquele mês. Toque no mês para ver o detalhe e a faixa provável: com só{' '}
-          {geada.anos_analisados} anos de dados, a conta tem folga para mais ou para menos. Noites com o ar a até{' '}
+          A linha Mínima mostra a temperatura do ar mais baixa já medida em cada mês (não é a média); quanto mais frio, mais azul. O floco marca os meses em que geou em pelo menos 1 de cada 10 anos. Toque no mês para ver em quantos anos geou e a faixa provável: com só{' '}
+        {geada.anos_analisados} anos de dados, a conta tem folga para mais ou para menos. Noites com o ar a até{' '}
           {grau(geada.limiar_c)}, de {geada.periodo_inicio} a {geada.periodo_fim} (NASA POWER). Baixada e beira de rio
           geiam mais que isso, e essa diferença não entra na faixa.
         </p>

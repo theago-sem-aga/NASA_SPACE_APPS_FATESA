@@ -1,3 +1,5 @@
+import { Icone } from './components/Icone';
+import { ConfirmarInicio } from './components/ConfirmarInicio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { criarAnalise, FalhaApi, SINALIZAR_MOCK, USANDO_MOCK } from './api/cliente';
 import type { CorrecoesTalhao, Local, RequisitoId, Resposta } from './api/tipos';
@@ -36,6 +38,7 @@ export function App() {
   const [etapa, setEtapa] = useState<Etapa>('inicio');
   const [dados, setDados] = useState<DadosFluxo>(DADOS_INICIAIS);
   const [analise, setAnalise] = useState<SituacaoAnalise>({ situacao: 'ociosa' });
+  const [confirmandoInicio, setConfirmandoInicio] = useState(false);
   const narracao = useNarracao();
   const principal = useRef<HTMLElement>(null);
   const primeiraRenderizacao = useRef(true);
@@ -57,6 +60,12 @@ export function App() {
     },
     [narracao]
   );
+  /** Apaga as respostas e volta à tela inicial (botão Início e "Recomeçar" do resumo). */
+  const recomecar = useCallback(() => {
+    setDados(DADOS_INICIAIS);
+    setAnalise({ situacao: 'ociosa' });
+    ir('inicio');
+  }, [ir]);
   const irDepoisDoToque = useCallback(
     (proxima: Etapa) => {
       window.clearTimeout(temporizador.current);
@@ -121,7 +130,9 @@ export function App() {
           },
           descreverLocal(dados.local)
         );
-        setAnalise({ situacao: 'sucesso', analise: resultado });
+        // O jeito de hoje fica por último: primeiro o que combina com as escolhas (ordem do motor), depois a base de comparação.
+        const estrategias = [...resultado.estrategias.filter(e => !e.eh_pratica_atual), ...resultado.estrategias.filter(e => e.eh_pratica_atual)];
+        setAnalise({ situacao: 'sucesso', analise: { ...resultado, estrategias } });
       } catch (e) {
         const falha = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
         setAnalise({ situacao: 'falha', codigo: falha.codigo, mensagem: falha.message });
@@ -262,6 +273,7 @@ export function App() {
           <TelaEstrategias
             analise={a}
             prioridades={dados.prioridades}
+            problemas={dados.problemas}
             marcouPraga={dados.problemas.includes('nematoides_pragas')}
             culturaId={dados.cultura_atual_id}
             nomeCultura={dados.nomeCultura}
@@ -293,6 +305,8 @@ export function App() {
               estrategia={estrategia}
               ehMock={a.eh_mock}
               recursos={dados.recursos_disponiveis}
+              clima={a.clima_mensal}
+              fonteClima={a.fonte_clima.fonte_id}
               aoVoltar={voltar}
               aoAvancar={() => ir('clima')}
             />
@@ -323,11 +337,7 @@ export function App() {
               setVoltarDoAcompanhamento('proximos');
               ir('acompanhamento');
             }}
-            aoRecomecar={() => {
-              setDados(DADOS_INICIAIS);
-              setAnalise({ situacao: 'ociosa' });
-              ir('inicio');
-            }}
+            aoRecomecar={() => setConfirmandoInicio(true)}
           />
         );
     }
@@ -354,8 +364,23 @@ export function App() {
       />
       <main id="conteudo" ref={principal} className="conteudo principal">
         {conteudo()}
+        {etapa !== 'inicio' && etapa !== 'proximos' && (
+          <div className="voltar-menu">
+            <button type="button" className="botao-menu-inicial" onClick={() => setConfirmandoInicio(true)}>
+              <Icone nome="casa" tamanho={20} /> Voltar ao menu inicial
+            </button>
+          </div>
+        )}
       </main>
       {analisePronta && <ResumoImpressao dados={dados} analise={analisePronta} />}
+      <ConfirmarInicio
+        aberto={confirmandoInicio}
+        aoCancelar={() => setConfirmandoInicio(false)}
+        aoConfirmar={() => {
+          setConfirmandoInicio(false);
+          recomecar();
+        }}
+      />
       <footer className="rodape">
         <div className="conteudo">
           <p>

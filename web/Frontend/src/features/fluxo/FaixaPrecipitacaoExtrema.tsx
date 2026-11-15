@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import type { RiscoPrecipitacaoExtrema } from '../../api/tipos';
 import { Pictograma } from '../../components/Pictograma';
 
@@ -26,6 +27,7 @@ export function FaixaPrecipitacaoExtrema({ precipitacaoExtrema: p }: { precipita
       </span>
       <div>
         <p className="faixa-chuva-extrema-frase">{fraseChuvaExtrema(p)}</p>
+        <SeloFonte fonte={p.fonte} />
         <details className="como-ler">
           <summary>Como ler este dado</summary>
           <p className="texto-apoio faixa-chuva-extrema-legenda">

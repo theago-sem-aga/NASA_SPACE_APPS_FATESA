@@ -85,6 +85,18 @@ export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; 
   valor_forragem: { nome: 'Dá comida pro gado', maiorEhMelhor: true }
 };
 
+/** O que cada ponto quer dizer, em uma frase (legenda de "Todos os pontos"). */
+export const DESCRICAO_ATRIBUTO: Record<keyof AtributosEstrategia, string> = {
+  protecao_solo: 'Quanto a planta ou a palha cobrem o chão e seguram a terra contra a enxurrada.',
+  materia_organica: 'Quanto de palha e raiz fica no solo e vira matéria orgânica, que guarda água e nutriente.',
+  fixacao_nitrogenio: 'Plantas como crotalária e mucuna tiram nitrogênio do ar e deixam no solo; isso reduz o adubo da próxima lavoura.',
+  quebra_pragas: 'Trocar de planta corta o ciclo de pragas e doenças que vivem na lavoura principal.',
+  renda_direta: 'Se o intervalo dá alguma colheita para vender antes do próximo plantio.',
+  demanda_agua: 'Quanta água a planta do intervalo precisa. Aqui, menos é melhor.',
+  trabalho_custo: 'Semente, máquina e mão de obra que o caminho pede. Aqui, menos é melhor.',
+  valor_forragem: 'Se a planta do intervalo serve de alimento para o gado.'
+};
+
 export const ROTULO_CONFIANCA: Record<Confianca, string> = {
   alta: 'Bastante certeza',
   media: 'Alguma certeza',

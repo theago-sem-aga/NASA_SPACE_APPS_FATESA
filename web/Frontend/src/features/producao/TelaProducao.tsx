@@ -5,7 +5,7 @@ import type { ChuvaDoMes, ColheitaCultura, Local, PainelProducao, PrevisaoClima,
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from '../../components/Pictograma';
-import { FRASE_CHUVA, FRASE_CHUVA_MES, FRASE_COLHEITA, FRASE_PREVISAO_CALOR, FRASE_PREVISAO_CHUVA, fraseCalor } from './frases';
+import { FRASE_CHUVA, FRASE_CHUVA_MES, FRASE_COLHEITA, FRASE_PREVISAO_CALOR, FRASE_PREVISAO_CHUVA, fraseCalor, fraseChuvaAno } from './frases';
 import { roteiroProducao } from './roteiroProducao';
 
 interface TelaProducaoProps {
@@ -215,7 +215,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
               <Pictograma nome="chuva" tamanho={52} />
               <span>
                 <strong className="producao-nome">{FRASE_CHUVA[p.clima.situacao_chuva]}</strong>
-                <span className="texto-apoio">De cada 10 chuvas, caíram {p.clima.gotas_em_10}</span>
+                <span className="texto-apoio">{fraseChuvaAno(p.clima)}</span>
               </span>
             </div>
             <div className="producao-cartao-cab">

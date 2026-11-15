@@ -306,6 +306,8 @@ export interface Analise {
   clima_mensal: ClimaMensal[];
   /** null = a série de temperatura mínima não respondeu para o ponto. */
   geada: RiscoGeada | null;
+  /** PROPOSTA (o back ainda não manda): calor forte mês a mês. Ausente/null = não mostra. */
+  estresse_termico?: EstresseTermico | null;
   /** null = a série de precipitação diária não respondeu para o ponto. */
   precipitacao_extrema: RiscoPrecipitacaoExtrema | null;
   /** null = faltam anos completos na série de chuva, ou a fonte não respondeu. */
@@ -471,4 +473,36 @@ export interface Acompanhamento {
   atribuicao: string;
   tipo_dado: TipoDado;
   gerado_em: string;
+}
+
+// --- Estresse térmico (PROPOSTA de contrato; o back ainda não calcula) ------------
+// BACKEND: calcular como o risco de geada (app/domain/geada.py), a partir de
+// temperatura_maxima_c diária da NASA POWER, e devolver em Analise.estresse_termico.
+// O front exibe e usa os mesmos nomes. Exemplo real em api/mock/calorMock.ts.
+
+export interface CalorMensal {
+  mes: number;
+  /** 0–1: fração dos anos com pelo menos um dia de máxima >= limiar_c no mês. */
+  probabilidade_calor: number;
+  anos_com_calor: number;
+  /** Média de dias por ano com máxima >= limiar_c. */
+  dias_calor_medio: number;
+  maior_maxima_c: number;
+  maxima_media_c: number;
+}
+
+export interface EstresseTermico {
+  nivel: Nivel;
+  mes_mais_arriscado: number | null;
+  /** Meses com calor forte em pelo menos metade dos anos. */
+  meses_com_risco: number[];
+  dias_calor_ano: number;
+  meses: CalorMensal[];
+  /** Limiar de calor forte, em °C (hoje 35 °C, pendente de fonte por cultura). */
+  limiar_c: number;
+  periodo_inicio: number;
+  periodo_fim: number;
+  anos_analisados: number;
+  fonte: string;
+  variavel: string;
 }

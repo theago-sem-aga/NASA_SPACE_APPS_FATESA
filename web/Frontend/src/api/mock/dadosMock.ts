@@ -7,6 +7,7 @@
 // (precipitacaoExtremaMock.ts) e a tendência da chuva (tendenciaHidricaMock.ts)
 // são REAIS (NASA POWER), só congelados.
 import type { Analise, CaracteristicasTalhao, CorrecoesTalhao, Cultura, Local, RiscoGeada } from '../tipos';
+import { CALOR_SJRP } from './calorMock';
 import { GEADA_SJRP } from './geadaMock';
 import { ESTRATEGIAS_PADRAO } from './montarEstrategias';
 import { PRECIPITACAO_EXTREMA_SJRP } from './precipitacaoExtremaMock';
@@ -60,6 +61,7 @@ export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   analise_id: 'mock-0001',
   eh_mock: true,
   geada: GEADA_SJRP,
+  estresse_termico: CALOR_SJRP,
   precipitacao_extrema: PRECIPITACAO_EXTREMA_SJRP,
   tendencia_hidrica: TENDENCIA_SJRP,
   fonte_clima: {

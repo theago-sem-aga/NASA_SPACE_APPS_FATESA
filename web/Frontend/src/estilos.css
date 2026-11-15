@@ -46,6 +46,8 @@ button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
 h1:focus { outline: none; }
 h1:focus-visible { outline: 3px solid var(--foco); }
+/* O título recebe foco só para o leitor de tela anunciar a troca de tela; sem moldura. */
+h1[tabindex='-1']:focus, h1[tabindex='-1']:focus-visible { outline: none; }
 
 .visualmente-oculto {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -827,3 +829,231 @@ p { margin: 0; }
 .carrossel-clima .faixa-chuva-extrema-icone { display: none; }
 .carrossel-clima .carrossel-trilho { overflow-y: hidden; transition: height 0.25s ease; }
 @media (prefers-reduced-motion: reduce) { .carrossel-clima .carrossel-trilho { transition: none; } }
+
+/* ---------- calor (estresse térmico) e meses de atenção ---------- */
+.meses-atencao { display: flex; flex-direction: column; gap: 10px; }
+.meses-atencao-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.meses-atencao-mes { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--cor-borda); border-radius: var(--raio-pequeno); min-height: 40px; }
+.meses-atencao-mes.com-alerta { border-color: var(--cor-alerta); }
+.meses-atencao-nome { font-weight: 700; width: 2.6em; flex: none; text-transform: capitalize; }
+.meses-atencao-alertas { display: flex; flex-wrap: wrap; gap: 4px; }
+.meses-atencao-ok { font-size: 0.85rem; color: var(--cor-texto-suave); }
+.meses-atencao-alertas .etiqueta { font-size: 0.75rem; padding: 1px 8px; }
+.meses-atencao-calor { background: var(--cor-alerta-clara); color: #6e3307; }
+.meses-atencao-geada { background: var(--cor-ceu-clara); color: var(--cor-ceu); }
+.meses-atencao-seca { background: var(--cor-terra-clara); color: var(--cor-terra); }
+
+/* ---------- temperaturas medidas nas faixas de calor e geada ---------- */
+/* Títulos dos itens do carrossel do clima mais visíveis. */
+.carrossel-clima-cabeca { font-family: var(--fonte-titulo); font-size: 1.35rem; color: var(--cor-mata); }
+.carrossel-clima .carrossel-posicao > span:first-child { font-size: 1.05rem; color: var(--cor-texto); }
+/* O valor de cada mês é a temperatura em °C, com a cor da faixa. */
+.faixa-temperatura { font-size: 0.82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.faixa-geada-mes:not(.com-risco) .faixa-temperatura { font-weight: 700; }
+.faixa-geada-mes.temp-quente-1, .escala-temperatura .temp-quente-1 { background: #fde9cf; border-color: #e9a14a; color: #7a3d00; }
+.faixa-geada-mes.temp-quente-2, .escala-temperatura .temp-quente-2 { background: #f8c08a; border-color: #d0701e; color: #5e2a00; }
+.faixa-geada-mes.temp-quente-3, .escala-temperatura .temp-quente-3 { background: #e0643a; border-color: #b3401b; color: #ffffff; }
+.faixa-geada-mes.temp-frio-1, .escala-temperatura .temp-frio-1 { background: #e5eef6; border-color: #8fb3d3; color: #1e4a6e; }
+.faixa-geada-mes.temp-frio-2, .escala-temperatura .temp-frio-2 { background: #b9d3ea; border-color: #4f86b8; color: #133a59; }
+.faixa-geada-mes.temp-frio-3, .escala-temperatura .temp-frio-3 { background: #2b5f8a; border-color: #1c4466; color: #ffffff; }
+.faixa-geada-mes.temp-quente-3 .faixa-geada-nome, .faixa-geada-mes.temp-frio-3 .faixa-geada-nome { color: #ffffff; }
+.faixa-geada-mes[class*='temp-'] .faixa-temperatura { color: inherit; }
+.faixa-temperatura-legenda { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; font-size: 0.8rem; color: var(--cor-texto-suave); }
+.escala-temperatura { display: inline-flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--cor-borda); }
+.escala-temperatura > span { padding: 1px 6px; font-weight: 700; font-size: 0.75rem; border: 0; }
+.escala-temperatura .temp-neutra { background: var(--cor-superficie); color: var(--cor-texto-suave); }
+/* Mês de risco que também tem cor de temperatura: a cor da temperatura vale (o ícone já marca o risco). */
+.faixa-geada-meses .faixa-geada-mes.com-risco[class*='temp-quente'], .faixa-geada-meses .faixa-geada-mes.com-risco[class*='temp-frio'] { outline: 2px solid currentColor; outline-offset: -4px; }
+.faixa-geada-mes.temp-quente-3 .pictograma, .faixa-geada-mes.temp-frio-3 .pictograma { background: #ffffff; border-radius: 6px; }
+
+/* Tabela de temperatura (máxima e mínima de cada mês) no item "Temperatura". */
+.tabela-temperatura { display: grid; grid-template-columns: auto repeat(12, minmax(0, 1fr)); gap: 3px; align-items: stretch; }
+.tabela-temperatura-rotulo { font-size: 0.78rem; font-weight: 700; color: var(--cor-texto); display: flex; align-items: center; padding-right: 4px; }
+.tabela-temperatura-mes {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 0; min-width: 0;
+  border: 1px solid var(--cor-borda); border-radius: var(--raio-pequeno); background: var(--cor-superficie);
+  font: inherit; font-size: 0.72rem; color: var(--cor-texto-suave); cursor: pointer;
+}
+.tabela-temperatura-mes.com-risco { color: var(--cor-texto); font-weight: 700; }
+.tabela-temperatura-mes.aberto { outline: 3px solid var(--cor-mata); outline-offset: 1px; }
+.tabela-temperatura-sol { height: 18px; display: grid; place-items: center; }
+.tabela-temperatura-valor {
+  display: grid; place-items: center; min-width: 0; padding: 4px 0; border-radius: 6px; border: 1px solid var(--cor-borda);
+  font-weight: 700; font-size: 0.8rem; font-variant-numeric: tabular-nums; background: var(--cor-superficie);
+}
+.tabela-temperatura-valor.temp-quente-1 { background: #fde9cf; border-color: #e9a14a; color: #7a3d00; }
+.tabela-temperatura-valor.temp-quente-2 { background: #f8c08a; border-color: #d0701e; color: #5e2a00; }
+.tabela-temperatura-valor.temp-quente-3 { background: #e0643a; border-color: #b3401b; color: #ffffff; }
+.tabela-temperatura-valor.temp-frio-1 { background: #e5eef6; border-color: #8fb3d3; color: #1e4a6e; }
+.tabela-temperatura-valor.temp-frio-2 { background: #b9d3ea; border-color: #4f86b8; color: #133a59; }
+.tabela-temperatura-valor.temp-frio-3 { background: #2b5f8a; border-color: #1c4466; color: #ffffff; }
+@media (max-width: 420px) {
+  .tabela-temperatura-valor { font-size: 0.72rem; }
+  .tabela-temperatura-rotulo { font-size: 0.7rem; }
+}
+
+/* Títulos do carrossel do clima bem visíveis: faixa verde com o nome do item. */
+.carrossel-clima-titulo { font-size: 1.4rem; color: var(--cor-mata); }
+.carrossel-clima-cabeca {
+  font-family: var(--fonte-titulo); font-size: 1.55rem; line-height: 1.2; color: #ffffff;
+  background: var(--cor-mata); margin: -14px -14px 2px; padding: 10px 14px; border-radius: var(--raio) var(--raio) 0 0;
+}
+.carrossel-clima-cabeca .pictograma { background: #ffffff; border-radius: 8px; }
+.carrossel-clima .carrossel-posicao > span:first-child { font-size: 1.15rem; color: var(--cor-texto); }
+.tabela-temperatura-rotulo { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--cor-mata); }
+
+/* ---------- ícones animados do clima (chuva, geada, calor) ---------- */
+.icone-animado { flex: none; background: #ffffff; border-radius: 10px; overflow: hidden; }
+.icone-animado line, .icone-animado path { stroke-linecap: round; }
+/* Chuva: nuvem parada, gotas caindo. */
+.anim-nuvem { fill: #8fa9bd; }
+.anim-gota { stroke: #2b5f8a; stroke-width: 2.4; animation: gota-cai 1.05s linear infinite; }
+@keyframes gota-cai {
+  0% { transform: translateY(-4px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+/* Geada: flocos descendo e girando. */
+.anim-floco { animation: floco-cai 2.7s linear infinite; opacity: 0; }
+.anim-floco path { stroke: #2b5f8a; stroke-width: 1.8; fill: none; transform-box: fill-box; transform-origin: center; animation: floco-gira 2.7s linear infinite; }
+@keyframes floco-cai {
+  0% { transform: translateY(2px); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(38px); opacity: 0; }
+}
+@keyframes floco-gira { to { transform: rotate(180deg); } }
+/* Calor: sol com raios pulsando. */
+.anim-sol { fill: #f0a020; }
+.anim-raios line { stroke: #e0643a; stroke-width: 2.6; }
+.anim-raios { transform-origin: 0 0; animation: raios-pulsam 1.6s ease-in-out infinite; }
+@keyframes raios-pulsam {
+  0%, 100% { transform: scale(0.85) rotate(0deg); opacity: 0.6; }
+  50% { transform: scale(1.1) rotate(22deg); opacity: 1; }
+}
+/* Quem pediu menos movimento no aparelho vê os ícones parados. */
+@media (prefers-reduced-motion: reduce) {
+  .anim-gota, .anim-floco, .anim-floco path, .anim-raios { animation: none; }
+  .anim-floco { opacity: 1; transform: translateY(16px); }
+  .anim-gota { opacity: 1; transform: translateY(2px); }
+}
+
+/* Selinho verde: o dado veio da NASA ou de agência parceira (components/SeloFonte.tsx). */
+.selo-fonte {
+  display: inline-flex; align-items: center; gap: 4px; width: fit-content;
+  margin: 2px 0 6px; padding: 2px 8px 2px 5px; border-radius: 999px;
+  background: #e6f4ea; border: 1px solid #9fd0ad; color: #1e6b34;
+  font-size: 0.75rem; font-weight: 700; line-height: 1.4;
+}
+.selo-fonte svg { flex: none; color: #2e8b47; }
+
+/* Botão "Início" no cabeçalho e a pergunta de confirmação. */
+.cabecalho-acoes { display: flex; align-items: center; gap: 8px; flex: none; }
+.confirmar-inicio {
+  max-width: min(440px, calc(100vw - 32px)); padding: 22px 20px; border: none; border-radius: var(--raio);
+  background: var(--cor-superficie); color: var(--cor-texto); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.confirmar-inicio::backdrop { background: rgba(20, 30, 22, 0.55); }
+.confirmar-inicio h2 { margin: 0 0 8px; font-family: var(--fonte-titulo); color: var(--cor-mata); font-size: 1.4rem; }
+.confirmar-inicio p { margin: 0 0 18px; line-height: 1.5; }
+.confirmar-inicio-botoes { display: flex; flex-direction: column; gap: 10px; }
+.confirmar-inicio-sair { background: var(--cor-erro); border-color: var(--cor-erro); color: #ffffff; }
+.confirmar-inicio-sair:hover { background: #821818; }
+@media (max-width: 420px) {
+  .cabecalho-acoes { gap: 6px; }
+  .botao-inicio { padding: 0 10px; }
+}
+
+/* Voltar ao menu inicial: abaixo do Voltar/Continuar de cada tela. */
+.voltar-menu { display: flex; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--cor-borda); }
+.botao-menu-inicial {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  border: 1.5px solid var(--cor-borda-forte); border-radius: var(--raio); background: var(--cor-superficie);
+  color: var(--cor-texto); font: inherit; font-weight: 600; cursor: pointer;
+}
+.botao-menu-inicial:hover { border-color: var(--cor-mata); color: var(--cor-mata); }
+.pagina-larga .voltar-menu { max-width: 560px; }
+
+/* Resumo final: legenda dos tracinhos e o motivo de cada caminho dar certo ou não. */
+.resumo-legenda { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 12px; font-size: 0.85rem; color: var(--cor-texto-suave); }
+.resumo-legenda-nota { flex-basis: 100%; }
+.resumo-motivos { display: grid; gap: 6px; margin: 10px 0 0; }
+.resumo-motivo { padding: 6px 10px; border-radius: var(--raio-pequeno); border-left: 4px solid; font-size: 0.9rem; line-height: 1.4; }
+.resumo-motivo dt { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.resumo-motivo dd { margin: 2px 0 0; }
+.resumo-motivo-bom { background: var(--cor-folha-clara); border-color: var(--cor-folha); }
+.resumo-motivo-bom dt { color: var(--cor-mata); }
+.resumo-motivo-risco { background: var(--cor-alerta-clara); border-color: var(--cor-alerta); }
+.resumo-motivo-risco dt { color: var(--cor-alerta); }
+
+/* "Todos os pontos": frase explicando cada ponto e aviso de "menos é melhor". */
+.todos-pontos .quatro-pontos-texto { flex-wrap: wrap; }
+.ponto-descricao { flex-basis: 100%; font-size: 0.85rem; line-height: 1.4; color: var(--cor-texto-suave); margin-top: 2px; }
+.etiqueta-menos {
+  display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; vertical-align: middle;
+  background: var(--cor-ceu-clara); color: var(--cor-ceu); font-size: 0.7rem; font-weight: 700;
+}
+
+/* Cartão do caminho: se ajuda nos problemas marcados. */
+.cartao-estrategia-nao-atende { color: var(--cor-texto-suave); }
+.problemas-caminho { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 0.9rem; }
+.problemas-caminho li { padding: 4px 10px; border-radius: var(--raio-pequeno); border-left: 4px solid; }
+.problema-ajuda-forte { background: var(--cor-folha-clara); border-color: var(--cor-folha); }
+.problema-ajuda { background: var(--cor-folha-clara); border-color: #8fbf98; }
+.problema-ajuda-pouca { background: var(--cor-alerta-clara); border-color: #e0a36a; }
+.problema-ajuda-nada { background: var(--cor-alerta-clara); border-color: var(--cor-alerta); }
+
+/* ---------- O ano da sua terra (detalhe do caminho) ---------- */
+.ano-terra { display: grid; gap: 10px; margin: 16px 0; }
+.ano-terra-titulo { margin: 0; font-family: var(--fonte-titulo); color: var(--cor-mata); font-size: 1.4rem; }
+.ano-terra-resumo { margin: 0; font-weight: 600; }
+.ano-terra-cena {
+  position: relative; height: 170px; border-radius: var(--raio); overflow: hidden;
+  background: linear-gradient(#cfe3f1, #eef5fa 70%); border: 2px solid var(--cor-borda); transition: border-color 0.3s;
+}
+.ano-terra-perigo { border-color: var(--cor-erro); box-shadow: 0 0 0 3px var(--cor-erro-clara); }
+.ano-terra-mes-grande { position: absolute; top: 8px; left: 12px; font-family: var(--fonte-titulo); font-size: 1.3rem; font-weight: 700; color: var(--cor-ceu); }
+.ano-terra-chuva { position: absolute; inset: 0 0 40px 0; }
+.ano-terra-gota {
+  position: absolute; top: -14px; width: 3px; height: 14px; border-radius: 2px; background: #2b5f8a; opacity: 0.75;
+  animation: ano-terra-cai 0.9s linear infinite;
+}
+.ano-terra-gota.parada { animation: none; top: 30%; }
+@keyframes ano-terra-cai { to { transform: translateY(150px); } }
+.ano-terra-plantas {
+  position: absolute; left: 0; right: 0; bottom: 34px; display: flex; justify-content: space-around; align-items: flex-end;
+  animation: ano-terra-surge 0.5s ease-out;
+}
+@keyframes ano-terra-surge { from { transform: translateY(12px); opacity: 0; } }
+.ano-terra-chao { position: absolute; left: 0; right: 0; bottom: 0; height: 38px; transition: background 0.4s; }
+.ano-terra-frase { margin: 0; min-height: 3em; }
+.ano-terra-perigo + .ano-terra-frase { color: var(--cor-erro); }
+.ano-terra-controles { display: flex; }
+.ano-terra-play { min-height: 48px; font-size: 1rem; }
+.ano-terra-linha { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+.ano-terra-linha li { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.ano-terra-ponto { width: 100%; height: 26px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; }
+.ano-terra-ponto.risco { border-color: var(--cor-erro); }
+.ano-terra-ponto.atual { outline: 3px solid var(--cor-texto); outline-offset: 1px; }
+.ano-terra-ponto-nome { font-size: 0.68rem; color: var(--cor-texto-suave); }
+.ano-terra-nota { margin: 0; font-size: 0.8rem; }
+@media (prefers-reduced-motion: reduce) {
+  .ano-terra-plantas { animation: none; }
+}
+
+/* ---------- Lado a lado: ordenar por um ponto ---------- */
+.ordenar-por { display: grid; gap: 8px; margin: 8px 0 12px; }
+.ordenar-por-titulo { margin: 0; font-weight: 700; }
+.ordenar-por-opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.ordenar-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 999px;
+  border: 1.5px solid var(--cor-borda-forte); background: var(--cor-superficie); color: var(--cor-texto);
+  font: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+}
+.ordenar-chip.ativo { background: var(--cor-mata); border-color: var(--cor-mata); color: #ffffff; }
+.ordenar-chip.ativo .pictograma { background: #ffffff; border-radius: 6px; }
+.ordenar-por-estado { margin: 0; font-size: 0.9rem; color: var(--cor-texto-suave); }
+.comparacao-melhor { background: var(--cor-folha-clara); }
+.comparacao-linha-ativa th, .comparacao-linha-ativa td { box-shadow: inset 0 2px 0 var(--cor-mata), inset 0 -2px 0 var(--cor-mata); }
+.selo-melhor { display: block; margin-bottom: 4px; font-size: 0.72rem; font-weight: 700; color: var(--cor-mata); }
+.tabela-comparacao th, .tabela-comparacao td { transition: background 0.3s; }

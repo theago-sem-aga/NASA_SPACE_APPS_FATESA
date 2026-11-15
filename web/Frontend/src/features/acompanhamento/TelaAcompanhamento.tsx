@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import { NomeCientificoCaminho } from '../../components/NomeCientifico';
 import { useCallback, useEffect, useState } from 'react';
 import { buscarAcompanhamento, buscarPrevisao, FalhaApi } from '../../api/cliente';
@@ -253,6 +254,7 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
         </section>
       )}
 
+      <SeloFonte fonte={d.fonte} />
       <p className="texto-apoio producao-fonte">
         Fotos: {d.fonte}. {d.atribuicao}. O satélite passa a cada 5 dias; foto com nuvem em cima da área fica de fora.
       </p>

@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import { useId, useState } from 'react';
 import type { TendenciaHidrica } from '../../api/tipos';
 
@@ -56,6 +57,7 @@ export function FaixaTendenciaHidrica({ tendencia }: { tendencia: TendenciaHidri
   return (
     <div className="faixa-tendencia">
       <p className="faixa-tendencia-frase">{fraseTendencia(tendencia)}</p>
+      <SeloFonte fonte={tendencia.fonte} />
       <figure className="grafico-chuva-anos">
         <figcaption id={`${id}-titulo`} className="grafico-chuva-anos-titulo">
           Chuva de cada ano (mm) e a linha da tendência

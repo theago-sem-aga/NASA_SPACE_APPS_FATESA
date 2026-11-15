@@ -1,8 +1,10 @@
 import { useId, useState } from 'react';
-import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
+import type { ClimaMensal, EstresseTermico, CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
 import { CarrosselClima } from './CarrosselClima';
+import { FaixaCalor } from './FaixaCalor';
+import { MesesAtencao } from './MesesAtencao';
 import { FaixaGeada, nivelComFaixa } from './FaixaGeada';
 import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { FaixaTendenciaHidrica, ROTULO_TENDENCIA } from './FaixaTendenciaHidrica';
@@ -12,6 +14,10 @@ interface PainelTalhaoProps {
   talhao: CaracteristicasTalhao;
   /** Detalhe mês a mês do risco de geada; null = sem dado. */
   geada: RiscoGeada | null;
+  /** Calor forte mês a mês; null/ausente = sem dado (proposta, ver api/tipos.ts). */
+  calor: EstresseTermico | null;
+  /** Chuva média de cada mês, para "Meses de atenção". */
+  climaMensal: ClimaMensal[];
   /** Dias de chuva extrema nos últimos 30; null = sem dado. */
   precipitacaoExtrema: RiscoPrecipitacaoExtrema | null;
   /** A chuva do ano vem caindo, subindo ou estável; null = sem dado. */
@@ -42,7 +48,7 @@ const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
  * A pessoa pode discordar: em "Não é bem assim" ela marca a terra, o terreno ou os
  * dois, e só ao tocar em "Confirmar mudanças" a análise é refeita com a correção.
  */
-export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidrica, aoCorrigir }: PainelTalhaoProps) {
+export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoExtrema, tendenciaHidrica, aoCorrigir }: PainelTalhaoProps) {
   const id = useId();
   const [corrigindo, setCorrigindo] = useState(false);
   /** O que a pessoa marcou e ainda não confirmou. Começa igual ao que os mapas mostraram. */
@@ -167,6 +173,10 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidr
       {/* Clima da área depois do "Não é bem assim", que é só de terra e terreno. Uma explicação por vez. */}
       <CarrosselClima
         slides={[
+          ...(calor || geada
+            ? [{ id: 'atencao', titulo: 'Meses de atenção', pictograma: 'seca' as const, conteudo: <MesesAtencao calor={calor} geada={geada} clima={climaMensal} /> }]
+            : []),
+          ...(calor ? [{ id: 'calor', titulo: 'Calor', pictograma: 'calor' as const, conteudo: <FaixaCalor calor={calor} /> }] : []),
           ...(geada ? [{ id: 'geada', titulo: 'Geada', pictograma: 'geada' as const, conteudo: <FaixaGeada geada={geada} /> }] : []),
           ...(precipitacaoExtrema
             ? [{ id: 'chuva-forte', titulo: 'Chuva forte', pictograma: 'chuva' as const, conteudo: <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} /> }]

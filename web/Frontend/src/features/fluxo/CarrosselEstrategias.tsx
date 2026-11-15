@@ -1,12 +1,29 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { Estrategia, PrioridadeId } from '../../api/tipos';
+import type { AtributosEstrategia, Estrategia, Nivel, PrioridadeId, ProblemaId } from '../../api/tipos';
 import { FaixaRotacao } from '../../components/FaixaRotacao';
 import { NomeCientificoCaminho } from '../../components/NomeCientifico';
 import { Icone } from '../../components/Icone';
-import { ROTULO_PRIORIDADE } from './rotulos';
+import { ROTULO_PRIORIDADE, ROTULO_PROBLEMA } from './rotulos';
+
+/**
+ * Qual ponto do caminho responde a cada problema marcado. Só lê os atributos que já vêm
+ * com o caminho; não muda a escolha do motor (BACKEND: o motor ainda não usa os problemas).
+ */
+const PONTO_DO_PROBLEMA: Record<ProblemaId, keyof AtributosEstrategia> = {
+  nematoides_pragas: 'quebra_pragas',
+  solo_cansado: 'materia_organica',
+  preco_baixo: 'renda_direta'
+};
+const AJUDA_NIVEL: Record<Nivel, { texto: string; classe: string }> = {
+  alto: { texto: 'ajuda bastante', classe: 'problema-ajuda-forte' },
+  medio: { texto: 'ajuda', classe: 'problema-ajuda' },
+  baixo: { texto: 'ajuda pouco', classe: 'problema-ajuda-pouca' },
+  nenhum: { texto: 'não ajuda', classe: 'problema-ajuda-nada' }
+};
 import type { Vocabulario } from './vocabularioCultura';
 
 interface CarrosselEstrategiasProps {
+  problemas?: ProblemaId[];
   estrategias: Estrategia[];
   prioridades: PrioridadeId[];
   /** Vocabulário da cultura escolhida. */
@@ -33,7 +50,7 @@ function emFrase(itens: string[]) {
  * Um caminho por vez: arrasta para o lado (ou usa ‹ ›) e as bolinhas mostram qual
  * está à vista. Dentro de cada caminho, abas trocam a parte sem abrir outra tela.
  */
-export function CarrosselEstrategias({ estrategias, prioridades, vocab, aoAbrir }: CarrosselEstrategiasProps) {
+export function CarrosselEstrategias({ estrategias, prioridades, problemas = [], vocab, aoAbrir }: CarrosselEstrategiasProps) {
   const id = useId();
   const trilho = useRef<HTMLDivElement>(null);
   const [atual, setAtual] = useState(0);
@@ -99,7 +116,7 @@ export function CarrosselEstrategias({ estrategias, prioridades, vocab, aoAbrir 
             aria-roledescription="caminho"
             aria-label={`${i + 1} de ${total}: ${e.nome}`}
           >
-            <CartaoCaminho estrategia={e} prioridades={prioridades} vocab={vocab} idBase={`${id}-${i}`} aoAbrir={() => aoAbrir(e.estrategia_id)} />
+            <CartaoCaminho estrategia={e} prioridades={prioridades} problemas={problemas} vocab={vocab} idBase={`${id}-${i}`} aoAbrir={() => aoAbrir(e.estrategia_id)} />
           </div>
         ))}
       </div>
@@ -111,11 +128,12 @@ interface CartaoCaminhoProps {
   vocab: Vocabulario;
   estrategia: Estrategia;
   prioridades: PrioridadeId[];
+  problemas: ProblemaId[];
   idBase: string;
   aoAbrir: () => void;
 }
 
-function CartaoCaminho({ estrategia: e, prioridades, vocab, idBase, aoAbrir }: CartaoCaminhoProps) {
+function CartaoCaminho({ estrategia: e, prioridades, problemas, vocab, idBase, aoAbrir }: CartaoCaminhoProps) {
   const [parte, setParte] = useState<Parte>('resumo');
   const atendidas = e.prioridades_atendidas.filter(p => prioridades.includes(p));
 
@@ -124,7 +142,7 @@ function CartaoCaminho({ estrategia: e, prioridades, vocab, idBase, aoAbrir }: C
       <div className="carrossel-cabeca">
         <h2 className="cartao-estrategia-nome">{e.nome}</h2>
         <NomeCientificoCaminho estrategia={e} />
-        {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">O jeito mais comum hoje</span>}
+        {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">O jeito de hoje, para comparar</span>}
       </div>
 
       <div className="abas" role="tablist" aria-label="Partes deste caminho">
@@ -152,8 +170,26 @@ function CartaoCaminho({ estrategia: e, prioridades, vocab, idBase, aoAbrir }: C
             {atendidas.length > 0 && (
               <p className="cartao-estrategia-ajuda">
                 <Icone nome="ok" tamanho={20} />
-                <span>Ajuda em: {emFrase(atendidas.map(p => ROTULO_PRIORIDADE[p].nome.toLowerCase()))}</span>
+                <span>Atende ao que você escolheu: {emFrase(atendidas.map(p => ROTULO_PRIORIDADE[p].nome.toLowerCase()))}</span>
               </p>
+            )}
+            {prioridades.length > 0 && atendidas.length === 0 && !e.eh_pratica_atual && (
+              <p className="cartao-estrategia-ajuda cartao-estrategia-nao-atende">
+                <Icone nome="info" tamanho={20} />
+                <span>Não atende direto ao que você escolheu; entrou como a melhor opção que sobrou.</span>
+              </p>
+            )}
+            {problemas.length > 0 && (
+              <ul className="problemas-caminho" aria-label="Os problemas que você marcou">
+                {problemas.map(pr => {
+                  const a = AJUDA_NIVEL[e.atributos[PONTO_DO_PROBLEMA[pr]]];
+                  return (
+                    <li key={pr} className={a.classe}>
+                      <strong>{ROTULO_PROBLEMA[pr]}:</strong> {a.texto}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </>
         )}

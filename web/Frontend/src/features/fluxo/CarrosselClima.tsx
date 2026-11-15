@@ -1,6 +1,10 @@
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Icone } from '../../components/Icone';
+import { IconeAnimado, type Animacao } from '../../components/IconeAnimado';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
+
+/** Itens de clima com ícone animado: chuva com gotas, geada com flocos, calor com raios. */
+const ANIMADOS: Partial<Record<NomePictograma, Animacao>> = { chuva: 'chuva', geada: 'geada', calor: 'calor' };
 
 export interface SlideClima {
   id: string;
@@ -52,7 +56,7 @@ export function CarrosselClima({ slides }: { slides: SlideClima[] }) {
 
   return (
     <section className="carrossel carrossel-clima" aria-roledescription="carrossel" aria-labelledby="titulo-chuva-geada">
-      <h2 id="titulo-chuva-geada" className="titulo-secao carrossel-clima-titulo">Chuva e geada</h2>
+      <h2 id="titulo-chuva-geada" className="titulo-secao carrossel-clima-titulo">Chuva, calor e geada</h2>
       {total > 1 && (
         <div className="carrossel-topo">
           <button type="button" className="carrossel-seta" onClick={() => irPara(atual - 1)} aria-disabled={atual === 0 || undefined} aria-label="Anterior">
@@ -85,7 +89,7 @@ export function CarrosselClima({ slides }: { slides: SlideClima[] }) {
           <div key={s.id} className="carrossel-item" role="group" aria-roledescription="item" aria-label={`${i + 1} de ${total}: ${s.titulo}`}>
             <article className="carrossel-clima-cartao">
               <h3 className="carrossel-clima-cabeca">
-                <Pictograma nome={s.pictograma} tamanho={32} /> {s.titulo}
+                {ANIMADOS[s.pictograma] ? <IconeAnimado tipo={ANIMADOS[s.pictograma]!} tamanho={40} /> : <Pictograma nome={s.pictograma} tamanho={32} />} {s.titulo}
               </h3>
               {s.conteudo}
             </article>

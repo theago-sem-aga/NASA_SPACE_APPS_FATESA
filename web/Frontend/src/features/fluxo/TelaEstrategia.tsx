@@ -1,5 +1,7 @@
+import { LegendaMedidor } from '../../components/LegendaMedidor';
 import { NomeCientificoCaminho } from '../../components/NomeCientifico';
-import type { AtributosEstrategia, Estrategia, RequisitoId, Resposta } from '../../api/tipos';
+import type { AtributosEstrategia, ClimaMensal, Estrategia, RequisitoId, Resposta } from '../../api/tipos';
+import { AnoDaTerra } from '../../components/AnoDaTerra';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { CalendarioCobertura } from '../../components/CalendarioCobertura';
 import { FaixaRotacao } from '../../components/FaixaRotacao';
@@ -11,7 +13,7 @@ import { Navegacao } from '../../components/Navegacao';
 import { Pictograma } from '../../components/Pictograma';
 import { Sanfona } from '../../components/Sanfona';
 import { Termo } from '../../components/Termo';
-import { PICTO_ATRIBUTO, PICTO_REQUISITO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA, ROTULO_REQUISITO } from './rotulos';
+import { DESCRICAO_ATRIBUTO, PICTO_ATRIBUTO, PICTO_REQUISITO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA, ROTULO_REQUISITO } from './rotulos';
 
 /** Os quatro pontos mostrados de cara. Os outros ficam em "Todos os pontos". */
 const PRINCIPAIS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
@@ -28,6 +30,9 @@ interface TelaEstrategiaProps {
   estrategia: Estrategia;
   ehMock: boolean;
   recursos: Record<RequisitoId, Resposta | null>;
+  /** Chuva média de cada mês, para "O ano da sua terra". */
+  clima: ClimaMensal[];
+  fonteClima?: string;
   aoVoltar: () => void;
   aoAvancar: () => void;
 }
@@ -40,17 +45,19 @@ function Lista({ itens }: { itens: string[] }) {
  * Detalhe de um caminho. De cara: faixa da rotação, para que serve, 4 pontos,
  * o bom, o cuidado e a pergunta ao agrônomo. O resto fica em sanfonas fechadas.
  */
-export function TelaEstrategia({ estrategia: e, ehMock, recursos, aoVoltar, aoAvancar }: TelaEstrategiaProps) {
+export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteClima, aoVoltar, aoAvancar }: TelaEstrategiaProps) {
   const imagem = IMAGEM_ESTRATEGIA[e.estrategia_id];
   const nivelConfianca = NIVEIS_CONFIANCA.indexOf(e.confianca);
   return (
     <>
       <AvisoDemonstracao ehMock={ehMock} />
-      {e.eh_pratica_atual && <p className="sobretitulo">O jeito mais comum hoje</p>}
+      {e.eh_pratica_atual && <p className="sobretitulo">O jeito de hoje, para comparar</p>}
       <h1 tabIndex={-1}>{e.nome}</h1>
       <NomeCientificoCaminho estrategia={e} />
       <FaixaRotacao etapas={e.etapas_rotacao} />
       <p className="texto-grande"><strong>Para quê:</strong> {e.objetivo}</p>
+
+      <AnoDaTerra estrategia={e} clima={clima} fonteClima={fonteClima} />
 
       <ul className="quatro-pontos" aria-label="Num olhar">
         {PRINCIPAIS.map(a => (
@@ -113,13 +120,18 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, aoVoltar, aoAv
           <CalendarioCobertura calendario={e.calendario} culturaId={e.etapas_rotacao[0]?.cultura_id} />
         </Sanfona>
         <Sanfona icone="alvo" titulo="Todos os pontos" contagem={TODOS.length}>
-          <ul className="quatro-pontos">
+          <LegendaMedidor menosEhMelhor />
+          <ul className="quatro-pontos todos-pontos">
             {TODOS.map(a => (
               <li key={a}>
                 <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={36} />
                 <span className="quatro-pontos-texto">
-                  <span className="quatro-pontos-rotulo">{ROTULO_ATRIBUTO[a].nome}</span>
+                  <span className="quatro-pontos-rotulo">
+                    {ROTULO_ATRIBUTO[a].nome}
+                    {!ROTULO_ATRIBUTO[a].maiorEhMelhor && <span className="etiqueta-menos">menos é melhor</span>}
+                  </span>
                   <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
+                  <span className="ponto-descricao">{DESCRICAO_ATRIBUTO[a]}</span>
                 </span>
               </li>
             ))}

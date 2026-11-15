@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import type { Analise, Estrategia } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { GraficoClima } from '../../components/GraficoClima';
@@ -33,6 +34,7 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
     <>
       <AvisoDemonstracao ehMock={analise.eh_mock} />
       <h1 tabIndex={-1}>Como costuma chover aí</h1>
+      <SeloFonte fonte={fonte.fonte_id} />
       <p className="texto-apoio">
         {fonte.tipo_dado === 'observacao_historica'
           ? `Média de ${anoDe(fonte.periodo_inicio)} a ${anoDe(fonte.periodo_fim)}, medida pela NASA. Não é previsão.`

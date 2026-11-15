@@ -1,5 +1,6 @@
 const CAMINHOS = {
   voltar: <path d="M15 5l-7 7 7 7" />,
+  casa: <path d="M4 11l8-7 8 7M6 9.5V20h4.5v-5.5h3V20H18V9.5" />,
   seguir: <path d="M9 5l7 7-7 7" />,
   local: (
     <>

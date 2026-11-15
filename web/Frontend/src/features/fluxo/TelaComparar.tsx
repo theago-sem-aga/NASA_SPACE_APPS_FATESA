@@ -1,6 +1,7 @@
+import { LegendaMedidor } from '../../components/LegendaMedidor';
 import { NomeCientifico } from '../../components/NomeCientifico';
 import { useState } from 'react';
-import type { Analise, AtributosEstrategia, Estrategia } from '../../api/tipos';
+import type { Analise, AtributosEstrategia, Estrategia, Nivel } from '../../api/tipos';
 import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { BotaoFigura } from '../../components/BotaoFigura';
 import { Icone } from '../../components/Icone';
@@ -23,19 +24,55 @@ const EXTRAS = (Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[]).f
 /** Nome curto para o topo da coluna: a etapa do meio da rotação (ex.: "Amendoim"). */
 const nomeCurto = (e: Estrategia) => e.etapas_rotacao[1]?.nome ?? e.nome;
 
+const VALOR: Record<Nivel, number> = { nenhum: 0, baixo: 1, medio: 2, alto: 3 };
+type Criterio = keyof AtributosEstrategia | 'descoberto';
+const mesesDescobertos = (e: Estrategia) => e.calendario.filter(m => m.cobertura === 'solo_descoberto').length;
+
+/** Nota de 0 a 3 (ou meses) em que "maior = melhor para você", para ordenar as colunas. */
+function notaPara(e: Estrategia, c: Criterio): number {
+  if (c === 'descoberto') return -mesesDescobertos(e);
+  const v = VALOR[e.atributos[c]];
+  return ROTULO_ATRIBUTO[c].maiorEhMelhor ? v : -v;
+}
+const nomeCriterio = (c: Criterio) => (c === 'descoberto' ? 'Menos meses de terra descoberta' : ROTULO_ATRIBUTO[c].nome);
+
 export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCompararProps) {
   const [verTudo, setVerTudo] = useState(false);
-  const estrategias = analise.estrategias;
-  const linhas = verTudo ? [...PRINCIPAIS, ...EXTRAS] : PRINCIPAIS;
+  const [criterio, setCriterio] = useState<Criterio | null>(null);
+  // Ordena as colunas pelo ponto escolhido (estável: empate mantém a ordem sugerida).
+  const estrategias = criterio
+    ? analise.estrategias.map((e, k) => ({ e, k })).sort((x, y) => notaPara(y.e, criterio) - notaPara(x.e, criterio) || x.k - y.k).map(x => x.e)
+    : analise.estrategias;
+  const melhorNota = criterio ? notaPara(estrategias[0], criterio) : null;
+  const ehMelhor = (e: Estrategia) => criterio !== null && notaPara(e, criterio) === melhorNota;
+  const opcoesCriterio: Criterio[] = [...PRINCIPAIS, 'descoberto', ...EXTRAS];
+  const linhas = verTudo || (criterio !== null && criterio !== 'descoberto' && EXTRAS.includes(criterio)) ? [...PRINCIPAIS, ...EXTRAS] : PRINCIPAIS;
 
   return (
     <>
       <AvisoDemonstracao ehMock={analise.eh_mock} />
       <h1 tabIndex={-1}>Lado a lado</h1>
-      <p className="legenda-medidor">
-        <span><span className="amostra-medidor amostra-bom" aria-hidden="true" /> Verde: bom</span>
-        <span><span className="amostra-medidor amostra-atencao" aria-hidden="true" /> Laranja: pesa contra</span>
-      </p>
+      <LegendaMedidor menosEhMelhor />
+
+      <div className="ordenar-por" role="group" aria-labelledby="ordenar-por-titulo">
+        <p id="ordenar-por-titulo" className="ordenar-por-titulo">O que mais importa para você? Toque e os caminhos se reorganizam:</p>
+        <div className="ordenar-por-opcoes">
+          <button type="button" className={`ordenar-chip${criterio === null ? ' ativo' : ''}`} aria-pressed={criterio === null} onClick={() => setCriterio(null)}>
+            Ordem sugerida
+          </button>
+          {opcoesCriterio.map(c => (
+            <button key={c} type="button" className={`ordenar-chip${criterio === c ? ' ativo' : ''}`} aria-pressed={criterio === c} onClick={() => setCriterio(c)}>
+              {c !== 'descoberto' && <Pictograma nome={PICTO_ATRIBUTO[c]} tamanho={20} />}
+              {nomeCriterio(c)}
+            </button>
+          ))}
+        </div>
+        <p className="ordenar-por-estado" aria-live="polite">
+          {criterio
+            ? `Melhor em "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' e ')}.`
+            : 'Na ordem sugerida pelas suas escolhas; o jeito de hoje fica por último, para comparar.'}
+        </p>
+      </div>
 
       <div className="rolagem-horizontal cartao tabela-comparacao-moldura">
         <table className="tabela tabela-comparacao">
@@ -46,7 +83,8 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
               {estrategias.map(e => {
                 const meio = e.etapas_rotacao[1];
                 return (
-                  <th key={e.estrategia_id} scope="col">
+                  <th key={e.estrategia_id} scope="col" className={ehMelhor(e) ? 'comparacao-melhor' : undefined}>
+                    {ehMelhor(e) && <span className="selo-melhor">★ Melhor nisso</span>}
                     <button type="button" className="comparacao-cabeca" onClick={() => aoAbrir(e.estrategia_id)}>
                       {meio && <Pictograma nome={PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei'} tamanho={40} />}
                       <span className="comparacao-nome">{nomeCurto(e)}</span>
@@ -60,7 +98,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
           </thead>
           <tbody>
             {linhas.map(a => (
-              <tr key={a}>
+              <tr key={a} className={criterio === a ? 'comparacao-linha-ativa' : undefined}>
                 <th scope="row">
                   <span className="comparacao-criterio">
                     <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={28} />
@@ -68,13 +106,13 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
                   </span>
                 </th>
                 {estrategias.map(e => (
-                  <td key={e.estrategia_id}>
+                  <td key={e.estrategia_id} className={ehMelhor(e) ? 'comparacao-melhor' : undefined}>
                     <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
                   </td>
                 ))}
               </tr>
             ))}
-            <tr>
+            <tr className={criterio === 'descoberto' ? 'comparacao-linha-ativa' : undefined}>
               <th scope="row">
                 <span className="comparacao-criterio">
                   <Pictograma nome="terra_descoberta" tamanho={28} />
@@ -82,7 +120,7 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
                 </span>
               </th>
               {estrategias.map(e => (
-                <td key={e.estrategia_id} className="comparacao-numero">{e.calendario.filter(m => m.cobertura === 'solo_descoberto').length}</td>
+                <td key={e.estrategia_id} className={`comparacao-numero${ehMelhor(e) ? ' comparacao-melhor' : ''}`}>{mesesDescobertos(e)}</td>
               ))}
             </tr>
             {verTudo && (
