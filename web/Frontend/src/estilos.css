@@ -705,10 +705,14 @@ p { margin: 0; }
 .faixa-geada { display: flex; flex-direction: column; gap: 6px; }
 .faixa-geada-frase { margin: 0; font-weight: 600; }
 .faixa-geada-meses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+.faixa-geada-meses > li { display: flex; }
 .faixa-geada-mes {
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0;
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0;
   border-radius: var(--raio-pequeno); background: var(--cor-superficie); border: 1px solid var(--cor-borda);
+  font: inherit; color: inherit; cursor: pointer;
 }
+.faixa-geada-mes.aberto { outline: 3px solid var(--cor-mata); outline-offset: 1px; }
+.faixa-geada-detalhe { margin: 0; min-height: 1.4em; font-size: 0.9rem; }
 .faixa-geada-mes.com-risco { background: var(--cor-ceu-clara); border-color: var(--cor-ceu); }
 .faixa-geada-nome { font-size: 0.72rem; color: var(--cor-texto-suave); }
 .faixa-geada-icone { height: 26px; display: grid; place-items: center; }

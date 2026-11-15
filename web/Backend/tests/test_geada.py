@@ -145,3 +145,53 @@ def test_inverno_do_hemisferio_norte_cruza_a_virada_do_ano():
     )
     assert r["meses_com_risco"] == [1, 2, 12]
     assert probabilidade_na_janela(r, serie(range(2000, 2010), lambda d: -1.0 if d.month in (12, 1, 2) and d.day == 5 else 10.0), [3, 4, 5]) == 0
+
+
+# --- Faixa de incerteza (intervalo de Wilson 90%) ---------------------------------
+
+from app.domain.geada import intervalo_wilson  # noqa: E402
+
+
+@pytest.mark.parametrize(
+    ("k", "n", "esperado"),
+    [
+        # Conferidos à parte (fórmula de Wilson, z = 1,6449).
+        (14, 30, (0.326, 0.613)),
+        (4, 30, (0.061, 0.266)),
+        (0, 31, (0.0, 0.08)),
+        (30, 30, (0.917, 1.0)),
+    ],
+)
+def test_intervalo_wilson_valores_conhecidos(k, n, esperado):
+    assert intervalo_wilson(k, n) == pytest.approx(esperado, abs=0.002)
+
+
+def test_faixa_sempre_contem_o_valor_central_e_fica_entre_0_e_1():
+    for n in (1, 5, 30):
+        for k in range(n + 1):
+            lo, hi = intervalo_wilson(k, n)
+            assert 0 <= lo <= k / n <= hi <= 1
+
+
+def test_faixa_estreita_com_mais_anos():
+    lo30, hi30 = intervalo_wilson(6, 30)
+    lo300, hi300 = intervalo_wilson(60, 300)
+    assert hi300 - lo300 < hi30 - lo30
+
+
+def test_zero_em_31_anos_nao_e_nunca():
+    r = calcular_risco_geada(serie(range(1995, 2026), quente))
+    assert mes(r, 7)["probabilidade_geada"] == 0
+    assert mes(r, 7)["probabilidade_geada_max"] > 0.05  # pode gear em ~1 de cada 12 anos
+    assert r["probabilidade_ano_min"] == 0 and r["probabilidade_ano_max"] > 0.05
+    assert r["confianca_intervalo"] == 0.9
+
+
+def test_nivel_com_faixa_avisa_quando_pode_ser_mais_grave():
+    # 20% (2 em 10 anos) e "medio"; com 10 anos a faixa passa de 1/3 -> pode ser "alto".
+    frios = {2003, 2007}
+    r = calcular_risco_geada(
+        serie(range(2000, 2010), lambda d: -1.0 if d.year in frios and d.month == 6 and d.day == 10 else 15.0)
+    )
+    assert r["nivel"] == "medio"
+    assert r["nivel_min"] == "baixo" and r["nivel_max"] == "alto"

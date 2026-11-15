@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
-import { FaixaGeada } from './FaixaGeada';
+import { FaixaGeada, nivelComFaixa } from './FaixaGeada';
 import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { PICTO_RELEVO, PICTO_TEXTURA, ROTULO_RELEVO, ROTULO_RISCO, ROTULO_TEXTURA } from './rotulos';
 
@@ -63,7 +63,7 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, aoCorrigir }:
         />
         <Item pictograma="erosao" rotulo="Risco de erosão" valor={risco(talhao.risco_erosao)} />
         <Item pictograma="falta_agua" rotulo="Risco de seca" valor={risco(talhao.risco_seca)} />
-        <Item pictograma="geada" rotulo="Risco de geada" valor={risco(talhao.risco_geada)} />
+        <Item pictograma="geada" rotulo="Risco de geada" valor={geada ? nivelComFaixa(geada) : risco(talhao.risco_geada)} />
       </ul>
       {geada && <FaixaGeada geada={geada} />}
       {precipitacaoExtrema && <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} />}

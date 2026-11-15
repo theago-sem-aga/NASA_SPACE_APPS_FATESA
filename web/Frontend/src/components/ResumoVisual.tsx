@@ -9,6 +9,7 @@ import { FaixaRotacao } from './FaixaRotacao';
 import { Icone } from './Icone';
 import { Medidor } from './Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from './Pictograma';
+import { nivelComFaixa } from '../features/fluxo/FaixaGeada';
 
 const CRITERIOS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
 /** Na tela, só os dois pontos que mais separam os caminhos; a versão impressa mostra os quatro. */
@@ -57,7 +58,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
             <Ficha pictograma="erosao" rotulo="Risco de erosão" valor={ROTULO_RISCO[analise.talhao.risco_erosao]} />
           )}
           {analise.talhao.risco_geada && (
-            <Ficha pictograma="geada" rotulo="Risco de geada" valor={ROTULO_RISCO[analise.talhao.risco_geada]} />
+            <Ficha pictograma="geada" rotulo="Risco de geada" valor={analise.geada ? nivelComFaixa(analise.geada) : ROTULO_RISCO[analise.talhao.risco_geada]} />
           )}
           {analise.precipitacao_extrema && (
             <Ficha

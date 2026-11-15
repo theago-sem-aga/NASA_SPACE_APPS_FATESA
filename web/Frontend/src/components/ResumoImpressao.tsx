@@ -1,7 +1,7 @@
 import { SINALIZAR_MOCK } from '../api/cliente';
 import type { Analise } from '../api/tipos';
 import type { DadosFluxo } from '../features/fluxo/estadoFluxo';
-import { fraseGeada } from '../features/fluxo/FaixaGeada';
+import { fraseGeada, linhaTecnicaGeada } from '../features/fluxo/FaixaGeada';
 import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 import { NOME_MES } from '../features/fluxo/rotulos';
 import { ResumoVisual } from './ResumoVisual';
@@ -21,8 +21,9 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
           <strong>Geada:</strong> {fraseGeada(analise.geada)}{' '}
           {analise.geada.meses_com_risco.length > 0 &&
             `Meses com geada em 1 de cada 10 anos ou mais: ${analise.geada.meses_com_risco.map(m => NOME_MES[m - 1]).join(', ')}. `}
+          {linhaTecnicaGeada(analise.geada)}{' '}
           (NASA POWER, mínima do ar a 2 m de até {analise.geada.limiar_c} °C, {analise.geada.periodo_inicio}–{analise.geada.periodo_fim};
-          a folha esfria mais que o ar.)
+          faixa = intervalo de Wilson pelo número de anos; não inclui o erro da grade nem o ar vs. folha.)
         </p>
       )}
       {analise.precipitacao_extrema && (
