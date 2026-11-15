@@ -16,3 +16,6 @@ data/processed/sentinel2/cache/
 .ruff_cache/
 *.egg-info/
 web/Backend/.cache/
+
+# Documentacao local (mantida no disco).
+/docs/
