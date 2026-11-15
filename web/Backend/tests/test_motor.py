@@ -27,7 +27,7 @@ def test_beta_deterministico_prioridade_sem_promessa(entrada):
     assert all(e.confianca == "baixa" for e in r)
     assert all("simulad" in e.lacunas[0] for e in r)
     assert all(len(e.calendario) == 12 for e in r)
-    assert all(any("irrigação" in risco.lower() for risco in e.riscos) for e in r)
+    assert all(any("Irrigação" in risco for risco in e.riscos) for e in r)
 
 
 def test_prioridade_muda_ordem(entrada):

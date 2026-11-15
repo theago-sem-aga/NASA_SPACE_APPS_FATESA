@@ -7,7 +7,7 @@
       "resumo": "Como muita gente faz hoje: depois do último corte, prepara o solo e espera a época de plantar a cana de ano e meio.",
       "eh_pratica_atual": true,
       "objetivo": "Gastar o mínimo na reforma e ter a área livre na hora de plantar.",
-      "motivos": ["Está aqui porque é o jeito mais comum de fazer a reforma hoje, e serve de base para comparar os outros dois."],
+      "motivos": ["Está aqui porque é o jeito mais comum de fazer a reforma hoje. Serve de base para comparar os outros dois."],
       "evidencias": [
         "No histórico da região, a área fica sem nada de outubro a fevereiro, justamente quando cai a maior parte da chuva do ano.",
         "Solo gradeado e sem palha é o que a chuva de verão mais carrega, principalmente em terreno inclinado."
@@ -20,7 +20,7 @@
       ],
       "lacunas": ["Não sabemos quanto o seu talhão já perdeu de solo nas reformas anteriores.", "Não sabemos se os terraços estão bem dimensionados para chuva forte."],
       "confianca": "alta",
-      "explicacao_confianca": "É o que já acontece na fazenda, e o risco de erosão com solo descoberto no verão é bem conhecido.",
+      "explicacao_confianca": "É o que já acontece na fazenda. O risco de erosão com solo descoberto no verão é bem conhecido.",
       "pergunta_especialista": "Com a declividade e o solo deste talhão, os terraços que tenho aguentam o verão com a terra descoberta?",
       "prioridades_atendidas": [],
       "requisitos": [],
@@ -46,13 +46,13 @@
         "Amendoim é leguminosa: parte do nitrogênio que ele fixa fica no solo para a cana."
       ],
       "beneficios": [
-        "É receita no período em que a área ficaria parada, e muitas vezes paga a reforma.",
+        "Receita no período em que a área ficaria parada. Muitas vezes paga a reforma.",
         "Solo coberto em boa parte do verão.",
         "Ajuda a quebrar o ciclo de algumas pragas e doenças da cana."
       ],
       "riscos": [
         "Chuva na colheita atrasa o arranquio e aumenta o risco de aflatoxina, o que derruba o preço.",
-        "O arranquio revolve a terra, e entre a colheita e o plantio da cana, o solo fica exposto em pleno fevereiro.",
+        "O arranquio revolve a terra. Entre a colheita e o plantio da cana, o solo fica exposto em pleno fevereiro.",
         "Se a chuva atrasar em outubro, a colheita atrasa e empurra o plantio da cana."
       ],
       "lacunas": [
@@ -84,7 +84,7 @@
       "motivos": ["É uma das opções que deixa a terra coberta por mais tempo nos meses de chuva forte."],
       "evidencias": [
         "A crotalária cobre o solo de outubro a dezembro e a palha protege até o plantio, em março.",
-        "É leguminosa, fixa nitrogênio do ar, e parte dele fica para a cana.",
+        "É leguminosa e fixa nitrogênio do ar. Parte dele fica para a cana.",
         "Algumas espécies, como a Crotalaria spectabilis, são usadas para baixar a população de nematoides."
       ],
       "beneficios": [
@@ -93,16 +93,16 @@
         "Pode reduzir o gasto com adubo nitrogenado no plantio da cana."
       ],
       "riscos": [
-        "Não dá dinheiro na hora, mas o retorno vem na produtividade dos cortes seguintes.",
+        "Não dá dinheiro na hora. O retorno vem na produtividade dos cortes seguintes.",
         "Semente pode faltar ou ficar cara perto da época de plantio.",
         "Se passar do ponto, a crotalária fica dura e dá trabalho para rolar ou incorporar."
       ],
       "lacunas": [
-        "Não sabemos qual nematoide existe no talhão, o que muda qual espécie de crotalária usar.",
-        "Não sabemos quanto a cana vai responder no seu solo, já que o ganho varia muito de área para área."
+        "Não sabemos qual nematoide existe no talhão. Isso muda qual espécie de crotalária usar.",
+        "Não sabemos quanto a cana vai responder no seu solo. O ganho varia muito de área para área."
       ],
       "confianca": "media",
-      "explicacao_confianca": "O efeito de proteção do solo é conhecido, mas o ganho na produção da cana depende do solo e do manejo de cada área.",
+      "explicacao_confianca": "O efeito de proteção do solo é conhecido. O ganho na produção da cana depende do solo e do manejo de cada área.",
       "pergunta_especialista": "Qual crotalária é melhor para o meu talhão, juncea ou spectabilis? Vale fazer análise de nematoide antes?",
       "prioridades_atendidas": ["reducao_erosao", "materia_organica", "fixacao_nitrogenio"],
       "requisitos": [],
@@ -132,7 +132,7 @@
       "riscos": [
         "Veranico na floração derruba a produção.",
         "Ferrugem e percevejo exigem aplicação, o que aumenta o gasto.",
-        "Alguns nematoides se multiplicam na soja e depois atacam a cana, por isso vale escolher variedade resistente.",
+        "Alguns nematoides se multiplicam na soja e depois atacam a cana. Vale escolher variedade resistente.",
         "Se a colheita atrasar, empurra o plantio da cana."
       ],
       "lacunas": [
@@ -141,7 +141,7 @@
         "Não sabemos qual nematoide existe no talhão."
       ],
       "confianca": "media",
-      "explicacao_confianca": "A prática é comum em SP, mas o resultado depende de máquina, comprador, chuva na floração e nematoide, que a ferramenta não conhece.",
+      "explicacao_confianca": "A prática é comum em SP. O resultado depende de máquina, comprador, chuva na floração e nematoide, que a ferramenta não conhece.",
       "pergunta_especialista": "Qual variedade de soja de ciclo curto vai bem aqui e é resistente aos nematoides do meu talhão?",
       "prioridades_atendidas": ["adequacao_mercado", "fixacao_nitrogenio"],
       "requisitos": ["maquinas_graos", "comprador_graos"],
@@ -158,7 +158,7 @@
     {
       "estrategia_id": "milheto",
       "nome": "Plantar milheto para cobrir o solo",
-      "resumo": "Planta milheto com as primeiras chuvas. Ele cresce rápido, aguenta seca e deixa muita palha, e dá para usar como pasto antes de rolar.",
+      "resumo": "Planta milheto com as primeiras chuvas. Ele cresce rápido, aguenta seca e deixa muita palha. Dá para usar como pasto antes de rolar.",
       "eh_pratica_atual": false,
       "objetivo": "Cobrir o solo rápido, mesmo com pouca chuva, e deixar palha para proteger até o plantio da cana.",
       "motivos": ["O milheto fecha o solo em poucas semanas e aguenta veranico melhor que as outras opções."],
@@ -168,13 +168,13 @@
       ],
       "beneficios": ["Solo coberto rápido no começo das chuvas.", "Muita palha protegendo a terra até o plantio.", "Pode virar pasto ou silagem para o gado.", "Semente barata e plantio simples."],
       "riscos": [
-        "Não fixa nitrogênio, mas a palha pode até segurar um pouco dele no começo da cana.",
+        "Não fixa nitrogênio. A palha pode até segurar um pouco do nitrogênio no começo da cana.",
         "Se deixar granar, as sementes viram mato na cana.",
         "Não dá dinheiro na hora, a não ser como comida para o gado."
       ],
       "lacunas": ["Não sabemos se você tem gado para aproveitar o milheto como pasto.", "Não sabemos quanto a palha vai durar no seu solo até março."],
       "confianca": "media",
-      "explicacao_confianca": "A cobertura do solo é bem conhecida, mas o efeito na produção da cana depende do manejo da palha e do nitrogênio.",
+      "explicacao_confianca": "A cobertura do solo é bem conhecida. O efeito na produção da cana depende do manejo da palha e do nitrogênio.",
       "pergunta_especialista": "Vale usar o milheto como pasto antes de rolar? Preciso ajustar o nitrogênio da cana por causa da palha?",
       "prioridades_atendidas": ["reducao_erosao", "materia_organica", "uso_agua", "valor_forragem"],
       "requisitos": [],
@@ -208,7 +208,7 @@
       ],
       "lacunas": ["Não sabemos se você tem ensiladeira ou um parceiro que corte.", "Não sabemos quantos animais vão comer a silagem."],
       "confianca": "media",
-      "explicacao_confianca": "O sorgo forrageiro é bem conhecido, mas o ganho depende de ter gado e máquina para cortar e guardar.",
+      "explicacao_confianca": "O sorgo forrageiro é bem conhecido. O ganho depende de ter gado e máquina para cortar e guardar.",
       "pergunta_especialista": "Compensa fazer silagem de sorgo na reforma? Como evitar que a rebrota atrapalhe a cana?",
       "prioridades_atendidas": ["valor_forragem", "uso_agua"],
       "requisitos": [],

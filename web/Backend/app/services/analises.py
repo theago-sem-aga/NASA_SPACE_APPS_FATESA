@@ -123,7 +123,7 @@ def criar_analise(entrada):
         "Risco de erosão ainda não tem regra validada e fica sem dado.",
         "Umidade superficial do SMAP não foi transformada em um índice de água na zona das raízes.",
         "A cultura atual não informa calendário nem manejo: a referência exibida não comprova a prática atual do produtor.",
-        "NASA POWER fornece dados históricos em grade, e não é medição de estação instalada no talhão nem previsão meteorológica.",
+        "NASA POWER fornece dados históricos em grade; não é medição de estação instalada no talhão nem previsão meteorológica.",
     ]
     if catalogo_real:
         limitacoes.append(
@@ -150,25 +150,24 @@ def criar_analise(entrada):
         limitacoes.append(
             f"Risco de geada: frequência de noites com mínima do ar a 2 m de até {geada['limiar_c']:g} °C "
             f"({geada['periodo_inicio']}–{geada['periodo_fim']}, NASA POWER). A folha esfria mais que o ar e "
-            "baixadas geiam mais que a média da grade, mas o limiar e as faixas ainda não têm referência validada."
+            "baixadas geiam mais que a média da grade; limiar e faixas ainda sem referência validada."
         )
     else:
         limitacoes.append("Risco de geada sem dado: a série de temperatura mínima não respondeu.")
     if tendencia:
         limitacoes.append(
             f"Tendência da chuva: {tendencia['metodo']}, {tendencia['periodo_inicio']}–{tendencia['periodo_fim']}. "
-            "NASA POWER é reanálise em grade, não um pluviômetro, por isso uma tendência forte deve ser conferida "
-            "com estação meteorológica antes de uma decisão cara, já que a tendência do passado não garante o futuro."
+            "NASA POWER é reanálise em grade, não pluviômetro: uma tendência forte deve ser conferida com estação "
+            "meteorológica antes de decisão cara. Tendência do passado não garante o futuro."
         )
     else:
         limitacoes.append("Tendência da chuva sem dado: faltam anos completos na série de chuva.")
     if estresse:
         limitacoes.append(
             f"Estresse vegetal: {estresse['metodo']}, foto de {estresse['data_foto']}, pixel de 250 m "
-            f"a {estresse['distancia_pixel_km']:g} km do ponto. NDVI baixo também pode ser colheita, preparo do solo "
-            "ou troca de cultura, e não só estresse, por isso quem conhece o talhão deve confirmar. Os cortes "
-            "(10%, 25%, 90%) e o limiar de 0,20 para \"sem planta\" foram escolhidos sem fonte agronômica e ainda "
-            "estão pendentes de revisão."
+            f"a {estresse['distancia_pixel_km']:g} km do ponto. NDVI baixo também é colheita, preparo do solo "
+            "ou troca de cultura, não só estresse: quem conhece o talhão confirma. Os cortes (10%, 25%, 90%) e o "
+            "limiar de 0,20 para \"sem planta\" foram escolhidos sem fonte agronômica: pendentes de revisão."
         )
     else:
         limitacoes.append(
@@ -176,8 +175,8 @@ def criar_analise(entrada):
         )
     if precipitacao_extrema:
         limitacoes.append(
-            f"Precipitação extrema: {precipitacao_extrema['metodo']}. É grade regional da NASA POWER, "
-            "não uma medição de pluviômetro no talhão, e o limiar é estatístico, não um alerta oficial."
+            f"Precipitação extrema: {precipitacao_extrema['metodo']}. Grade regional da NASA POWER, "
+            "não é medição de pluviômetro no talhão; limiar estatístico, não um alerta oficial."
         )
     else:
         limitacoes.append("Precipitação extrema sem dado: a série diária de chuva não respondeu.")
@@ -196,8 +195,8 @@ def criar_analise(entrada):
         )
     if declividade:
         limitacoes.append(
-            "A declividade do terreno é calculada a partir de 5 pontos de elevação (USGS 3DEP) ao redor "
-            "da coordenada, não um levantamento topográfico do talhão, e só cobre os EUA hoje."
+            "Terreno: declividade calculada a partir de 5 pontos de elevação (USGS 3DEP) ao redor "
+            "da coordenada, não um levantamento topográfico do talhão; só cobre os EUA hoje."
         )
     else:
         limitacoes.append("Terreno sem dado: fonte de elevação indisponível ou ponto fora da cobertura do USGS 3DEP (fora dos EUA).")
