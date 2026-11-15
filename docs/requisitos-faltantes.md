@@ -6,6 +6,7 @@
 
 - Geada (risco de geada, NASA POWER) — qualquer coordenada do mundo
 - Precipitação extrema (percentil 95 da chuva diária do mês) — qualquer coordenada
+- Glossário com os termos científicos que o desafio pede (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico): `web/Frontend/src/accessibility/glossario.ts`, aberto pelo rodapé e pelos "Palavras deste quadro"
 - Tendência hídrica de longo prazo (Mann-Kendall + inclinação de Sen, chuva anual) — qualquer coordenada
 - Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP e Fresno): a série longa levou de 8 a 20 min por ponto no ORNL (medido em 15/11/2026). Os pontos baixados são lavoura (confirmado pelo Thiago). Faixas do NDVI, limiar de 0,2 e causas de queda seguem o artigo da EOSDA sobre NDVI; os cortes 10/25/90% seguem sem fonte agronômica
 - GRACE/GRACE-FO (armazenamento de água) — qualquer coordenada do mundo (lê o pixel direto do arquivo global da NASA, não só nos pontos piloto)
@@ -26,7 +27,6 @@
 
 > Ordenado do mais fácil pro mais difícil de implementar (pra quem for pegar tarefa rápida, comece de cima).
 
-- Glossário com os termos científicos que o desafio pede (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico) — só texto, sem fonte de dado nova nem backend
 - Estresse térmico — a variável já existe, falta só calcular o índice (parecido com o que já foi feito pro risco de seca)
 - Busca de local nos EUA por nome (digitar cidade/condado) — a tela de localização só busca por nome no Brasil hoje; nos EUA é só GPS ou coordenada digitada. O painel de colheita (`GET /producao`) já geocodifica a coordenada pro condado via Census, mas isso é depois de o usuário já ter um ponto. Dá pra seguir o mesmo padrão da base de municípios do Brasil (IBGE), só que com a lista de condados dos EUA (Census)
 - Conversão do rendimento dos EUA (NASS, em BU/ACRE, LB/ACRE etc.) pra kg/ha — deixado de lado por variar o peso do bushel por cultura; só é seguro de fazer achando uma tabela oficial (USDA/NIST) de peso padrão do bushel por cultura, senão é inventar dado
