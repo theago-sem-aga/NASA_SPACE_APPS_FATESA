@@ -700,3 +700,23 @@ p { margin: 0; }
   .decisao-trator { animation: none; transform: none; left: auto; right: 12px; }
   .decisao-trator .pictograma { animation: none; }
 }
+
+/* Risco de geada: 12 meses, floco onde costuma gear e o número de anos em cada 10. */
+.faixa-geada { display: flex; flex-direction: column; gap: 6px; }
+.faixa-geada-frase { margin: 0; font-weight: 600; }
+.faixa-geada-meses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+.faixa-geada-mes {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0;
+  border-radius: var(--raio-pequeno); background: var(--cor-superficie); border: 1px solid var(--cor-borda);
+}
+.faixa-geada-mes.com-risco { background: var(--cor-ceu-clara); border-color: var(--cor-ceu); }
+.faixa-geada-nome { font-size: 0.72rem; color: var(--cor-texto-suave); }
+.faixa-geada-icone { height: 26px; display: grid; place-items: center; }
+.faixa-geada-vazio { width: 6px; height: 6px; border-radius: 50%; background: var(--cor-borda); }
+.faixa-geada-numero { font-weight: 700; font-size: 0.85rem; color: var(--cor-ceu); }
+.faixa-geada-mes:not(.com-risco) .faixa-geada-numero { color: var(--cor-texto-suave); font-weight: 400; }
+.faixa-geada-legenda { margin: 0; font-size: 0.8rem; }
+@media (max-width: 420px) {
+  .faixa-geada-icone .pictograma { width: 20px; height: 20px; }
+  .faixa-geada-nome { font-size: 0.65rem; }
+}

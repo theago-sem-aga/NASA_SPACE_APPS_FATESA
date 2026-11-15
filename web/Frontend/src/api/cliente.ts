@@ -19,6 +19,7 @@ import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
 import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
+import { GEADA_FRESNO, GEADA_SJRP } from './mock/geadaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
@@ -45,7 +46,7 @@ export class FalhaApi extends Error {
   }
 }
 
-// Permite demonstrar os estados da tela no mock: ?simular=erro | dados_insuficientes | lento | sem_gps
+// Permite demonstrar os estados da tela no mock: ?simular=erro | dados_insuficientes | lento | sem_gps | geada
 export function simulacaoPedida(): string | null {
   return new URLSearchParams(window.location.search).get('simular');
 }
@@ -219,10 +220,13 @@ function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
   // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
   const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
+  // Geada REAL da NASA POWER (congelada). ?simular=geada mostra Fresno, onde geia todo inverno.
+  const geada = simulacaoPedida() === 'geada' ? GEADA_FRESNO : GEADA_SJRP;
   return {
     ...ANALISE_MOCK,
     descricao_local: descricaoLocal,
-    talhao: montarTalhaoMock(entrada.correcoes),
+    talhao: montarTalhaoMock(entrada.correcoes, geada),
+    geada,
     estrategias,
     limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
   };

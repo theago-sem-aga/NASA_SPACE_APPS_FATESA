@@ -248,6 +248,20 @@ const DEFS: Record<string, Def> = {
       </>
     )
   },
+  geada: {
+    fundo: 'azul',
+    desenho: (
+      <>
+        <path
+          d="M24 5v34M7.5 14.5l33 19M7.5 33.5l33-19M24 5l-4 4M24 5l4 4M24 39l-4-4M24 39l4-4M7.5 14.5l5.5 1M7.5 14.5l1.5-5.5M40.5 33.5l-5.5-1M40.5 33.5l-1.5 5.5M7.5 33.5l1.5 5.5M7.5 33.5l5.5-1M40.5 14.5l-1.5-5.5M40.5 14.5l-5.5 1"
+          stroke={C.agua}
+          strokeWidth="2.6"
+          strokeLinecap="round"
+        />
+        <circle cx="24" cy="22" r="3.5" fill="#fff" stroke={C.agua} strokeWidth="2" />
+      </>
+    )
+  },
   saco: {
     fundo: 'amarelo',
     desenho: (

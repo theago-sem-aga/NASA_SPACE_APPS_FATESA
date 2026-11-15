@@ -50,6 +50,7 @@ def verificar():
             "talhao",
             "fonte_clima",
             "clima_mensal",
+            "geada",
             "estrategias",
             "limitacoes",
         )

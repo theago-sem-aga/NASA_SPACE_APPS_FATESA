@@ -13,7 +13,30 @@ def cliente():
         yield c
 
 
+GEADA_FIXTURE = {
+    "nivel": "medio",
+    "mes_mais_arriscado": 1,
+    "meses_com_risco": [1, 12],
+    "probabilidade_ano": 0.3,
+    "meses": [
+        {"mes": m, "probabilidade_geada": 0.3 if m in (1, 12) else 0.0, "probabilidade_geada_forte": 0.0,
+         "anos_com_geada": 3 if m in (1, 12) else 0, "dias_geada_medio": 0.5 if m in (1, 12) else 0.0,
+         "menor_minima_c": 1.0}
+        for m in range(1, 13)
+    ],
+    "limiar_c": 2.0,
+    "limiar_forte_c": 0.0,
+    "periodo_inicio": 2011,
+    "periodo_fim": 2020,
+    "anos_analisados": 10,
+    "fonte": "fixture",
+    "variavel": "temperatura_minima_c",
+    "tipo_acesso": "pre_processado",
+}
+
+
 def preparar(monkeypatch, repositorio):
+    monkeypatch.setattr(servico, "risco_geada", lambda *args: GEADA_FIXTURE)
     monkeypatch.setattr(servico, "RepositorioAnalises", lambda: repositorio)
     monkeypatch.setattr(rotas, "RepositorioAnalises", lambda: repositorio)
     monkeypatch.setattr(
@@ -119,3 +142,26 @@ def test_openapi_rotas_e_snake_case(cliente):
     assert "post" in c["paths"]["/api/v1/analises"]
     for schema in c["components"]["schemas"].values():
         assert all(not any(ch.isupper() for ch in nome) for nome in schema.get("properties", {}))
+
+
+def test_analise_traz_risco_de_geada(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["talhao"]["risco_geada"] == "medio"
+    assert "NASA POWER" in corpo["talhao"]["bases"]
+    assert corpo["geada"]["meses_com_risco"] == [1, 12]
+    assert any("geada" in t.lower() for t in corpo["limitacoes"])
+
+
+def test_falha_da_geada_nao_derruba_a_analise(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+
+    def falhar(*args):
+        raise OSError("POWER fora do ar")
+
+    monkeypatch.setattr(servico, "risco_geada", falhar)
+    resposta = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json"))
+    assert resposta.status_code == 201, resposta.text
+    corpo = resposta.json()
+    assert corpo["geada"] is None and corpo["talhao"]["risco_geada"] is None
+    assert {"fonte": "nasa_power_geada", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]

@@ -196,8 +196,45 @@ export interface CaracteristicasTalhao {
   risco_erosao: Nivel | null;
   /** BACKEND: a partir da tendência de chuva e da umidade do solo (POWER/SMAP). */
   risco_seca: Nivel | null;
+  /** REAL: frequência de noites frias na mínima diária da NASA POWER (detalhe em `Analise.geada`). */
+  risco_geada: Nivel | null;
   /** Nomes curtos das bases usadas, para a linha "De onde vem", ex.: ['SRTM', 'SoilGrids']. */
   bases: string[];
+}
+
+/** Geada num mês: em quantos dos anos analisados houve pelo menos 1 noite fria. */
+export interface GeadaMensal {
+  /** 1 = janeiro … 12 = dezembro */
+  mes: number;
+  /** 0–1: fração dos anos com mínima do ar <= `limiar_c` neste mês. */
+  probabilidade_geada: number;
+  /** 0–1: o mesmo, com mínima <= `limiar_forte_c` (geada forte). */
+  probabilidade_geada_forte: number;
+  anos_com_geada: number;
+  dias_geada_medio: number;
+  menor_minima_c: number | null;
+}
+
+/**
+ * Risco de geada do ponto (REAL, calculado no backend em app/domain/geada.py).
+ * O front só exibe; não refaz conta nem muda os cortes.
+ */
+export interface RiscoGeada {
+  nivel: Nivel;
+  mes_mais_arriscado: number | null;
+  /** Meses com geada em pelo menos 1 de cada 10 anos. */
+  meses_com_risco: number[];
+  /** 0–1: fração dos anos com geada em algum mês. */
+  probabilidade_ano: number;
+  meses: GeadaMensal[];
+  limiar_c: number;
+  limiar_forte_c: number;
+  periodo_inicio: number;
+  periodo_fim: number;
+  anos_analisados: number;
+  fonte: string;
+  variavel: string;
+  tipo_acesso: TipoAcesso;
 }
 
 export interface Analise {
@@ -209,6 +246,8 @@ export interface Analise {
   talhao: CaracteristicasTalhao;
   fonte_clima: FonteClima;
   clima_mensal: ClimaMensal[];
+  /** null = a série de temperatura mínima não respondeu para o ponto. */
+  geada: RiscoGeada | null;
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];

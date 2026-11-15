@@ -3,7 +3,9 @@
 // com o técnico de campo e citam práticas reais da reforma de canavial em SP,
 // mas TODOS precisam ser conferidos nas referências antes de ir para o produto.
 // As referências listadas NÃO foram verificadas: são indicações de onde buscar.
-import type { Analise, CaracteristicasTalhao, CorrecoesTalhao, Cultura, Local } from '../tipos';
+// EXCEÇÃO: o risco de geada (geadaMock.ts) é REAL (NASA POWER), só congelado.
+import type { Analise, CaracteristicasTalhao, CorrecoesTalhao, Cultura, Local, RiscoGeada } from '../tipos';
+import { GEADA_SJRP } from './geadaMock';
 import { ESTRATEGIAS_PADRAO } from './montarEstrategias';
 
 export const CULTURAS_MOCK: Cultura[] = [
@@ -36,7 +38,7 @@ export const MUNICIPIOS_MOCK: Local[] = [
 ];
 
 /** O que "os mapas" dizem do talhão no mock, já aplicando a correção do produtor. */
-export function montarTalhaoMock(correcoes: CorrecoesTalhao): CaracteristicasTalhao {
+export function montarTalhaoMock(correcoes: CorrecoesTalhao, geada: RiscoGeada | null = GEADA_SJRP): CaracteristicasTalhao {
   return {
     textura_solo: correcoes.textura_solo ?? 'arenosa',
     fonte_textura: correcoes.textura_solo ? 'informado_produtor' : 'mapas',
@@ -45,6 +47,7 @@ export function montarTalhaoMock(correcoes: CorrecoesTalhao): CaracteristicasTal
     declividade_pct: correcoes.relevo ? null : 5,
     risco_erosao: 'alto',
     risco_seca: 'medio',
+    risco_geada: geada?.nivel ?? null,
     bases: ['SRTM', 'SoilGrids', 'NASA POWER']
   };
 }
@@ -52,6 +55,7 @@ export function montarTalhaoMock(correcoes: CorrecoesTalhao): CaracteristicasTal
 export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   analise_id: 'mock-0001',
   eh_mock: true,
+  geada: GEADA_SJRP,
   fonte_clima: {
     fonte_id: 'nasa_power',
     nome: 'NASA POWER',

@@ -102,6 +102,8 @@ class CaracteristicasTalhao(BaseModel):
     declividade_pct: float | None = None
     risco_erosao: Nivel | None = None
     risco_seca: Nivel | None = None
+    # Regra em app/domain/geada.py (mínima do ar NASA POWER). Limiar e cortes pendentes de fonte.
+    risco_geada: Nivel | None = None
     bases: list[str] = Field(default_factory=list)
 
 
@@ -109,6 +111,32 @@ class ClimaMensal(BaseModel):
     mes: int = Field(ge=1, le=12)
     precipitacao_acumulada_mm: float | None = None
     umidade_solo: float | None = None
+
+
+class GeadaMensal(BaseModel):
+    mes: int = Field(ge=1, le=12)
+    # Fração dos anos com pelo menos 1 dia de mínima do ar <= limiar_c naquele mês.
+    probabilidade_geada: float = Field(ge=0, le=1)
+    probabilidade_geada_forte: float = Field(ge=0, le=1)
+    anos_com_geada: int
+    dias_geada_medio: float
+    menor_minima_c: float | None = None
+
+
+class RiscoGeada(BaseModel):
+    nivel: Nivel
+    mes_mais_arriscado: int | None = None
+    meses_com_risco: list[int]
+    probabilidade_ano: float = Field(ge=0, le=1)
+    meses: list[GeadaMensal]
+    limiar_c: float
+    limiar_forte_c: float
+    periodo_inicio: int
+    periodo_fim: int
+    anos_analisados: int
+    fonte: str
+    variavel: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
 class FonteClima(BaseModel):
@@ -171,6 +199,8 @@ class Analise(BaseModel):
     talhao: CaracteristicasTalhao
     fonte_clima: FonteClima
     clima_mensal: list[ClimaMensal]
+    # None = sem série de temperatura mínima para o ponto (fonte fora do ar).
+    geada: RiscoGeada | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

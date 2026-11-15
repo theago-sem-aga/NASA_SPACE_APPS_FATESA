@@ -56,6 +56,9 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
           {!compacto && analise.talhao.risco_erosao && (
             <Ficha pictograma="erosao" rotulo="Risco de erosão" valor={ROTULO_RISCO[analise.talhao.risco_erosao]} />
           )}
+          {analise.talhao.risco_geada && (
+            <Ficha pictograma="geada" rotulo="Risco de geada" valor={ROTULO_RISCO[analise.talhao.risco_geada]} />
+          )}
           {!compacto && (Object.keys(ROTULO_REQUISITO) as RequisitoId[]).map(r => {
             const resp = dados.recursos_disponiveis[r];
             return resp && <Ficha key={r} pictograma={PICTO_REQUISITO[r]} rotulo={ROTULO_REQUISITO[r].nome} valor={ROTULO_RESPOSTA[resp]} />;
