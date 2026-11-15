@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { GLOSSARIO } from '../accessibility/glossario';
+import { tx } from '../i18n/idioma';
 
 /** Glossário inteiro numa janela, aberta pelo rodapé de qualquer tela. */
 export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFechar: () => void }) {
@@ -26,12 +27,12 @@ export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFech
       }}
     >
       <div className="glossario-cabeca">
-        <h2 id="glossario-titulo">Glossário</h2>
-        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label="Fechar o glossário">
+        <h2 id="glossario-titulo">{tx('Glossário', 'Glossary')}</h2>
+        <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label={tx('Fechar o glossário', 'Close the glossary')}>
           ✕
         </button>
       </div>
-      <p className="glossario-intro">As palavras da NASA e do campo que aparecem no site, em linguagem simples.</p>
+      <p className="glossario-intro">{tx('As palavras da NASA e do campo que aparecem no site, em linguagem simples.', 'NASA and farm words used on the site, in plain language.')}</p>
       <dl className="glossario-lista">
         {itens.map(i => (
           <div key={i.termo}>

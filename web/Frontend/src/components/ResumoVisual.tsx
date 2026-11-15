@@ -15,6 +15,7 @@ import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from './Pictogram
 import { nivelComFaixa } from '../features/fluxo/FaixaGeada';
 import { ROTULO_TENDENCIA } from '../features/fluxo/FaixaTendenciaHidrica';
 import { ROTULO_ESTRESSE } from '../features/fluxo/FaixaEstresseVegetal';
+import { tx } from '../i18n/idioma';
 
 const CRITERIOS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
 /** Na tela, só os dois pontos que mais separam os caminhos; a versão impressa mostra os quatro. */
@@ -41,46 +42,46 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
   return (
     <div className="resumo-visual">
       <section aria-labelledby={`${id}-talhao`}>
-        <h2 id={`${id}-talhao`} className="titulo-secao">Sua área</h2>
+        <h2 id={`${id}-talhao`} className="titulo-secao">{tx('Sua área', 'Your field')}</h2>
         <ul className="fichas">
           <li className="ficha">
             <span className="ficha-icone"><Icone nome="local" tamanho={28} /></span>
             <span className="ficha-texto">
-              <span className="ficha-rotulo">Onde</span>
-              <span className="ficha-valor">{analise.descricao_local || 'Sem local'}</span>
+              <span className="ficha-rotulo">{tx('Onde', 'Where')}</span>
+              <span className="ficha-valor">{analise.descricao_local || tx('Sem local', 'No location')}</span>
             </span>
           </li>
           {dados.cultura_atual_id && (
-            <Ficha pictograma={PICTOGRAMA_CULTURA[dados.cultura_atual_id] ?? 'nao_sei'} rotulo="Plantado hoje" valor={dados.nomeCultura ?? ''} />
+            <Ficha pictograma={PICTOGRAMA_CULTURA[dados.cultura_atual_id] ?? 'nao_sei'} rotulo={tx('Plantado hoje', 'Planted today')} valor={dados.nomeCultura ?? ''} />
           )}
           {analise.talhao.textura_solo && (
-            <Ficha pictograma={PICTO_TEXTURA[analise.talhao.textura_solo]} rotulo="Terra" valor={ROTULO_TEXTURA[analise.talhao.textura_solo].nome} />
+            <Ficha pictograma={PICTO_TEXTURA[analise.talhao.textura_solo]} rotulo={tx('Terra', 'Soil')} valor={ROTULO_TEXTURA[analise.talhao.textura_solo].nome} />
           )}
           {analise.talhao.relevo && (
-            <Ficha pictograma={PICTO_RELEVO[analise.talhao.relevo]} rotulo="Terreno" valor={ROTULO_RELEVO[analise.talhao.relevo].nome} />
+            <Ficha pictograma={PICTO_RELEVO[analise.talhao.relevo]} rotulo={tx('Terreno', 'Terrain')} valor={ROTULO_RELEVO[analise.talhao.relevo].nome} />
           )}
           {!compacto && analise.talhao.risco_erosao && (
-            <Ficha pictograma="erosao" rotulo="Risco de erosão" valor={ROTULO_RISCO[analise.talhao.risco_erosao]} />
+            <Ficha pictograma="erosao" rotulo={tx('Risco de erosão', 'Erosion risk')} valor={ROTULO_RISCO[analise.talhao.risco_erosao]} />
           )}
           {analise.talhao.risco_geada && (
-            <Ficha pictograma="geada" rotulo="Risco de geada" valor={analise.geada ? nivelComFaixa(analise.geada) : ROTULO_RISCO[analise.talhao.risco_geada]} />
+            <Ficha pictograma="geada" rotulo={tx('Risco de geada', 'Frost risk')} valor={analise.geada ? nivelComFaixa(analise.geada) : ROTULO_RISCO[analise.talhao.risco_geada]} />
           )}
           {analise.precipitacao_extrema && (
             <Ficha
               pictograma="chuva"
-              rotulo="Chuva extrema (30 dias)"
+              rotulo={tx('Chuva extrema (30 dias)', 'Extreme rain (30 days)')}
               valor={
                 analise.precipitacao_extrema.dias_chuva_extrema_30d === 0
-                  ? 'Normal'
-                  : `${analise.precipitacao_extrema.dias_chuva_extrema_30d} ${analise.precipitacao_extrema.dias_chuva_extrema_30d === 1 ? 'dia' : 'dias'}`
+                  ? tx('Normal', 'Normal')
+                  : `${analise.precipitacao_extrema.dias_chuva_extrema_30d} ${analise.precipitacao_extrema.dias_chuva_extrema_30d === 1 ? tx('dia', 'day') : tx('dias', 'days')}`
               }
             />
           )}
           {analise.tendencia_hidrica && (
-            <Ficha pictograma="chuva" rotulo="Chuva ao longo dos anos" valor={ROTULO_TENDENCIA[analise.tendencia_hidrica.tendencia]} />
+            <Ficha pictograma="chuva" rotulo={tx('Chuva ao longo dos anos', 'Rain over the years')} valor={ROTULO_TENDENCIA[analise.tendencia_hidrica.tendencia]} />
           )}
           {analise.estresse_vegetal && (
-            <Ficha pictograma="planta" rotulo="Vegetação (NDVI)" valor={ROTULO_ESTRESSE[analise.estresse_vegetal.situacao]} />
+            <Ficha pictograma="planta" rotulo={tx('Vegetação (NDVI)', 'Vegetation (NDVI)')} valor={ROTULO_ESTRESSE[analise.estresse_vegetal.situacao]} />
           )}
           {!compacto && (Object.keys(ROTULO_REQUISITO) as RequisitoId[]).map(r => {
             const resp = dados.recursos_disponiveis[r];
@@ -91,7 +92,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
           <div className="resumo-duplo">
             {!compacto && dados.problemas.length > 0 && (
               <div>
-                <h3 className="resumo-subtitulo">Incomoda</h3>
+                <h3 className="resumo-subtitulo">{tx('Incomoda', 'Problems')}</h3>
                 <ul className="figuras-com-nome">
                   {dados.problemas.map(p => (
                     <li key={p}><Pictograma nome={PICTO_PROBLEMA[p]} tamanho={40} /> {p === 'solo_cansado' ? vocabulario(dados.cultura_atual_id, dados.nomeCultura).produzindoMenos : ROTULO_PROBLEMA[p]}</li>
@@ -101,7 +102,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
             )}
             {dados.prioridades.length > 0 && (
               <div>
-                <h3 className="resumo-subtitulo">Mais importante</h3>
+                <h3 className="resumo-subtitulo">{tx('Mais importante', 'Most important')}</h3>
                 <ul className="figuras-com-nome">
                   {dados.prioridades.map(p => (
                     <li key={p}><Pictograma nome={PICTO_PRIORIDADE[p]} tamanho={40} /> {ROTULO_PRIORIDADE[p].nome}</li>
@@ -114,7 +115,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
       </section>
 
       <section aria-labelledby={`${id}-caminhos`}>
-        <h2 id={`${id}-caminhos`} className="titulo-secao">Os caminhos</h2>
+        <h2 id={`${id}-caminhos`} className="titulo-secao">{tx('Os caminhos', 'The options')}</h2>
         <LegendaMedidor />
         <ol className="resumo-caminhos">
           {analise.estrategias.map(e => (
@@ -122,7 +123,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
               <p className="resumo-caminho-nome">
                 {e.nome}
                 <NomeCientificoCaminho estrategia={e} />
-                {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">O jeito de hoje, para comparar</span>}
+                {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">{tx('O jeito de hoje, para comparar', 'Today’s practice, for comparison')}</span>}
               </p>
               <FaixaRotacao etapas={e.etapas_rotacao} tamanho={compacto ? 28 : 36} />
               <ul className="resumo-criterios">
@@ -139,13 +140,13 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
                 <dl className="resumo-motivos">
                   {e.beneficios[0] && (
                     <div className="resumo-motivo resumo-motivo-bom">
-                      <dt>Por que pode dar certo</dt>
+                      <dt>{tx('Por que pode dar certo', 'Why it may work')}</dt>
                       <dd>{e.beneficios[0]}</dd>
                     </div>
                   )}
                   {e.riscos[0] && (
                     <div className="resumo-motivo resumo-motivo-risco">
-                      <dt>O que pode dar errado</dt>
+                      <dt>{tx('O que pode dar errado', 'What may go wrong')}</dt>
                       <dd>{e.riscos[0]}</dd>
                     </div>
                   )}
@@ -153,7 +154,7 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
               )}
               {!compacto && (<>
               <p className="resumo-pergunta">
-                <Icone nome="pessoa" tamanho={20} /> <span><strong>Pergunte:</strong> {e.pergunta_especialista}</span>
+                <Icone nome="pessoa" tamanho={20} /> <span><strong>{tx('Pergunte:', 'Ask:')}</strong> {e.pergunta_especialista}</span>
               </p>
               <p className="texto-apoio">{ROTULO_CONFIANCA[e.confianca]}</p>
               </>)}

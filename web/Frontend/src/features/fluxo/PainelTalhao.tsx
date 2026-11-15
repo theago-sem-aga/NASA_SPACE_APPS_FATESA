@@ -10,6 +10,7 @@ import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { FaixaTendenciaHidrica, ROTULO_TENDENCIA } from './FaixaTendenciaHidrica';
 import { FaixaEstresseVegetal, ROTULO_ESTRESSE } from './FaixaEstresseVegetal';
 import { PICTO_RELEVO, PICTO_TEXTURA, ROTULO_RELEVO, ROTULO_RISCO, ROTULO_TEXTURA } from './rotulos';
+import { tx } from '../../i18n/idioma';
 
 interface PainelTalhaoProps {
   talhao: CaracteristicasTalhao;
@@ -44,7 +45,7 @@ function Item({ pictograma, rotulo, valor, corrigido }: { pictograma: NomePictog
   );
 }
 
-const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
+const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : tx('Sem dado', 'No data'));
 
 /**
  * O que os dados acharam sobre o talhão (solo, terreno, riscos), em vez de perguntar.
@@ -81,39 +82,39 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
 
   const valorRelevo = talhao.relevo
     ? ROTULO_RELEVO[talhao.relevo].nome
-    : 'Sem dado';
+    : tx('Sem dado', 'No data');
 
   return (
     <section className="cartao painel-talhao" aria-labelledby={`${id}-titulo`}>
-      <h2 id={`${id}-titulo`} className="titulo-secao">Sua terra, pelos mapas</h2>
+      <h2 id={`${id}-titulo`} className="titulo-secao">{tx('Sua terra, pelos mapas', 'Your land, from the maps')}</h2>
       <ul className="fichas fichas-compactas">
         <Item
           pictograma={talhao.textura_solo ? PICTO_TEXTURA[talhao.textura_solo] : 'solo_sem_dado'}
-          rotulo="Terra"
-          valor={talhao.textura_solo ? ROTULO_TEXTURA[talhao.textura_solo].nome : 'Sem dado'}
+          rotulo={tx('Terra', 'Soil')}
+          valor={talhao.textura_solo ? ROTULO_TEXTURA[talhao.textura_solo].nome : tx('Sem dado', 'No data')}
           corrigido={talhao.fonte_textura === 'informado_produtor'}
         />
         <Item
           pictograma={talhao.relevo ? PICTO_RELEVO[talhao.relevo] : 'terreno_sem_dado'}
-          rotulo="Terreno"
+          rotulo={tx('Terreno', 'Terrain')}
           valor={valorRelevo}
           corrigido={talhao.fonte_relevo === 'informado_produtor'}
         />
-        <Item pictograma="falta_agua" rotulo="Risco de seca" valor={risco(talhao.risco_seca)} />
-        <Item pictograma="erosao" rotulo="Risco de erosão" valor={risco(talhao.risco_erosao)} />
-        <Item pictograma="geada" rotulo="Risco de geada" valor={geada ? nivelComFaixa(geada) : risco(talhao.risco_geada)} />
+        <Item pictograma="falta_agua" rotulo={tx('Risco de seca', 'Drought risk')} valor={risco(talhao.risco_seca)} />
+        <Item pictograma="erosao" rotulo={tx('Risco de erosão', 'Erosion risk')} valor={risco(talhao.risco_erosao)} />
+        <Item pictograma="geada" rotulo={tx('Risco de geada', 'Frost risk')} valor={geada ? nivelComFaixa(geada) : risco(talhao.risco_geada)} />
         <Item
           pictograma="chuva"
-          rotulo="Chuva ao longo dos anos"
-          valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : 'Sem dado'}
+          rotulo={tx('Chuva ao longo dos anos', 'Rain over the years')}
+          valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : tx('Sem dado', 'No data')}
         />
-        <Item pictograma="planta" rotulo="Vegetação (NDVI)" valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : 'Sem dado'} />
+        <Item pictograma="planta" rotulo={tx('Vegetação (NDVI)', 'Vegetation (NDVI)')} valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : tx('Sem dado', 'No data')} />
       </ul>
       <div className="painel-talhao-rodape">
-        {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
+        {talhao.bases.length > 0 && <span className="texto-apoio">{tx('De onde vem:', 'Sources:')} {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (
           <button type="button" className="link-discreto" onClick={abrir} aria-expanded={false}>
-            Não é bem assim
+            {tx('Não é bem assim', 'That’s not quite right')}
           </button>
         )}
       </div>
@@ -121,10 +122,13 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
       {corrigindo && (
         <div className="painel-correcao">
           <p className="texto-apoio">
-            Você conhece a sua terra melhor que o satélite. Marque o que é certo: pode mudar só a terra, só o terreno ou os dois. Depois toque em confirmar.
+            {tx(
+              'Você conhece a sua terra melhor que o satélite. Marque o que é certo: pode mudar só a terra, só o terreno ou os dois. Depois toque em confirmar.',
+              'You know your land better than the satellite. Mark what is right: you can change just the soil, just the terrain, or both. Then tap confirm.'
+            )}
           </p>
           <fieldset className="grade-escolhas grade-escolhas-3">
-            <legend className="resumo-subtitulo">A terra é…</legend>
+            <legend className="resumo-subtitulo">{tx('A terra é…', 'The soil is…')}</legend>
             {TEXTURAS.map(t => (
               <CartaoEscolha
                 key={t}
@@ -139,7 +143,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
             ))}
           </fieldset>
           <fieldset className="grade-escolhas grade-escolhas-3">
-            <legend className="resumo-subtitulo">O terreno é…</legend>
+            <legend className="resumo-subtitulo">{tx('O terreno é…', 'The terrain is…')}</legend>
             {RELEVOS.map(r => (
               <CartaoEscolha
                 key={r}
@@ -155,7 +159,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
           </fieldset>
           <div className="navegacao">
             <button type="button" className="botao botao-secundario" onClick={cancelar}>
-              Cancelar
+              {tx('Cancelar', 'Cancel')}
             </button>
             <button
               type="button"
@@ -164,12 +168,12 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
               aria-disabled={!temMudanca || undefined}
               aria-describedby={temMudanca ? undefined : idAjuda}
             >
-              Confirmar mudanças
+              {tx('Confirmar mudanças', 'Confirm changes')}
             </button>
           </div>
           {!temMudanca && (
             <p id={idAjuda} className="texto-apoio">
-              Marque a terra ou o terreno certo para poder confirmar.
+              {tx('Marque a terra ou o terreno certo para poder confirmar.', 'Mark the right soil or terrain to confirm.')}
             </p>
           )}
         </div>
@@ -178,18 +182,18 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
       <CarrosselClima
         slides={[
           ...(calor || geada
-            ? [{ id: 'atencao', titulo: 'Meses de atenção', pictograma: 'seca' as const, conteudo: <MesesAtencao calor={calor} geada={geada} clima={climaMensal} /> }]
+            ? [{ id: 'atencao', titulo: tx('Meses de atenção', 'Months to watch'), pictograma: 'seca' as const, conteudo: <MesesAtencao calor={calor} geada={geada} clima={climaMensal} /> }]
             : []),
-          ...(calor ? [{ id: 'calor', titulo: 'Calor', pictograma: 'calor' as const, conteudo: <FaixaCalor calor={calor} /> }] : []),
-          ...(geada ? [{ id: 'geada', titulo: 'Geada', pictograma: 'geada' as const, conteudo: <FaixaGeada geada={geada} /> }] : []),
+          ...(calor ? [{ id: 'calor', titulo: tx('Calor', 'Heat'), pictograma: 'calor' as const, conteudo: <FaixaCalor calor={calor} /> }] : []),
+          ...(geada ? [{ id: 'geada', titulo: tx('Geada', 'Frost'), pictograma: 'geada' as const, conteudo: <FaixaGeada geada={geada} /> }] : []),
           ...(precipitacaoExtrema
-            ? [{ id: 'chuva-forte', titulo: 'Chuva forte', pictograma: 'chuva' as const, conteudo: <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} /> }]
+            ? [{ id: 'chuva-forte', titulo: tx('Chuva forte', 'Heavy rain'), pictograma: 'chuva' as const, conteudo: <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} /> }]
             : []),
           ...(tendenciaHidrica
-            ? [{ id: 'chuva-anos', titulo: 'Chuva ao longo dos anos', pictograma: 'chuva' as const, conteudo: <FaixaTendenciaHidrica tendencia={tendenciaHidrica} /> }]
+            ? [{ id: 'chuva-anos', titulo: tx('Chuva ao longo dos anos', 'Rain over the years'), pictograma: 'chuva' as const, conteudo: <FaixaTendenciaHidrica tendencia={tendenciaHidrica} /> }]
             : []),
           ...(estresseVegetal
-            ? [{ id: 'verdor', titulo: 'Vigor da vegetação (NDVI)', pictograma: 'planta' as const, conteudo: <FaixaEstresseVegetal estresse={estresseVegetal} /> }]
+            ? [{ id: 'verdor', titulo: tx('Vigor da vegetação (NDVI)', 'Vegetation vigor (NDVI)'), pictograma: 'planta' as const, conteudo: <FaixaEstresseVegetal estresse={estresseVegetal} /> }]
             : [])
         ]}
       />

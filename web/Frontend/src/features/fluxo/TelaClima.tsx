@@ -7,6 +7,7 @@ import { Pictograma } from '../../components/Pictograma';
 import { Navegacao } from '../../components/Navegacao';
 import { Termo } from '../../components/Termo';
 import { NOME_MES, ROTULO_TIPO_DADO, anoDe, formatarNumero } from './rotulos';
+import { tx } from '../../i18n/idioma';
 
 interface TelaClimaProps {
   analise: Analise;
@@ -16,7 +17,7 @@ interface TelaClimaProps {
 }
 
 const juntar = (itens: string[]) =>
-  itens.length <= 1 ? itens.join('') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+  itens.length <= 1 ? itens.join('') : `${itens.slice(0, -1).join(', ')} ${tx('e', 'and')} ${itens[itens.length - 1]}`;
 
 export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClimaProps) {
   const fonte = analise.fonte_clima;
@@ -33,13 +34,19 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
   return (
     <>
       <AvisoDemonstracao ehMock={analise.eh_mock} />
-      <h1 tabIndex={-1}>Como costuma chover aí</h1>
+      <h1 tabIndex={-1}>{tx('Como costuma chover aí', 'How it usually rains there')}</h1>
       <SeloFonte fonte={fonte.fonte_id} />
       <p className="texto-apoio">
         {fonte.tipo_dado === 'observacao_historica'
-          ? `Média de ${anoDe(fonte.periodo_inicio)} a ${anoDe(fonte.periodo_fim)}, medida pela NASA. Não é previsão.`
-          : `Atenção: isto é ${ROTULO_TIPO_DADO[fonte.tipo_dado].toLowerCase()}, não o que já aconteceu.`}{' '}
-        <Termo id="satelite_estacao">Como a NASA mede</Termo>
+          ? tx(
+              `Média de ${anoDe(fonte.periodo_inicio)} a ${anoDe(fonte.periodo_fim)}, medida pela NASA. Não é previsão.`,
+              `Average from ${anoDe(fonte.periodo_inicio)} to ${anoDe(fonte.periodo_fim)}, measured by NASA. It is not a forecast.`
+            )
+          : tx(
+              `Atenção: isto é ${ROTULO_TIPO_DADO[fonte.tipo_dado].toLowerCase()}, não o que já aconteceu.`,
+              `Note: this is a ${ROTULO_TIPO_DADO[fonte.tipo_dado].toLowerCase()}, not what has already happened.`
+            )}{' '}
+        <Termo id="satelite_estacao">{tx('Como a NASA mede', 'How NASA measures')}</Termo>
       </p>
 
       {descobertos.size > 0 && percentual !== null ? (
@@ -49,14 +56,21 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
             <Pictograma nome="terra_descoberta" tamanho={40} />
           </span>
           <span>
-            <strong>{percentual}% da chuva do ano</strong> cai com a terra descoberta, de {nomesDescobertos[0]} a {nomesDescobertos[nomesDescobertos.length - 1]}
+            <strong>{tx(`${percentual}% da chuva do ano`, `${percentual}% of the year’s rain`)}</strong>{' '}
+            {tx(
+              `cai com a terra descoberta, de ${nomesDescobertos[0]} a ${nomesDescobertos[nomesDescobertos.length - 1]}`,
+              `falls on bare soil, from ${nomesDescobertos[0]} to ${nomesDescobertos[nomesDescobertos.length - 1]}`
+            )}
             <span className="visualmente-oculto"> ({juntar(nomesDescobertos)}, {formatarNumero(noDescoberto)} mm)</span>.
           </span>
         </p>
       ) : (
         <p className="destaque destaque-positivo">
           <Pictograma nome="palhada" tamanho={48} />
-          <span>Nesse caminho a terra fica <strong>coberta o ano todo</strong>, mesmo na chuva forte.</span>
+          <span>
+            {tx('Nesse caminho a terra fica', 'With this option the soil stays')} <strong>{tx('coberta o ano todo', 'covered all year')}</strong>
+            {tx(', mesmo na chuva forte.', ', even in heavy rain.')}
+          </span>
         </p>
       )}
 
@@ -64,10 +78,10 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
         clima={analise.clima_mensal}
         ordemMeses={ordemMeses}
         mesesDestacados={descobertos}
-        rotuloDestaque="terra descoberta"
+        rotuloDestaque={tx('terra descoberta', 'bare soil')}
       />
 
-      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar="Antes de decidir" />
+      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar={tx('Antes de decidir', 'Before you decide')} />
     </>
   );
 }

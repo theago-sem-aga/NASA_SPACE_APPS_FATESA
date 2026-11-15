@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { tx } from '../i18n/idioma';
 
 /**
  * Pergunta antes de voltar ao início: avisa que as respostas serão perdidas.
@@ -34,17 +35,21 @@ export function ConfirmarInicio({ aberto, aoConfirmar, aoCancelar }: { aberto: b
         if (e.target === ref.current) aoCancelar();
       }}
     >
-      <h2 id="confirmar-inicio-titulo">Voltar ao menu inicial?</h2>
+      <h2 id="confirmar-inicio-titulo">{tx('Voltar ao menu inicial?', 'Go back to the start?')}</h2>
       <p id="confirmar-inicio-texto">
-        As respostas que você deu até aqui (cidade, lavoura, problemas e prioridades) <strong>serão perdidas</strong>, e você vai
-        começar de novo.
+        {tx(
+          'As respostas que você deu até aqui (cidade, lavoura, problemas e prioridades)',
+          'The answers you gave so far (town, crop, problems and priorities)'
+        )}{' '}
+        <strong>{tx('serão perdidas', 'will be lost')}</strong>
+        {tx(', e você vai começar de novo.', ', and you will start over.')}
       </p>
       <div className="confirmar-inicio-botoes">
         <button type="button" className="botao confirmar-inicio-sair" onClick={aoConfirmar}>
-          Sim, voltar ao menu inicial
+          {tx('Sim, voltar ao menu inicial', 'Yes, go back to the start')}
         </button>
         <button ref={ficar} type="button" className="botao botao-primario" onClick={aoCancelar}>
-          Continuar aqui
+          {tx('Continuar aqui', 'Stay here')}
         </button>
       </div>
     </dialog>

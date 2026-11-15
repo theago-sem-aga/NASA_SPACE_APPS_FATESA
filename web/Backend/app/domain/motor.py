@@ -4,6 +4,7 @@ O modo beta serve para validar a integração das telas. Não há limiares de se
 erosão, produtividade ou retorno econômico aprovados para produção.
 """
 
+from app.i18n import texto
 from app.schemas.analises import CaracteristicasTalhao, Estrategia
 
 VERSAO = "0.2.0-beta-cenarios"
@@ -26,23 +27,29 @@ def gerar_cenarios(entrada, clima_mensal=None):
 
     Ordenação: quantidade de prioridades coincidentes, sem pesos científicos.
     Empate mantém a ordem editorial. Sem estimativa de renda/água economizada.
+    Textos no idioma da entrada (`idioma`, padrão português).
     """
+    idioma = getattr(entrada, "idioma", "pt")
+
+    def t(pt: str, en: str) -> str:
+        return texto(idioma, pt, en)
+
     definicoes = [
         (
             "referencia_beta",
-            "Referência sem cultura intermediária (hipótese)",
+            t("Referência sem cultura intermediária (hipótese)", "Baseline with no gap crop (hypothesis)"),
             [],
             "solo_descoberto",
         ),
         (
             "graminea_beta",
-            "Explorar cobertura com gramínea",
+            t("Explorar cobertura com gramínea", "Explore a grass cover crop"),
             ["reducao_erosao", "materia_organica"],
             "cultura_intermediaria",
         ),
         (
             "leguminosa_beta",
-            "Explorar cobertura com leguminosa",
+            t("Explorar cobertura com leguminosa", "Explore a legume cover crop"),
             ["fixacao_nitrogenio", "materia_organica"],
             "adubo_verde",
         ),
@@ -51,48 +58,62 @@ def gerar_cenarios(entrada, clima_mensal=None):
     for indice, (identificador, nome, prioridades, cobertura) in enumerate(definicoes):
         coincidencias = [p for p in entrada.prioridades if p in prioridades]
         lacunas = [
-            "Calendário e níveis de comparação são simulados; as datas reais de plantio e colheita não foram informadas.",
-            "Não sabemos a espécie, cultivar, análise de solo e histórico de manejo necessários para recomendar esta opção.",
+            t("Calendário e níveis de comparação são simulados; as datas reais de plantio e colheita não foram informadas.",
+              "Calendar and comparison levels are simulated; the real planting and harvest dates were not provided."),
+            t("Não sabemos a espécie, cultivar, análise de solo e histórico de manejo necessários para recomendar esta opção.",
+              "We do not know the species, cultivar, soil test and management history needed to recommend this option."),
         ]
         riscos = [
-            "A janela de manejo e a disponibilidade de água precisam ser conferidas antes de plantar."
+            t("A janela de manejo e a disponibilidade de água precisam ser conferidas antes de plantar.",
+              "The management window and water availability must be checked before planting.")
         ]
         if entrada.recursos_disponiveis.irrigacao != "sim":
             riscos.append(
-                "Irrigação não confirmada. O sistema não garante estabelecimento da cobertura com a chuva histórica."
+                t("Irrigação não confirmada. O sistema não garante estabelecimento da cobertura com a chuva histórica.",
+                  "Irrigation not confirmed. The system does not guarantee the cover crop will establish with historical rain.")
             )
         if "nematoides_pragas" in entrada.problemas:
             lacunas.append(
-                "A praga não foi identificada. Não há indicação de controle nem escolha de espécie por esse relato."
+                t("A praga não foi identificada. Não há indicação de controle nem escolha de espécie por esse relato.",
+                  "The pest was not identified. This report gives no control advice or species choice.")
             )
         if entrada.origem_local == "municipio":
-            lacunas.append("A localização é aproximada e não representa os limites do seu talhão.")
+            lacunas.append(t("A localização é aproximada e não representa os limites do seu talhão.",
+                             "The location is approximate and does not represent the boundaries of your field."))
         estrategias.append(
             Estrategia(
                 estrategia_id=identificador,
                 nome=nome,
-                resumo="Cenário simulado para explorar a conversa com um técnico. Não é recomendação validada para o seu talhão.",
+                resumo=t("Cenário simulado para explorar a conversa com um técnico. Não é recomendação validada para o seu talhão.",
+                         "Simulated scenario to explore the conversation with an advisor. It is not a validated recommendation for your field."),
                 eh_pratica_atual=indice == 0,
-                objetivo="Comparar hipóteses de manejo entre ciclos da cultura principal.",
+                objetivo=t("Comparar hipóteses de manejo entre ciclos da cultura principal.",
+                           "Compare management hypotheses between cycles of the main crop."),
                 motivos=[
-                    "Coincide com uma prioridade informada."
+                    t("Coincide com uma prioridade informada.", "Matches a priority you gave.")
                     if coincidencias
-                    else "Referência exploratória para comparação.",
-                    "A ordem usa apenas a quantidade de prioridades coincidentes, sem previsão de desempenho.",
+                    else t("Referência exploratória para comparação.", "Exploratory baseline for comparison."),
+                    t("A ordem usa apenas a quantidade de prioridades coincidentes, sem previsão de desempenho.",
+                      "The order uses only the number of matching priorities, with no performance forecast."),
                 ],
                 evidencias=[
-                    "A referência consultada discute coberturas em sistemas anuais da Califórnia; não valida este calendário simulado."
+                    t("A referência consultada discute coberturas em sistemas anuais da Califórnia; não valida este calendário simulado.",
+                      "The reference consulted discusses cover crops in California annual systems; it does not validate this simulated calendar.")
                 ],
                 beneficios=[
-                    "Possível aporte de resíduos vegetais; o efeito local depende do manejo."
+                    t("Possível aporte de resíduos vegetais; o efeito local depende do manejo.",
+                      "Possible addition of plant residue; the local effect depends on management.")
                 ]
                 if indice
-                else ["Referência de comparação, sem benefício agronômico quantificado."],
+                else [t("Referência de comparação, sem benefício agronômico quantificado.",
+                        "Comparison baseline, with no quantified agronomic benefit.")],
                 riscos=riscos,
                 lacunas=lacunas,
                 confianca="baixa",
-                explicacao_confianca="Hipótese beta sem validação local. Confiança não é probabilidade de sucesso.",
-                pergunta_especialista="Esta cobertura cabe entre as minhas safras sem comprometer água e manejo?",
+                explicacao_confianca=t("Hipótese beta sem validação local. Confiança não é probabilidade de sucesso.",
+                                       "Beta hypothesis with no local validation. Confidence is not a probability of success."),
+                pergunta_especialista=t("Esta cobertura cabe entre as minhas safras sem comprometer água e manejo?",
+                                        "Does this cover crop fit between my crops without compromising water and management?"),
                 prioridades_atendidas=coincidencias,
                 requisitos=[],
                 atributos={
@@ -108,13 +129,13 @@ def gerar_cenarios(entrada, clima_mensal=None):
                 etapas_rotacao=[
                     {
                         "cultura_id": entrada.cultura_atual_id,
-                        "nome": "Cultura principal",
+                        "nome": t("Cultura principal", "Main crop"),
                         "duracao_meses": None,
                     },
                     {"cultura_id": identificador, "nome": nome, "duracao_meses": None},
                     {
                         "cultura_id": entrada.cultura_atual_id,
-                        "nome": "Próxima safra",
+                        "nome": t("Próxima safra", "Next crop"),
                         "duracao_meses": None,
                     },
                 ],
@@ -140,7 +161,11 @@ def gerar_cenarios(entrada, clima_mensal=None):
             acumulado = sum(chuva[m] for m in descobertos)
             if total > 0:
                 estrategia.evidencias.append(
-                    f"No calendário SIMULADO, os meses descobertos coincidem com {acumulado / total:.1%} da chuva histórica média anual. "
-                    "É uma comparação de calendário, não uma estimativa de erosão ou previsão de chuva."
+                    t(
+                        f"No calendário SIMULADO, os meses descobertos coincidem com {acumulado / total:.1%} da chuva histórica média anual. "
+                        "É uma comparação de calendário, não uma estimativa de erosão ou previsão de chuva.",
+                        f"In the SIMULATED calendar, the bare months hold {acumulado / total:.1%} of the average yearly historical rain. "
+                        "It is a calendar comparison, not an erosion estimate or a rain forecast.",
+                    )
                 )
     return sorted(estrategias, key=lambda e: -len(e.prioridades_atendidas))

@@ -1,9 +1,11 @@
-"""Catálogos. /locais e /municipios cobrem o Brasil (base real do IBGE);
-fora do Brasil (ou sem reverse geocoding ainda, como os EUA), 404 honesto."""
+"""Catálogos. /locais e /municipios cobrem o Brasil (base real do IBGE) e os EUA
+(Gazetteer do Census Bureau: cidades, CDPs e condados); fora disso, 404 honesto.
+/culturas devolve os nomes no idioma pedido (?idioma=en|pt, padrão pt)."""
 
 from fastapi import APIRouter, HTTPException, Query
 
 from app.configuracao import configuracao
+from app.i18n import texto
 from app.schemas.analises import Cultura, Local
 from app.services.analises import CULTURAS_COM_CATALOGO_REAL
 from app.services.locais import buscar_por_nome, localizar_por_coordenada
@@ -12,18 +14,18 @@ roteador = APIRouter(tags=["catalogos"])
 
 
 @roteador.get("/culturas", response_model=list[Cultura])
-def culturas():
+def culturas(idioma: str = Query(default="pt", pattern="^(pt|en)$")):
     # O motor de cenários (domain/motor.py) é genérico -- nunca teve lógica
     # específica de cultura -- então o selo de demonstração segue só o modo beta.
     beta = configuracao()["cenarios_beta"]
     return [
         Cultura(cultura_id=c, nome=n, tem_demonstracao=beta or c in CULTURAS_COM_CATALOGO_REAL)
         for c, n in [
-            ("milho", "Milho"),
-            ("cana_de_acucar", "Cana-de-açúcar"),
-            ("soja", "Soja"),
-            ("trigo", "Trigo"),
-            ("pastagem", "Pasto"),
+            ("milho", texto(idioma, "Milho", "Corn")),
+            ("cana_de_acucar", texto(idioma, "Cana-de-açúcar", "Sugarcane")),
+            ("soja", texto(idioma, "Soja", "Soybeans")),
+            ("trigo", texto(idioma, "Trigo", "Wheat")),
+            ("pastagem", texto(idioma, "Pasto", "Pasture")),
         ]
     ]
 
@@ -40,8 +42,8 @@ def local(
             {
                 "erro": {
                     "codigo": "fora_da_cobertura",
-                    "mensagem": "Sem reconhecimento de município para esta coordenada ainda "
-                    "(hoje só cobrimos o Brasil).",
+                    "mensagem": "Sem reconhecimento de município ou cidade para esta coordenada "
+                    "(cobrimos o Brasil e os EUA).",
                     "detalhes": [],
                     "requisicao_id": None,
                 }

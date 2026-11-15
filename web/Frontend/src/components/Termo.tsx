@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from 'react';
 import { GLOSSARIO, type TermoId } from '../accessibility/glossario';
+import { tx } from '../i18n/idioma';
 
 /** Palavra técnica com botão "?" que abre uma explicação curta logo abaixo. Funciona por toque, mouse e teclado. */
 export function Termo({ id, children }: { id: TermoId; children?: ReactNode }) {
@@ -14,7 +15,7 @@ export function Termo({ id, children }: { id: TermoId; children?: ReactNode }) {
         className="termo-botao"
         aria-expanded={aberto}
         aria-controls={idExplicacao}
-        aria-label={`O que é ${item.termo.toLowerCase()}?`}
+        aria-label={tx(`O que é ${item.termo.toLowerCase()}?`, `What is ${item.termo.toLowerCase()}?`)}
         onClick={() => setAberto(a => !a)}
       >
         ?

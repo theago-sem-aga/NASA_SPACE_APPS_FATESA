@@ -1,3 +1,4 @@
+import { tx } from '../i18n/idioma';
 /**
  * Selinho verde de verificação: "Dados da NASA" (ou de agência parceira).
  * Só aparece quando a `fonte` que veio junto com o dado é da NASA ou de parceira
@@ -27,7 +28,9 @@ export function SeloFonte({ fonte }: { fonte: string | null | undefined }) {
   const o = origemOficial(fonte);
   if (!o) return null;
   const parceira = o.orgao !== 'NASA' && o.orgao !== 'NASA/USGS';
-  const texto = parceira ? `Dados da ${o.orgao}, parceira da NASA · ${o.nome}` : `Dados da NASA · ${o.nome}`;
+  const texto = parceira
+    ? tx(`Dados da ${o.orgao}, parceira da NASA · ${o.nome}`, `${o.orgao} data, a NASA partner · ${o.nome}`)
+    : tx(`Dados da NASA · ${o.nome}`, `NASA data · ${o.nome}`);
   return (
     <span className="selo-fonte" title={`${texto} (${o.orgao})`}>
       <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">

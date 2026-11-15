@@ -14,17 +14,18 @@ import { Pictograma } from '../../components/Pictograma';
 import { Sanfona } from '../../components/Sanfona';
 import { Termo } from '../../components/Termo';
 import { DESCRICAO_ATRIBUTO, PICTO_ATRIBUTO, PICTO_REQUISITO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA, ROTULO_REQUISITO } from './rotulos';
+import { L, traduzivel, tx } from '../../i18n/idioma';
 
 /** Os quatro pontos mostrados de cara. Os outros ficam em "Todos os pontos". */
 const PRINCIPAIS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
 const TODOS = Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[];
 const NIVEIS_CONFIANCA = ['baixa', 'media', 'alta'] as const;
 
-const SITUACAO_RECURSO: Record<Resposta, { simbolo: string; texto: string; classe: string }> = {
-  sim: { simbolo: '✓', texto: 'você tem', classe: 'requisito-ok' },
-  nao: { simbolo: '✕', texto: 'você não tem', classe: 'requisito-falta' },
-  nao_sei: { simbolo: '?', texto: 'você não sabe', classe: 'requisito-duvida' }
-};
+const SITUACAO_RECURSO: Record<Resposta, { simbolo: string; texto: string; classe: string }> = traduzivel({
+  sim: { simbolo: '✓', texto: L('você tem', 'you have it'), classe: 'requisito-ok' },
+  nao: { simbolo: '✕', texto: L('você não tem', 'you do not have it'), classe: 'requisito-falta' },
+  nao_sei: { simbolo: '?', texto: L('você não sabe', 'you are not sure'), classe: 'requisito-duvida' }
+});
 
 interface TelaEstrategiaProps {
   estrategia: Estrategia;
@@ -51,15 +52,15 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
   return (
     <>
       <AvisoDemonstracao ehMock={ehMock} />
-      {e.eh_pratica_atual && <p className="sobretitulo">O jeito de hoje, para comparar</p>}
+      {e.eh_pratica_atual && <p className="sobretitulo">{tx('O jeito de hoje, para comparar', 'Today’s practice, for comparison')}</p>}
       <h1 tabIndex={-1}>{e.nome}</h1>
       <NomeCientificoCaminho estrategia={e} />
       <FaixaRotacao etapas={e.etapas_rotacao} />
-      <p className="texto-grande"><strong>Para quê:</strong> {e.objetivo}</p>
+      <p className="texto-grande"><strong>{tx('Para quê:', 'Goal:')}</strong> {e.objetivo}</p>
 
       <AnoDaTerra estrategia={e} clima={clima} fonteClima={fonteClima} />
 
-      <ul className="quatro-pontos" aria-label="Num olhar">
+      <ul className="quatro-pontos" aria-label={tx('Num olhar', 'At a glance')}>
         {PRINCIPAIS.map(a => (
           <li key={a}>
             <Pictograma nome={PICTO_ATRIBUTO[a]} tamanho={36} />
@@ -72,13 +73,15 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
       </ul>
 
       {e.requisitos.length > 0 && (
-        <ul className="lista-requisitos" aria-label="O que precisa ter">
+        <ul className="lista-requisitos" aria-label={tx('O que precisa ter', 'What you need')}>
           {e.requisitos.map(r => {
             const s = SITUACAO_RECURSO[recursos[r] ?? 'nao_sei'];
             return (
               <li key={r} className={s.classe}>
                 <Pictograma nome={PICTO_REQUISITO[r]} tamanho={32} />
-                <span>Precisa de <strong>{ROTULO_REQUISITO[r].nome.toLowerCase()}</strong>: {s.texto}</span>
+                <span>
+                  {tx('Precisa de', 'Needs')} <strong>{ROTULO_REQUISITO[r].nome.toLowerCase()}</strong>: {s.texto}
+                </span>
                 <span className="requisito-simbolo" aria-hidden="true">{s.simbolo}</span>
               </li>
             );
@@ -88,18 +91,18 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
 
       <div className="bom-e-cuidado">
         <section className="bloco-info bloco-beneficio">
-          <h2 className="bloco-info-titulo"><Icone nome="ok" /> O que você ganha</h2>
+          <h2 className="bloco-info-titulo"><Icone nome="ok" /> {tx('O que você ganha', 'What you gain')}</h2>
           <Lista itens={e.beneficios} />
         </section>
         <section className="bloco-info bloco-risco">
-          <h2 className="bloco-info-titulo"><Icone nome="alerta" /> Cuidado com</h2>
+          <h2 className="bloco-info-titulo"><Icone nome="alerta" /> {tx('Cuidado com', 'Watch out for')}</h2>
           <Lista itens={e.riscos} />
         </section>
       </div>
 
       <p className="pergunta-agronomo">
         <Icone nome="pessoa" tamanho={24} />
-        <span><strong>Pergunte ao agrônomo:</strong> {e.pergunta_especialista}</span>
+        <span><strong>{tx('Pergunte ao agrônomo:', 'Ask the agronomist:')}</strong> {e.pergunta_especialista}</span>
       </p>
 
       <p className={`confianca-linha confianca-${e.confianca}`}>
@@ -107,19 +110,19 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
           {NIVEIS_CONFIANCA.map((n, i) => <span key={n} className={i <= nivelConfianca ? 'cheio' : ''} />)}
         </span>
         <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
-        <Termo id="confianca">O que isso quer dizer</Termo>
+        <Termo id="confianca">{tx('O que isso quer dizer', 'What this means')}</Termo>
       </p>
 
       <div className="sanfonas">
-        <Sanfona icone="lampada" titulo="Como funciona">
+        <Sanfona icone="lampada" titulo={tx('Como funciona', 'How it works')}>
           <p>{e.resumo}</p>
           <Lista itens={e.motivos} />
           {imagem && <Foto imagem={imagem} classe="foto-faixa" />}
         </Sanfona>
-        <Sanfona icone="calendario" titulo="Mês a mês">
+        <Sanfona icone="calendario" titulo={tx('Mês a mês', 'Month by month')}>
           <CalendarioCobertura calendario={e.calendario} culturaId={e.etapas_rotacao[0]?.cultura_id} />
         </Sanfona>
-        <Sanfona icone="alvo" titulo="Todos os pontos" contagem={TODOS.length}>
+        <Sanfona icone="alvo" titulo={tx('Todos os pontos', 'All criteria')} contagem={TODOS.length}>
           <LegendaMedidor menosEhMelhor />
           <ul className="quatro-pontos todos-pontos">
             {TODOS.map(a => (
@@ -128,7 +131,7 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
                 <span className="quatro-pontos-texto">
                   <span className="quatro-pontos-rotulo">
                     {ROTULO_ATRIBUTO[a].nome}
-                    {!ROTULO_ATRIBUTO[a].maiorEhMelhor && <span className="etiqueta-menos">menos é melhor</span>}
+                    {!ROTULO_ATRIBUTO[a].maiorEhMelhor && <span className="etiqueta-menos">{tx('menos é melhor', 'less is better')}</span>}
                   </span>
                   <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
                   <span className="ponto-descricao">{DESCRICAO_ATRIBUTO[a]}</span>
@@ -137,21 +140,21 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
             ))}
           </ul>
         </Sanfona>
-        <Sanfona icone="dados" titulo="Por que a gente diz isso" contagem={e.evidencias.length}>
+        <Sanfona icone="dados" titulo={tx('Por que a gente diz isso', 'Why we say this')} contagem={e.evidencias.length}>
           <Lista itens={e.evidencias} />
           <p className="texto-apoio">{e.explicacao_confianca}</p>
         </Sanfona>
-        <Sanfona icone="info" titulo="O que a gente ainda não sabe" contagem={e.lacunas.length}>
+        <Sanfona icone="info" titulo={tx('O que a gente ainda não sabe', 'What we do not know yet')} contagem={e.lacunas.length}>
           <Lista itens={e.lacunas} />
         </Sanfona>
         {e.referencias.length > 0 && (
-          <Sanfona icone="tubo" titulo="Onde conferir" contagem={e.referencias.length}>
+          <Sanfona icone="tubo" titulo={tx('Onde conferir', 'Where to check')} contagem={e.referencias.length}>
             <Lista itens={e.referencias} />
           </Sanfona>
         )}
       </div>
 
-      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar="Ver a chuva" />
+      <Navegacao aoVoltar={aoVoltar} aoAvancar={aoAvancar} rotuloAvancar={tx('Ver a chuva', 'See the rain')} />
     </>
   );
 }

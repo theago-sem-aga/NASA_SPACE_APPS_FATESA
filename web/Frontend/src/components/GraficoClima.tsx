@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import type { ClimaMensal } from '../api/tipos';
 import { NOME_MES, NOME_MES_CURTO, formatarNumero } from '../features/fluxo/rotulos';
+import { L, traduzivel, tx } from '../i18n/idioma';
 
 type Variavel = 'chuva' | 'umidade';
 
@@ -13,22 +14,22 @@ interface GraficoClimaProps {
   rotuloDestaque: string;
 }
 
-const CONFIG: Record<Variavel, { titulo: string; unidade: string; explicacao: string; valor: (c: ClimaMensal) => number | null; formatar: (v: number) => string }> = {
+const CONFIG: Record<Variavel, { titulo: string; unidade: string; explicacao: string; valor: (c: ClimaMensal) => number | null; formatar: (v: number) => string }> = traduzivel({
   chuva: {
-    titulo: 'Chuva',
+    titulo: L('Chuva', 'Rain'),
     unidade: 'mm',
-    explicacao: '1 mm é 1 litro de água em cada metro quadrado.',
+    explicacao: L('1 mm é 1 litro de água em cada metro quadrado.', '1 mm is 1 liter of water on each square meter.'),
     valor: c => c.precipitacao_acumulada_mm,
     formatar: v => `${formatarNumero(v)} mm`
   },
   umidade: {
-    titulo: 'Umidade da terra',
-    unidade: 'de 0 a 1',
-    explicacao: 'Água na terra, na altura da raiz: 0 é seca, 1 é encharcada.',
+    titulo: L('Umidade da terra', 'Soil moisture'),
+    unidade: L('de 0 a 1', '0 to 1'),
+    explicacao: L('Água na terra, na altura da raiz: 0 é seca, 1 é encharcada.', 'Water in the soil at root depth: 0 is dry, 1 is soaked.'),
     valor: c => c.umidade_solo,
     formatar: v => formatarNumero(v)
   }
-};
+});
 
 export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaque }: GraficoClimaProps) {
   const [variavel, setVariavel] = useState<Variavel>('chuva');
@@ -43,7 +44,7 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
 
   return (
     <section className="cartao grafico-clima" aria-labelledby={`${idDescricao}-titulo`}>
-      <div className="alternador" role="group" aria-label="Escolha o que mostrar no gráfico">
+      <div className="alternador" role="group" aria-label={tx('Escolha o que mostrar no gráfico', 'Choose what the chart shows')}>
         {(Object.keys(CONFIG) as Variavel[]).map(v => (
           <button key={v} type="button" className="alternador-opcao" aria-pressed={variavel === v} onClick={() => setVariavel(v)}>
             {CONFIG[v].titulo}
@@ -59,7 +60,7 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
       </div>
 
       <div className="rolagem-horizontal">
-        <div className="barras" role="img" aria-describedby={idDescricao} aria-label={`Gráfico de ${cfg.titulo.toLowerCase()} por mês. A mesma informação está na tabela abaixo.`}>
+        <div className="barras" role="img" aria-describedby={idDescricao} aria-label={tx(`Gráfico de ${cfg.titulo.toLowerCase()} por mês. A mesma informação está na tabela abaixo.`, `Chart of ${cfg.titulo.toLowerCase()} by month. The same information is in the table below.`)}>
           {valores.map(({ mes, valor }) => (
             <div key={mes} className="barra-coluna">
               <span className="barra-valor">{valor === null ? '—' : formatarNumero(valor)}</span>
@@ -76,17 +77,17 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
 
       {mesesDestacados.size > 0 && (
         <p className="legenda-linha">
-          <span className="amostra-marca" aria-hidden="true" /> Listrado embaixo: {rotuloDestaque}
+          <span className="amostra-marca" aria-hidden="true" /> {tx('Listrado embaixo:', 'Striped below:')} {rotuloDestaque}
         </p>
       )}
 
       <details className="detalhes">
-        <summary>Ver os valores em tabela</summary>
+        <summary>{tx('Ver os valores em tabela', 'See the values as a table')}</summary>
         <table className="tabela">
-          <caption className="visualmente-oculto">{cfg.titulo} por mês</caption>
+          <caption className="visualmente-oculto">{cfg.titulo} {tx('por mês', 'by month')}</caption>
           <thead>
             <tr>
-              <th scope="col">Mês</th>
+              <th scope="col">{tx('Mês', 'Month')}</th>
               <th scope="col">{cfg.titulo}</th>
               <th scope="col">{rotuloDestaque}</th>
             </tr>
@@ -95,8 +96,8 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
             {valores.map(({ mes, valor }) => (
               <tr key={mes}>
                 <th scope="row">{NOME_MES[mes - 1]}</th>
-                <td>{valor === null ? 'sem dado' : cfg.formatar(valor)}</td>
-                <td>{mesesDestacados.has(mes) ? 'sim' : 'não'}</td>
+                <td>{valor === null ? tx('sem dado', 'no data') : cfg.formatar(valor)}</td>
+                <td>{mesesDestacados.has(mes) ? tx('sim', 'yes') : tx('não', 'no')}</td>
               </tr>
             ))}
           </tbody>

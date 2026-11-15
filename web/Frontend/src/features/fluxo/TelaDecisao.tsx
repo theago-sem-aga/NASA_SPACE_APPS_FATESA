@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import type { Estrategia } from '../../api/tipos';
 import { Icone } from '../../components/Icone';
 import { Pictograma, PICTOGRAMA_CULTURA } from '../../components/Pictograma';
+import { tx } from '../../i18n/idioma';
 
 interface TelaDecisaoProps {
   estrategia: Estrategia;
@@ -34,7 +35,7 @@ export function TelaDecisao({ estrategia, aoSeguir }: TelaDecisaoProps) {
 
   return (
     <div className="decisao">
-      <h1 tabIndex={-1}>Caminho escolhido</h1>
+      <h1 tabIndex={-1}>{tx('Caminho escolhido', 'Option chosen')}</h1>
       <p className="decisao-escolha">
         {meio && <Pictograma nome={PICTOGRAMA_CULTURA[meio.cultura_id] ?? 'nao_sei'} tamanho={56} />}
         <span className="decisao-nome">
@@ -53,10 +54,10 @@ export function TelaDecisao({ estrategia, aoSeguir }: TelaDecisaoProps) {
           <Pictograma nome="trator" tamanho={88} semFundo />
         </div>
       </div>
-      <p className="texto-apoio" role="status">Preparando o acompanhamento da sua área…</p>
+      <p className="texto-apoio" role="status">{tx('Preparando o acompanhamento da sua área…', 'Getting your field follow-up ready…')}</p>
 
       <button type="button" className="botao botao-secundario decisao-seguir" onClick={aoSeguir}>
-        Seguir <Icone nome="seguir" />
+        {tx('Seguir', 'Continue')} <Icone nome="seguir" />
       </button>
     </div>
   );

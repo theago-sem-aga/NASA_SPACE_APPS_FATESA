@@ -1,13 +1,16 @@
+import { L, traduzivel, tx } from '../../i18n/idioma';
+
 /**
  * Como os textos falam de cada cultura. Todo texto que cita a cultura ou o período
  * entre um plantio e outro deve vir daqui, nunca escrito fixo na tela.
  *
  * Hoje só a cana está liberada. Quando o back liberar outra cultura (GET /culturas com
  * tem_demonstracao = true), os textos mudam sozinhos:
- *  - se a cultura estiver em VOCABULARIOS, usa as frases escritas à mão (melhor português);
+ *  - se a cultura estiver em VOCABULARIOS, usa as frases escritas à mão (melhor texto);
  *  - se não estiver, monta frases genéricas com o nome que o back mandar
  *    ("a lavoura de feijão", "a próxima safra de feijão"). Nada quebra.
  * Para uma cultura nova soar natural, basta acrescentar uma entrada abaixo.
+ * Cada texto existe em português e inglês (i18n/idioma.ts).
  */
 
 export interface Vocabulario {
@@ -29,82 +32,88 @@ export interface Vocabulario {
   planejamento: string;
 }
 
-const AGRONOMO_GERAL = 'Da cooperativa, da Casa da Agricultura ou da empresa que compra a sua produção.';
+const AGRONOMO_GERAL = L(
+  'Da cooperativa, da Casa da Agricultura ou da empresa que compra a sua produção.',
+  'From the co-op, the local extension office or the company that buys your crop.'
+);
 
-const VOCABULARIOS: Record<string, Vocabulario> = {
+const VOCABULARIOS: Record<string, Vocabulario> = traduzivel({
   cana_de_acucar: {
-    aCultura: 'a cana',
-    periodo: 'reforma',
-    aPeriodo: 'a reforma',
-    nestePeriodo: 'Nesta reforma',
-    culturaNova: 'a cana nova',
-    produzindoMenos: 'A cana está produzindo menos',
-    ondeAgronomo: 'Da usina, da cooperativa ou da Casa da Agricultura.',
-    planejamento: 'Planejamento da reforma'
+    aCultura: L('a cana', 'the sugarcane'),
+    periodo: L('reforma', 'renewal'),
+    aPeriodo: L('a reforma', 'the renewal'),
+    nestePeriodo: L('Nesta reforma', 'In this renewal'),
+    culturaNova: L('a cana nova', 'the new cane'),
+    produzindoMenos: L('A cana está produzindo menos', 'The cane is yielding less'),
+    ondeAgronomo: L('Da usina, da cooperativa ou da Casa da Agricultura.', 'From the mill, the co-op or the local extension office.'),
+    planejamento: L('Planejamento da reforma', 'Field renewal planning')
   },
   soja: {
-    aCultura: 'a soja',
-    periodo: 'rotação',
-    aPeriodo: 'a rotação',
-    nestePeriodo: 'Nesta rotação',
-    culturaNova: 'a próxima safra de soja',
-    produzindoMenos: 'A soja está produzindo menos',
+    aCultura: L('a soja', 'the soybeans'),
+    periodo: L('rotação', 'rotation'),
+    aPeriodo: L('a rotação', 'the rotation'),
+    nestePeriodo: L('Nesta rotação', 'In this rotation'),
+    culturaNova: L('a próxima safra de soja', 'the next soybean crop'),
+    produzindoMenos: L('A soja está produzindo menos', 'The soybeans are yielding less'),
     ondeAgronomo: AGRONOMO_GERAL,
-    planejamento: 'Planejamento da rotação'
+    planejamento: L('Planejamento da rotação', 'Rotation planning')
   },
   milho: {
-    aCultura: 'o milho',
-    periodo: 'rotação',
-    aPeriodo: 'a rotação',
-    nestePeriodo: 'Nesta rotação',
-    culturaNova: 'a próxima safra de milho',
-    produzindoMenos: 'O milho está produzindo menos',
+    aCultura: L('o milho', 'the corn'),
+    periodo: L('rotação', 'rotation'),
+    aPeriodo: L('a rotação', 'the rotation'),
+    nestePeriodo: L('Nesta rotação', 'In this rotation'),
+    culturaNova: L('a próxima safra de milho', 'the next corn crop'),
+    produzindoMenos: L('O milho está produzindo menos', 'The corn is yielding less'),
     ondeAgronomo: AGRONOMO_GERAL,
-    planejamento: 'Planejamento da rotação'
+    planejamento: L('Planejamento da rotação', 'Rotation planning')
   },
   trigo: {
-    aCultura: 'o trigo',
-    periodo: 'rotação',
-    aPeriodo: 'a rotação',
-    nestePeriodo: 'Nesta rotação',
-    culturaNova: 'a próxima safra de trigo',
-    produzindoMenos: 'O trigo está produzindo menos',
+    aCultura: L('o trigo', 'the wheat'),
+    periodo: L('rotação', 'rotation'),
+    aPeriodo: L('a rotação', 'the rotation'),
+    nestePeriodo: L('Nesta rotação', 'In this rotation'),
+    culturaNova: L('a próxima safra de trigo', 'the next wheat crop'),
+    produzindoMenos: L('O trigo está produzindo menos', 'The wheat is yielding less'),
     ondeAgronomo: AGRONOMO_GERAL,
-    planejamento: 'Planejamento da rotação'
+    planejamento: L('Planejamento da rotação', 'Rotation planning')
   },
   pastagem: {
-    aCultura: 'o pasto',
-    periodo: 'reforma',
-    aPeriodo: 'a reforma',
-    nestePeriodo: 'Nesta reforma',
-    culturaNova: 'o pasto novo',
-    produzindoMenos: 'O pasto está produzindo menos',
+    aCultura: L('o pasto', 'the pasture'),
+    periodo: L('reforma', 'renewal'),
+    aPeriodo: L('a reforma', 'the renewal'),
+    nestePeriodo: L('Nesta reforma', 'In this renewal'),
+    culturaNova: L('o pasto novo', 'the new pasture'),
+    produzindoMenos: L('O pasto está produzindo menos', 'The pasture is yielding less'),
     ondeAgronomo: AGRONOMO_GERAL,
-    planejamento: 'Planejamento da reforma do pasto'
+    planejamento: L('Planejamento da reforma do pasto', 'Pasture renewal planning')
   }
-};
+});
 
 /** Antes de a pessoa escolher a cultura (tela inicial, cabeçalho). */
-const SEM_CULTURA: Vocabulario = {
-  aCultura: 'a lavoura',
-  periodo: 'rotação',
-  aPeriodo: 'a rotação',
-  nestePeriodo: 'Nesta rotação',
-  culturaNova: 'o próximo plantio',
-  produzindoMenos: 'A lavoura está produzindo menos',
+const SEM_CULTURA: Vocabulario = traduzivel({
+  aCultura: L('a lavoura', 'the crop'),
+  periodo: L('rotação', 'rotation'),
+  aPeriodo: L('a rotação', 'the rotation'),
+  nestePeriodo: L('Nesta rotação', 'In this rotation'),
+  culturaNova: L('o próximo plantio', 'the next planting'),
+  produzindoMenos: L('A lavoura está produzindo menos', 'The crop is yielding less'),
   ondeAgronomo: AGRONOMO_GERAL,
-  planejamento: 'Planejamento da lavoura'
-};
+  planejamento: L('Planejamento da lavoura', 'Crop planning')
+});
 
 /** Frases genéricas para uma cultura que o back liberou, mas que ainda não está em VOCABULARIOS. */
 function generico(nome: string): Vocabulario {
-  const n = nome.toLocaleLowerCase('pt-BR');
+  const n = nome.toLocaleLowerCase(tx('pt-BR', 'en-US'));
   return {
-    ...SEM_CULTURA,
-    aCultura: `a lavoura de ${n}`,
-    culturaNova: `a próxima safra de ${n}`,
-    produzindoMenos: `A lavoura de ${n} está produzindo menos`,
-    planejamento: `Planejamento da rotação de ${n}`
+    aCultura: tx(`a lavoura de ${n}`, `the ${n} crop`),
+    periodo: SEM_CULTURA.periodo,
+    aPeriodo: SEM_CULTURA.aPeriodo,
+    nestePeriodo: SEM_CULTURA.nestePeriodo,
+    culturaNova: tx(`a próxima safra de ${n}`, `the next ${n} crop`),
+    produzindoMenos: tx(`A lavoura de ${n} está produzindo menos`, `The ${n} crop is yielding less`),
+    ondeAgronomo: SEM_CULTURA.ondeAgronomo,
+    planejamento: tx(`Planejamento da rotação de ${n}`, `${nome} rotation planning`)
   };
 }
 
@@ -115,4 +124,4 @@ export function vocabulario(culturaId: string | null | undefined, nomeCultura?: 
 }
 
 /** Primeira letra maiúscula: 'a reforma' → 'A reforma'. */
-export const maiuscula = (s: string) => s.charAt(0).toLocaleUpperCase('pt-BR') + s.slice(1);
+export const maiuscula = (s: string) => s.charAt(0).toLocaleUpperCase(tx('pt-BR', 'en-US')) + s.slice(1);

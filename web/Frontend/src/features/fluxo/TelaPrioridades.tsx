@@ -6,6 +6,7 @@ import { Icone } from '../../components/Icone';
 import { Navegacao } from '../../components/Navegacao';
 import { MAX_PRIORIDADES, type DadosFluxo } from './estadoFluxo';
 import { explicacaoPrioridade, ORDEM_PRIORIDADES, PICTO_PRIORIDADE, ROTULO_PRIORIDADE } from './rotulos';
+import { tx } from '../../i18n/idioma';
 
 interface TelaPrioridadesProps {
   dados: DadosFluxo;
@@ -27,7 +28,7 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
 
   function avancar() {
     if (dados.prioridades.length === 0) {
-      setErro('Toque em pelo menos uma figura.');
+      setErro(tx('Toque em pelo menos uma figura.', 'Tap at least one picture.'));
       return;
     }
     aoAvancar();
@@ -35,15 +36,19 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
 
   return (
     <>
-      <h1 tabIndex={-1}>{vocabulario(dados.cultura_atual_id, dados.nomeCultura).nestePeriodo}, o que é mais importante para você?</h1>
+      <h1 tabIndex={-1}>
+        {vocabulario(dados.cultura_atual_id, dados.nomeCultura).nestePeriodo}, {tx('o que é mais importante para você?', 'what matters most to you?')}
+      </h1>
       <fieldset className="grade-escolhas">
         <legend className="texto-apoio">
-          Escolha até {MAX_PRIORIDADES}.{' '}
+          {tx('Escolha até', 'Choose up to')} {MAX_PRIORIDADES}.{' '}
           <span className="contador" aria-live="polite">
             {Array.from({ length: MAX_PRIORIDADES }, (_, i) => (
               <span key={i} className={i < dados.prioridades.length ? 'contador-cheio' : ''} aria-hidden="true" />
             ))}
-            <span className="visualmente-oculto">{dados.prioridades.length} de {MAX_PRIORIDADES} escolhidas</span>
+            <span className="visualmente-oculto">
+              {dados.prioridades.length} {tx('de', 'of')} {MAX_PRIORIDADES} {tx('escolhidas', 'chosen')}
+            </span>
           </span>
         </legend>
         {ORDEM_PRIORIDADES.map(id => (
@@ -59,13 +64,13 @@ export function TelaPrioridades({ dados, aoMudar, aoVoltar, aoAvancar }: TelaPri
           />
         ))}
       </fieldset>
-      {cheio && <p className="texto-apoio">Para trocar, toque de novo numa das escolhidas.</p>}
+      {cheio && <p className="texto-apoio">{tx('Para trocar, toque de novo numa das escolhidas.', 'To change, tap one of your choices again.')}</p>}
       {erro && (
         <p className="mensagem-erro" role="alert">
           <Icone nome="alerta" tamanho={20} /> {erro}
         </p>
       )}
-      <Navegacao aoVoltar={aoVoltar} aoAvancar={avancar} rotuloAvancar="Ver os caminhos" />
+      <Navegacao aoVoltar={aoVoltar} aoAvancar={avancar} rotuloAvancar={tx('Ver os caminhos', 'See the options')} />
     </>
   );
 }

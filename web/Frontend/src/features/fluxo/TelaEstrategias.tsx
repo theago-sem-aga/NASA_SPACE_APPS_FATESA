@@ -5,6 +5,7 @@ import { AvisoEspecialistaPragas } from '../../components/AvisoEspecialistaPraga
 import { CarrosselEstrategias } from './CarrosselEstrategias';
 import { vocabulario } from './vocabularioCultura';
 import { PainelTalhao } from './PainelTalhao';
+import { tx } from '../../i18n/idioma';
 
 interface TelaEstrategiasProps {
   analise: Analise;
@@ -28,7 +29,7 @@ export function TelaEstrategias({ analise, prioridades, problemas, marcouPraga, 
   return (
     <>
       <AvisoDemonstracao ehMock={analise.eh_mock} />
-      <h1 tabIndex={-1}>{analise.estrategias.length} caminhos para {v.aPeriodo}</h1>
+      <h1 tabIndex={-1}>{tx(`${analise.estrategias.length} caminhos para ${v.aPeriodo}`, `${analise.estrategias.length} options for ${v.aPeriodo}`)}</h1>
 
       {marcouPraga && <AvisoEspecialistaPragas />}
 
@@ -49,10 +50,10 @@ export function TelaEstrategias({ analise, prioridades, problemas, marcouPraga, 
 
       <div className="navegacao">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
         <button type="button" className="botao botao-primario" onClick={aoComparar}>
-          Comparar <Icone nome="seguir" />
+          {tx('Comparar', 'Compare')} <Icone nome="seguir" />
         </button>
       </div>
     </>

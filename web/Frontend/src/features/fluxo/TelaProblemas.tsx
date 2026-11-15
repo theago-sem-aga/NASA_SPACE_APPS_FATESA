@@ -5,6 +5,7 @@ import { Icone } from '../../components/Icone';
 import type { DadosFluxo } from './estadoFluxo';
 import { PICTO_PROBLEMA, ROTULO_PROBLEMA } from './rotulos';
 import { vocabulario } from './vocabularioCultura';
+import { tx } from '../../i18n/idioma';
 
 interface TelaProblemasProps {
   dados: DadosFluxo;
@@ -29,10 +30,10 @@ export function TelaProblemas({ dados, aoMudar, aoVoltar, aoAvancar }: TelaProbl
 
   return (
     <>
-      <h1 tabIndex={-1}>Alguma dessas coisas está acontecendo?</h1>
-      <p className="texto-apoio">Pode tocar em mais de uma.</p>
+      <h1 tabIndex={-1}>{tx('Alguma dessas coisas está acontecendo?', 'Is any of this happening?')}</h1>
+      <p className="texto-apoio">{tx('Pode tocar em mais de uma.', 'You can tap more than one.')}</p>
       <fieldset className="grade-escolhas">
-        <legend className="visualmente-oculto">O que está acontecendo</legend>
+        <legend className="visualmente-oculto">{tx('O que está acontecendo', 'What is happening')}</legend>
         {PROBLEMAS.map(p => (
           <CartaoEscolha
             key={p}
@@ -47,17 +48,17 @@ export function TelaProblemas({ dados, aoMudar, aoVoltar, aoAvancar }: TelaProbl
           tipo="checkbox"
           marcado={nenhum}
           simbolo={{ texto: '✓', tom: 'sim' }}
-          titulo="Nada disso"
+          titulo={tx('Nada disso', 'None of these')}
           aoMudar={() => aoMudar({ problemas: [], problemasRespondidos: !nenhum })}
         />
       </fieldset>
       {dados.problemas.includes('nematoides_pragas') && <AvisoEspecialistaPragas />}
       <div className="navegacao">
         <button type="button" className="botao botao-secundario" onClick={aoVoltar}>
-          <Icone nome="voltar" /> Voltar
+          <Icone nome="voltar" /> {tx('Voltar', 'Back')}
         </button>
         <button type="button" className="botao botao-primario" onClick={aoAvancar}>
-          {dados.problemasRespondidos ? 'Continuar' : 'Pular'} <Icone nome="seguir" />
+          {dados.problemasRespondidos ? tx('Continuar', 'Continue') : tx('Pular', 'Skip')} <Icone nome="seguir" />
         </button>
       </div>
     </>
