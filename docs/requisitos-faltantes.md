@@ -12,7 +12,7 @@
 | Landsat | Reflectância, NDVI, índices de vegetação, solo exposto, 30 m | ✅ Indexado (via HLS), só o NDVI é calculado — não a reflectância completa por banda |
 | MODIS | Reflectância/NDVI diário, 250 m–1 km, mesma finalidade do Landsat com revisita maior | ❌ **Abandonado** — o GDAL instalado não tem o driver HDF4 que o formato do MODIS exige |
 | NASA POWER | Clima agrícola por ponto (temperatura, umidade, radiação, precipitação), série histórica de décadas, sem login | ✅ Ao vivo (consulta recente) e também histórico mensal (1991–2020) |
-| **GRACE / GRACE-FO** | Variação do armazenamento total de água (inclui água subterrânea), por medição de gravidade, resolução grossa (~300 km), mensal | ❌ **Nunca implementado.** Nenhuma linha de código toca nisso — gap real, a fonte está no texto oficial do desafio |
+| **GRACE / GRACE-FO** | Variação do armazenamento total de água (inclui água subterrânea), por medição de gravidade, resolução grossa (~300 km), mensal | ✅ **Implementado (15/11).** Mascons do JPL via PO.DAAC: série mensal completa da missão (abril/2002–presente, 261 meses) baixada numa chamada, fator de escala do filtro CRI aplicado, indexada por célula de 0,1° (fan-out: um pixel nativo de 0,5° cobre ~25 das nossas células — limitação real, documentada no pipeline, não dá mais detalhe espacial que isso). Variável `armazenamento_agua_anomalia_cm` |
 | SRTM | Elevação do terreno, 30 m, levantamento único (1999, não muda com o tempo) | ✅ Indexado |
 
 ## 2. Análises sugeridas pelo desafio
@@ -27,14 +27,14 @@ Pra cada análise que o desafio sugere, a tabela mostra qual variável deveria r
 | Umidade do solo | `umidade_solo_cm3_cm3` | SMAP (indexado) | ✅ Existe, mas cobertura esparsa (poucas células com dado válido) |
 | Evaporação/evapotranspiração | `evapotranspiracao_mm` | OpenET (ao vivo) — ECOSTRESS também mede isso, mas não extraímos essa variável dele | ✅ Existe via OpenET, só nos EUA (cobertura da fonte) |
 | **Risco de geada** | Frequência mensal de noites com `temperatura_minima_c` <= 2 °C (ar a 2 m; geada forte <= 0 °C) nos anos completos da série | NASA POWER (cache local diário ou ao vivo) | ✅ `app/domain/geada.py` + `services/geada.py`; vai em `talhao.risco_geada` e `Analise.geada`, exibido no painel "Sua terra, pelos mapas" e no resumo. Cada probabilidade traz faixa de incerteza (Wilson 90%, pelo número de anos) e `nivel_min`/`nivel_max`. Limiar 2 °C e cortes 10%/33% **pendentes de fonte** |
-| **Precipitação extrema** | Seria uma detecção de evento sobre a série de `precipitacao_acumulada_mm` (ex.: percentil alto da série histórica) | NASA POWER (histórico) ou GPM | ❌ Temos o valor diário bruto; nenhuma detecção de evento extremo |
+| **Precipitação extrema** | `dias_chuva_extrema_30d`, `limiar_chuva_extrema_mm_dia` | NASA POWER (cache diário local ou ao vivo) | ✅ **Implementado (15/11).** `app/modelos/precipitacao_extrema.py`: limiar = percentil 95 da chuva diária do mesmo mês sobre todo o histórico real; conta quantos dos últimos 30 dias passaram dele. `services/precipitacao_extrema.py` é multi-regional — usa o cache local se existir, senão busca ao vivo só o recorte necessário, funciona em qualquer coordenada |
 | **Estresse vegetal** | Seria uma anomalia de `ndvi_medio` em relação à média esperada pra época do ano | Landsat (via HLS) | ❌ Temos o valor pontual de NDVI; nenhuma classificação de anomalia/estresse |
 | **Tendências hídricas de longo prazo** | Chuva anual (`precipitacao_acumulada_mm` somada por ano completo) | NASA POWER (cache diário local ou ao vivo) | ✅ `app/domain/tendencia_hidrica.py` (Mann-Kendall 5% + inclinação de Sen) + `services/tendencia_hidrica.py`; vai em `Analise.tendencia_hidrica` e no painel "Sua terra, pelos mapas" com gráfico de barras e reta. SJRP: −174 mm/década (p < 0,001); Fresno: sem tendência (p = 0,89). Umidade do solo (SMAP/GPM) ainda sem série |
 
 ## 3. Informação local a combinar
 
 ### Solo
-Citada no desafio. ✅ Resolvido: USDA Soil Data Access (EUA, ao vivo) e SoilGrids (Brasil, indexado) trazem textura, matéria orgânica e propriedades físicas por coordenada.
+Citada no desafio. ✅ Resolvido: USDA Soil Data Access (EUA, ao vivo) e SoilGrids (Brasil, indexado) trazem textura, matéria orgânica e propriedades físicas por coordenada. **Atualização (15/11):** essa textura agora está de fato conectada ao relatório — antes o dado existia mas nenhuma função o usava, `talhao.textura_solo` ficava sempre `null` (ou o valor fixo do mock). `app/domain/solo.py` classifica em 3 faixas (areia/argila), `app/services/solo.py` tenta USDA e, se não cobrir o ponto, cai pra SoilGrids — nunca inventa valor, nunca sobrescreve correção do produtor.
 
 ### Prioridades do agricultor
 Citada no desafio (uso de água, valor de forragem, fixação de nitrogênio, redução de erosão, matéria orgânica, adequação ao mercado). ✅ Resolvido: modelado como enum `prioridades` nos dois motores de decisão que existem hoje.
@@ -97,7 +97,7 @@ Estado real: ✅ bem resolvido — `confianca`, `lacunas`, `pergunta_especialist
 
 Hoje existem **três sistemas de recomendação desconectados entre si**, em níveis de rigor bem diferentes:
 
-1. **Motor da Califórnia** (`web/Backend/app/domain/motor.py`, Ghabriel) — o único **conectado ao endpoint real** (`POST /api/v1/analises`, só dentro da caixa de Fresno). Gera **3 cenários com texto fixo** ("referência", "gramínea", "leguminosa"); a única coisa que varia por usuário é a ordem (contagem de prioridades que coincidem com uma lista fixa por cenário — sem peso científico). Calendário, níveis de atributo e textos de motivo/benefício/risco são **todos estáticos**, escritos no código. **Está desligado por padrão** (`HABILITAR_CENARIOS_BETA` não está no nosso `.env`) — ou seja, hoje a API real devolve **zero estratégias** pra Califórnia, `estado_recomendacoes="dados_insuficientes"`. Quando ligado, o próprio código já rotula `eh_mock=true` e diz textualmente "não são recomendações validadas".
+1. **Motor genérico/beta** (`web/Backend/app/domain/motor.py`, Ghabriel) — o único **conectado ao endpoint real** (`POST /api/v1/analises`). Gera **3 cenários com texto fixo** ("referência", "gramínea", "leguminosa"); a única coisa que varia por usuário é a ordem (contagem de prioridades que coincidem com uma lista fixa por cenário — sem peso científico). Calendário, níveis de atributo e textos de motivo/benefício/risco são **todos estáticos**, escritos no código. **Atualização (15/11):** o gate geográfico (só caixa de Fresno) e de cultura (só milho) foi removido do endpoint — o motor roda pra qualquer coordenada e cultura agora, inclusive Brasil. Isso **não mudou o rigor do conteúdo**: continua o mesmo cenário genérico simulado, só deixou de estar artificialmente restrito a um ponto. Liga com `HABILITAR_CENARIOS_BETA=true`; o próprio código já rotula `eh_mock=true` e diz textualmente "não são recomendações validadas".
 
 2. **Motor de São José do Rio Preto** (`web/Backend/app/modelos/motor_decisao.py`, Matheus) — **nunca chamado pelo backend real**. Roda só como script offline que gera uma tabela estática (`estrategiasMotor.ts`) que o **frontend consulta direto, sem servidor**. É tecnicamente mais rigoroso: usa um catálogo curado de práticas reais (pousio, amendoim, crotalária etc.) e filtra pelo **ZARC** (zoneamento agroclimático oficial do governo brasileiro) — isso é dado real e oficial, não simulado. Mas o próprio código avisa: os **níveis de atributo do catálogo ainda não foram conferidos com um técnico/agrônomo**. O comentário do próprio Matheus no código diz literalmente: *"quando existir POST /api/v1/analises, ele deve chamar motor_decisao.sugerir"* — ou seja, mesmo o autor sabia que isso devia estar no backend e não está.
 
@@ -109,8 +109,8 @@ Hoje existem **três sistemas de recomendação desconectados entre si**, em ní
 
 ## 7. Prioridade sugerida (não é decisão, é proposta)
 
-1. Decidir **um único motor de decisão** chamado pelo backend (hoje são dois, desconectados) — provavelmente o do Matheus, por ter o filtro ZARC real, generalizado além da cana.
-2. Fazer os atributos do catálogo serem conferidos por alguém com conhecimento agronômico, ou rotular explicitamente "estimativa não validada" em cada atributo.
-3. Avaliar se dá tempo de implementar GRACE/GRACE-FO (citado no texto oficial) ou documentar formalmente a decisão de não incluir.
-4. Decidir se vale calcular ao menos um indicador real por análise faltante (risco de geada a partir de `temperatura_minima_c`; detecção de chuva extrema a partir do percentil da série GPM) — são contas simples sobre dado que já temos, não exigem fonte nova.
-5. Revisar o glossário pra cobrir os termos científicos que o próprio desafio pede pra explicar (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico).
+1. Decidir **um único motor de decisão** chamado pelo backend (hoje são dois, desconectados) — provavelmente o do Matheus, por ter o filtro ZARC real, generalizado além da cana. **Ainda não feito.**
+2. Fazer os atributos do catálogo serem conferidos por alguém com conhecimento agronômico, ou rotular explicitamente "estimativa não validada" em cada atributo. **Ainda não feito.**
+3. ~~Avaliar se dá tempo de implementar GRACE/GRACE-FO~~ ✅ **feito (15/11)** — ver seção 1.
+4. ~~Decidir se vale calcular ao menos um indicador real por análise faltante~~ ✅ **feito** — risco de geada (seção 2) e precipitação extrema (15/11, seção 2) calculados a partir de dado real, sem fonte nova.
+5. Revisar o glossário pra cobrir os termos científicos que o próprio desafio pede pra explicar (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico). **Ainda não feito.**
