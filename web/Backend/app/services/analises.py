@@ -10,12 +10,12 @@ from app.configuracao import configuracao
 from app.domain.motor import VERSAO, caracterizar_talhao, gerar_cenarios
 from app.domain.solo import classificar_textura
 from app.integrations.clima_historico import buscar_clima
-from app.integrations.usda_soil_data_access import buscar_solo_ponto
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.geada import risco_geada
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
+from app.services.solo import buscar_textura_ponto
 
 
 def dentro_piloto(lat, lon):
@@ -34,7 +34,7 @@ def criar_analise(entrada):
         precipitacao_extrema_pendente = executor.submit(
             resumo_precipitacao_extrema, entrada.latitude, entrada.longitude
         )
-        solo_pendente = executor.submit(buscar_solo_ponto, entrada.latitude, entrada.longitude)
+        solo_pendente = executor.submit(buscar_textura_ponto, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -54,9 +54,7 @@ def criar_analise(entrada):
             solo = solo_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
             solo = None
-            coleta["fontes_indisponiveis"].append(
-                {"fonte": "usda_soil_data_access_textura", "motivo": "falha_fonte"}
-            )
+            coleta["fontes_indisponiveis"].append({"fonte": "textura_solo", "motivo": "falha_fonte"})
         try:
             clima = clima_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
@@ -77,16 +75,11 @@ def criar_analise(entrada):
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_historico", "motivo": "falha_fonte"}
             )
-    componentes_solo = solo["componentes"] if solo and solo.get("disponivel") else []
-    textura_calculada = None
-    if len(componentes_solo) == 1:
-        c = componentes_solo[0]
-        if c["areia_pct"] is not None and c["argila_pct"] is not None:
-            textura_calculada = classificar_textura(c["areia_pct"], c["argila_pct"])
+    textura_calculada = classificar_textura(solo["areia_pct"], solo["argila_pct"]) if solo else None
 
     beta = configuracao()["cenarios_beta"]
     limitacoes = [
-        "Piloto restrito ao recorte processado de Fresno, Califórnia. Dados regionais não substituem levantamento do talhão.",
+        "Dados regionais (grade de satélite/clima) não substituem levantamento do talhão.",
         "Elevação agregada não permite calcular declividade; riscos de erosão e seca não têm regra validada e ficam sem dado.",
         "Umidade superficial do SMAP não foi transformada em um índice de água na zona das raízes.",
         "A cultura atual não informa calendário nem manejo: a referência exibida não comprova a prática atual do produtor.",
@@ -127,17 +120,15 @@ def criar_analise(entrada):
         pass  # o produtor corrigiu; não há limitação a registrar sobre a fonte.
     elif textura_calculada:
         limitacoes.append(
-            "Textura do solo: classificação simplificada em 3 faixas a partir de areia/argila "
-            "da camada superficial (USDA Soil Data Access / SSURGO); não é o triângulo textural "
-            "completo e está pendente de revisão agronômica."
-        )
-    elif len(componentes_solo) > 1:
-        limitacoes.append(
-            "Textura do solo sem dado: a unidade de mapeamento tem mais de um tipo de solo, sem "
-            "como escolher automaticamente qual representa o talhão."
+            f"Textura do solo: classificação simplificada em 3 faixas a partir de areia/argila "
+            f"da camada superficial ({solo['fonte']}); não é o triângulo textural completo e "
+            "está pendente de revisão agronômica."
         )
     else:
-        limitacoes.append("Textura do solo sem dado: fonte indisponível ou ponto fora da cobertura do SSURGO.")
+        limitacoes.append(
+            "Textura do solo sem dado: fonte indisponível, unidade de mapeamento ambígua, ou "
+            "ponto fora da cobertura do USDA Soil Data Access e do SoilGrids."
+        )
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
     talhao_base = caracterizar_talhao(entrada)
@@ -146,11 +137,11 @@ def criar_analise(entrada):
     if geada:
         bases.append("NASA POWER")
     if usa_textura_calculada:
-        bases.append("USDA Soil Data Access")
+        bases.append(solo["fonte"])
     resultado = Analise(
         analise_id=str(uuid4()),
         eh_mock=beta,
-        descricao_local="Região piloto de Fresno (CA)",
+        descricao_local=f"Coordenada {entrada.latitude:.4f}, {entrada.longitude:.4f}",
         talhao=talhao_base.model_copy(
             update={
                 "risco_geada": geada["nivel"] if geada else None,

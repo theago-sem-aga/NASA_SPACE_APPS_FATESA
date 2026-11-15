@@ -22,7 +22,7 @@ logger = logging.getLogger("fatesa.api")
 app = FastAPI(
     title="Field Shift API",
     version="0.2.0",
-    description="Piloto Fresno. Cenários beta são explicitamente simulados.",
+    description="Qualquer coordenada válida. Cenários beta são explicitamente simulados.",
     responses={codigo: {"model": ErroApi} for codigo in (400, 404, 422, 500, 503)},
 )
 

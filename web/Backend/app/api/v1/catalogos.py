@@ -16,12 +16,13 @@ PILOTO = Local(
 
 @roteador.get("/culturas", response_model=list[Cultura])
 def culturas():
+    # O motor de cenários (domain/motor.py) é genérico -- nunca teve lógica
+    # específica de cultura -- então o selo de demonstração segue só o modo beta.
+    beta = configuracao()["cenarios_beta"]
     return [
-        Cultura(
-            cultura_id=c, nome=n, tem_demonstracao=c == "milho" and configuracao()["cenarios_beta"]
-        )
+        Cultura(cultura_id=c, nome=n, tem_demonstracao=beta)
         for c, n in [
-            ("milho", "Milho (cenário beta)"),
+            ("milho", "Milho"),
             ("cana_de_acucar", "Cana-de-açúcar"),
             ("soja", "Soja"),
             ("trigo", "Trigo"),

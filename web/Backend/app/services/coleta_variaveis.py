@@ -14,10 +14,9 @@ from app.integrations import nasa_power, openet, usda_soil_data_access
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
 from app.services.precipitacao_extrema import precipitacao_extrema_do_ponto
+from app.services.solo import camada_soilgrids
 
 FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace", "soilgrids")
-# Camada superficial (0-5cm): mesma profundidade que o USDA Soil Data Access usa (hzdept_r = 0).
-SOILGRIDS_PROFUNDIDADE = "0-5cm"
 CAMPOS = {
     "nasa_power": set(nasa_power._MAPA_PARAMETROS.values()),
     "usda_soil_data_access": {
@@ -89,14 +88,9 @@ def _buscar(fonte, lat, lon):
     if fonte == "soilgrids":
         # Formato longo (uma linha por variavel x profundidade) -- achata so a
         # camada superficial pros mesmos nomes de campo do usda_soil_data_access.
-        bruto = buscar_celula(fonte, lat, lon)
-        if bruto is None:
+        camada = camada_soilgrids(lat, lon)
+        if camada is None:
             return None
-        camada = {
-            r["variavel"]: r["valor"]
-            for r in bruto["serie"]
-            if r.get("profundidade") == SOILGRIDS_PROFUNDIDADE
-        }
         return {
             "serie": [{
                 "areia_pct": camada.get("areia"),

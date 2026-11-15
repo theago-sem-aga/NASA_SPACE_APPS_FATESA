@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise, AnaliseEntrada, RespostaAnalise
-from app.services.analises import criar_analise, dentro_piloto
+from app.services.analises import criar_analise
 from app.services.coleta_variaveis import coletar_variaveis
 
 roteador = APIRouter(tags=["analises"])
@@ -38,42 +38,10 @@ def obter_analise(
 
 @roteador.post("/analises", response_model=Analise, status_code=201)
 def analisar(entrada: AnaliseEntrada):
-    if not dentro_piloto(entrada.latitude, entrada.longitude):
-        raise HTTPException(
-            422,
-            {
-                "erro": {
-                    "codigo": "fora_da_cobertura",
-                    "mensagem": "Esta primeira versão analisa o recorte piloto de Fresno, Califórnia.",
-                    "detalhes": [],
-                    "requisicao_id": None,
-                }
-            },
-        )
-    if entrada.codigo_ibge is not None:
-        raise HTTPException(
-            422,
-            {
-                "erro": {
-                    "codigo": "local_incompativel",
-                    "mensagem": "O piloto na Califórnia não utiliza código IBGE.",
-                    "detalhes": [],
-                    "requisicao_id": None,
-                }
-            },
-        )
-    if entrada.cultura_atual_id != "milho":
-        raise HTTPException(
-            422,
-            {
-                "erro": {
-                    "codigo": "cultura_nao_suportada",
-                    "mensagem": "O teste beta está disponível apenas para o identificador milho. Outras culturas aguardam validação.",
-                    "detalhes": [],
-                    "requisicao_id": None,
-                }
-            },
-        )
+    # Sem gate de local, código IBGE ou cultura: qualquer coordenada válida é
+    # aceita. Cada fonte decide por si se tem cobertura ali -- quando não tem,
+    # o campo correspondente vem None/vazio e entra em `fontes_indisponiveis`
+    # com o motivo, nunca um 422 bloqueando a análise inteira.
     return criar_analise(entrada)
 
 
