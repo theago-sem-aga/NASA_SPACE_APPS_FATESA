@@ -1,6 +1,7 @@
-// GERADO por web/Backend/app/services/tendencia_hidrica.py -- nao editar a mao.
-// Numeros REAIS da NASA POWER (chuva diaria somada por ano), congelados em 2026-11-14:
-// Sao Jose do Rio Preto (celula -209_-494) e Fresno (celula 366_-1197), cache local 1995-2025.
+// GERADO por web/Backend/app/pipelines/gerar_mocks_front.py -- nao editar a mao.
+// Numeros REAIS da NASA POWER (chuva diaria somada por ano), congelados em 2026-11-15:
+// Sao Jose do Rio Preto (celula -209_-494, 1995-2025, pre_processado) e
+// Fresno (celula 366_-1197, 1995-2025, pre_processado).
 // Para ver Fresno no mock: ?simular=fresno
 import type { TendenciaHidrica } from '../tipos';
 

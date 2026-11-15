@@ -1,4 +1,4 @@
-// GERADO por web/Backend/app/services/estresse_vegetal.py -- nao editar a mao.
+// GERADO por web/Backend/app/pipelines/gerar_mocks_front.py -- nao editar a mao.
 // Numeros REAIS do NDVI do MODIS (MOD13Q1, API do ORNL), congelados em 2026-11-15.
 // Sao Jose do Rio Preto: pixel (-20.89, -49.36), celula -209_-494. Escolhido por ter NDVI alto
 // (0,83 em fev/2025) e ciclo anual; o uso do solo (lavoura, pasto, mata) NAO foi verificado.
