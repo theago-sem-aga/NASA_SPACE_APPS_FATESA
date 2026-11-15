@@ -82,7 +82,7 @@ public/imagens/       # fotos; licenças em CREDITOS.md
 
 ## Pendências reais
 
-- `docs/contrato_api.md` só descreve o `GET /analises`. Os tipos `Variavel`/`RespostaAnalise` de `src/api/tipos.ts` são cópia dele; o resto do arquivo (`Analise`, `Local`, `Cultura`, `AnaliseEntrada`…) ainda é proposta e precisa ser aprovado por Ghabriel e Julya e entrar no contrato.
+- O `/openapi.json` só descreve o `GET /analises` de verdade. Os tipos `Variavel`/`RespostaAnalise` de `src/api/tipos.ts` são cópia dele; o resto do arquivo (`Analise`, `Local`, `Cultura`, `AnaliseEntrada`…) ainda é proposta e precisa ser aprovado por Ghabriel e Julya e entrar no contrato.
 - Faltam fotos de amendoim e de erosão em solo brasileiro. O amendoim usa provisoriamente a foto orbital.
 - Nome do produto, região e lista de culturas não estão definidos. O mock usa cana-de-açúcar só como exemplo.
 - Os textos agronômicos do mock precisam de fonte (IAC, CATI, Embrapa, ZARC).

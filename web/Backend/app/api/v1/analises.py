@@ -1,4 +1,4 @@
-"""Rotas de /api/v1/analises. Ver docs/contrato_api.md."""
+"""Rotas de /api/v1/analises. Ver /openapi.json ou /docs."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 """Rotas de /api/v1/acompanhamento: fotos do satelite do ponto do produtor.
 
-Ver docs/contrato_api.md. A logica fica em pipelines/acompanhamento_sentinel2.py.
+Ver /openapi.json ou /docs. A logica fica em pipelines/acompanhamento_sentinel2.py.
 
 EXCECAO A CONVENCAO (secao 7, satelite so pre-processado): o ponto vem do GPS
 do produtor e nao da para pre-processar todos os pontos possiveis. Por isso o

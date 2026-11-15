@@ -1,7 +1,7 @@
 """Painel "Sua colheita": como vai a producao de um municipio, em linguagem simples.
 
 Monta a resposta da rota proposta GET /api/v1/producao?codigo_ibge=... (ver
-docs/contrato_api.md). Toda regra fica aqui, no backend -- o front so exibe:
+/openapi.json ou /docs). Toda regra fica aqui, no backend -- o front so exibe:
   - situacao de cada cultura: rendimento do ultimo ano vs media dos 5 anteriores
     (acima/abaixo se passar de 5%);
   - clima do mesmo ano da colheita vs media dos anos anteriores desde 1995 (NASA POWER, celula do municipio);

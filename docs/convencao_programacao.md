@@ -10,7 +10,7 @@
 1. **Leia este arquivo inteiro antes de criar, alterar ou refatorar código.** Consulte também o código e a documentação já existentes; **não presuma que o repositório está vazio**.
 2. Respeite contratos, nomes e responsabilidades. **Nunca invente um campo diferente para representar a mesma informação.** Se a API expõe `umidade_solo`, o frontend consome `umidade_solo`, e não `umidadeSolo`, `aguaseca` ou `agua_seca` sem mapeamento formal aprovado.
 3. Se faltarem definições (região, culturas, fontes já integradas, regras agronômicas), registre a pendência. **Não preencha lacunas com suposições silenciosas.** Para protótipos, dados fictícios devem estar rotulados como `mock` e não podem aparecer como observações reais.
-4. Antes de alterar um contrato público, atualize a especificação em `docs/contrato_api.md` e a definição em `docs/dicionario_dados.md`, comunicando a quebra de compatibilidade aos dois responsáveis. Não altere o contrato unilateralmente.
+4. O contrato real é o `/openapi.json`/`/docs` gerado pelo FastAPI (sempre atualizado, não existe cópia em `.md`). Antes de alterar um contrato público, comunique a quebra de compatibilidade aos dois responsáveis. Não altere o contrato unilateralmente.
 5. **Não implemente automaticamente itens FUTUROS.** Prepare limites de arquitetura para a evolução, mas priorize um MVP web funcional e demonstrável.
 6. Mudanças em arquivos da outra frente devem ser coordenadas. Não sobrescreva trabalho existente; não faça `git push --force`, não apague datasets e não instale serviços sem necessidade.
 7. Ao concluir uma tarefa, informe: arquivos alterados, decisões tomadas, endpoints/campos afetados, testes executados e pendências reais. Nunca declare testes ou integrações como realizados sem executá-los.
@@ -150,7 +150,7 @@ Princípios de UX:
 | Componentes, tipos e interfaces React/TS | `PascalCase` | `ResumoAnalise`, `PerfilPropriedade` |
 | Arquivos de componentes React | `PascalCase.tsx` | `AjudaContextual.tsx` |
 | CSS classes | `kebab-case` | `.botao-ajuda` |
-| Diretórios e arquivos de documentação | `snake_case` | `docs/contrato_api.md` |
+| Diretórios e arquivos de documentação | `snake_case` | `docs/convencao_programacao.md` |
 | Endpoints HTTP | minúsculas, substantivos plurais, prefixo versionado | `/api/v1/analises` |
 | Constantes e variáveis de ambiente | `UPPER_SNAKE_CASE` | `DATABASE_URL` |
 
@@ -167,7 +167,7 @@ O idioma dos identificadores de domínio será **português sem acentos**. Nomes
 - GeoJSON (se futuramente usado): coordenadas na ordem **[longitude, latitude]**, nunca invertidas.
 - Ausência de medição: `null` com motivo/qualidade quando necessário. **Nunca converter ausência em zero** e nunca gerar números científicos artificiais sem rotular como simulação.
 - Enum em JSON: `snake_case` minúsculo, com domínio documentado; não depender do texto da UI.
-- IDs: escolher estratégia consistente em `docs/contrato_api.md`; não misturar IDs de bancos com rótulos apresentados ao usuário.
+- IDs: escolher estratégia consistente e documentar no `/openapi.json`; não misturar IDs de bancos com rótulos apresentados ao usuário.
 
 ### Exemplos de nomes — PROPOSTAS, NÃO CONTRATOS DEFINITIVOS
 
@@ -177,8 +177,7 @@ A equipe deverá registrar definições, unidades, validade e obrigatoriedade an
 
 ## 6. Contrato API-first: ponto de encontro entre Codex e Claude
 
-- Especificação em **`docs/contrato_api.md`** (exemplos e estados) e **OpenAPI gerado pelo FastAPI** (`/openapi.json`) assim que existir backend. O OpenAPI executável é a definição de rotas/schemas em produção; divergências com o documento devem ser corrigidas.
-- Para cada endpoint documentar: método, URL, objetivo, request, response de sucesso, erros, tipos, obrigatoriedade, unidades, validações e exemplos.
+- Especificação única e real: **OpenAPI gerado pelo FastAPI** (`/openapi.json`, visual em `/docs`). Não existe cópia em `.md` — evita o documento divergir do código (já aconteceu antes de decidirmos isso). Método, URL, objetivo, request, response, erros, tipos, obrigatoriedade, unidades e exemplos ficam documentados direto nos schemas Pydantic (docstrings e `Field(description=...)`), que é o que gera o OpenAPI.
 - Respostas de uma operação devem usar JSON consistente; não variar formatos entre situações normais.
 - Esqueleto sugerido para erros (pendente de aprovação):
 
@@ -203,7 +202,7 @@ A equipe deverá registrar definições, unidades, validade e obrigatoriedade an
 ### Sequência de trabalho dos agentes
 
 1. Inspecionar árvore do projeto e contratos existentes; listar riscos de incompatibilidade.
-2. Propor/atualizar `docs/dicionario_dados.md` e `docs/contrato_api.md` com **somente campos e endpoints necessários para a primeira demonstração**.
+2. Propor campos e endpoints direto nos schemas Pydantic (docstrings/`Field(description=...)`), **só os necessários para a primeira demonstração** — isso já gera o `/openapi.json` certo, sem documento paralelo pra manter sincronizado.
 3. Alinhar formato do JSON, erros e estados entre Ghabriel e Julya (registrar a decisão).
 4. Codex implementa backend e testes; Claude implementa frontend e mocks conformes ao contrato.
 5. Testar integração ponta a ponta; não declarar êxito com mocks apresentados como dados reais.
@@ -243,10 +242,10 @@ Toda fonte usada no produto se encaixa em **exatamente uma** destas duas categor
 **Contrato entre ingestão e API** (o que o backend pode assumir sem reimplementar a ingestão):
 - Existe uma tabela/índice no PostGIS com, no mínimo, `fonte`, geometria da célula e caminho do Parquet correspondente.
 - Os arquivos Parquet ficam em um caminho previsível em disco (ex.: `data/processed/<fonte>/<celula_id>.parquet`), nunca no Git.
-- O esquema de colunas dentro de cada Parquet (nomes de variável, unidades) segue as convenções de nomenclatura da seção 5 e deve ser formalizado em `docs/dicionario_dados.md` conforme a ingestão for implementada.
+- O esquema de colunas dentro de cada Parquet (nomes de variável, unidades) segue as convenções de nomenclatura da seção 5.
 - Cada resposta da API deve rotular, por fonte, se o valor veio **ao vivo** ou do **índice pré-processado** — rastreabilidade já exigida pelos princípios desta seção.
 
-**Responsabilidade:** o pipeline de ingestão/indexação (download, recorte, Parquet, carga no PostGIS) é de **Tiago/Claude**; o endpoint que consome esse índice e a chamada ao vivo da NASA POWER são de **Ghabriel/Codex**, dentro do contrato de `docs/contrato_api.md`. Mudança em qualquer lado desse contrato (nome de tabela, caminho de arquivo, esquema do Parquet) precisa ser coordenada entre os dois antes de implementar.
+**Responsabilidade:** o pipeline de ingestão/indexação (download, recorte, Parquet, carga no PostGIS) é de **Tiago/Claude**; o endpoint que consome esse índice e a chamada ao vivo da NASA POWER são de **Ghabriel/Codex**. Mudança em qualquer lado desse contrato (nome de tabela, caminho de arquivo, esquema do Parquet) precisa ser coordenada entre os dois antes de implementar.
 
 ### Os 26 links encontrados na aba Resources (referência, não fontes integradas)
 
@@ -304,11 +303,10 @@ Toda fonte usada no produto se encaixa em **exatamente uma** destas duas categor
 │       ├── accessibility/        # ajuda, narração e preferências
 │       └── pages/
 ├── docs/
-│   ├── convencao_programacao.md   # este documento
-│   ├── contrato_api.md
-│   ├── dicionario_dados.md
-│   ├── fontes_dados.md
-│   └── decisoes_arquitetura.md
+│   ├── convencao_programacao.md   # este documento (inclui decisões e regras de contrato)
+│   ├── historico_sumario.md       # log de ações relevantes
+│   ├── fontes-dados.md
+│   └── requisitos-faltantes.md    # comparação com o descritivo oficial do desafio
 └── data/
     └── README.md                # instruções; sem dados gigantes no Git
 ```
@@ -342,11 +340,16 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
   entrega e Brasil depois; autoriza avançar o beta e preparar o ambiente local.
   Implementação agora inclui catálogos do piloto, POST/recuperação de análises,
   persistência e migrações, histórico mensal POWER e cenários opt-in simulados.
-  Isso não aprova culturas nem regras agronômicas para produção. Estado atual,
-  diferenças dos exemplos antigos e schemas estão em `docs/contrato_api.md` e
-  `docs/openapi.json`; pendências em `docs/pendencias_backend.md`. Neste dispositivo
+  Isso não aprova culturas nem regras agronômicas para produção. Estado atual e
+  schemas reais estão no `/openapi.json`/`/docs` (sempre atualizado, gerado do código).
   Ghabriel/Codex validou PostgreSQL 17 com PostGIS 3.7 (o ambiente anterior do
   Tiago usava PostGIS 3.6). Não expor credenciais nem prometer cobertura fora do recorte.
+  API e ingestão ficam só em `web/Backend` (nenhum segundo servidor em `web/API`).
+  Persistência via SQLAlchemy/Alembic; SQLite só em testes isolados. Referência
+  piloto retorna CA e `codigo_ibge` vazio — não inventa município brasileiro pra
+  coordenada da Califórnia. Agregação histórica da POWER: média dos totais mensais,
+  com verificação de unidade/completude, período padrão 1991–2020. Alternativas
+  adiadas nesta entrega: microserviços, fila, geocodificação externa, malha IBGE.
 
 - Desafio: **Field Shift** (e não Earth System Trend Detective).
 - Primeiro produto: **web**, com backend de **Ghabriel/Codex** e frontend de **Julya/Claude**.
@@ -382,7 +385,7 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 - Empacotamento, mapa offline, sincronização e armazenamento do desktop e Android.
 - **Proposta do Tiago (2026-11-14, ainda não implementada) — ciclo de vida da imagem/mapa por requisição:** sob requisição, baixar a imagem de satélite da coordenada, gerar o relatório/sumário a partir dela, guardar a imagem num cache temporário e **deletar** depois de gerar o relatório. O que persiste por usuário (se logado) é o relatório processado daquela data, não a imagem bruta; reprocessamento é feito só se o usuário pedir de novo. Não implementar sem alinhar com Ghabriel (contrato de API/persistência) e Julya/Thiago (o que a tela precisa exibir).
 
-**Regra para decisões novas:** acrescentar uma entrada datada em `docs/decisoes_arquitetura.md` com decisão, motivo, alternativas, impacto em backend/frontend e responsáveis que aprovaram. Atualizar este arquivo quando a decisão tornar-se permanente.
+**Regra para decisões novas:** acrescentar uma entrada datada direto na lista "Decisões já tomadas" desta seção (10), com decisão, motivo, alternativas e impacto em backend/frontend quando houver. Não existe arquivo separado de decisões de arquitetura — tudo fica aqui, pra não fragmentar o contexto entre documentos. `docs/pendencias_backend.md` foi removido pelo mesmo motivo (2026-11-14, decisão do Tiago) — pendências reais se acham testando a aplicação, não mantendo lista escrita separada.
 
 ---
 
