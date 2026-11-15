@@ -10,8 +10,10 @@ em arquivo.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import psycopg2
+from dotenv import load_dotenv
 
 from indice_espacial import (
     RAIZ_DADOS_PROCESSADOS,
@@ -20,6 +22,10 @@ from indice_espacial import (
     celula_id,
     limites_da_celula,
 )
+
+# Carrega web/.env mesmo quando o script roda isolado (fora do app FastAPI,
+# ex.: chamado direto pelo iniciar_backend.ps1 antes do uvicorn subir).
+load_dotenv(Path(__file__).resolve().parents[4] / "web" / ".env")
 
 
 def _conexao():
@@ -94,11 +100,13 @@ def buscar_por_coordenada_pg(fonte: str, latitude: float, longitude: float) -> d
 if __name__ == "__main__":
     import pandas as pd
 
-    manifesto = pd.read_parquet(RAIZ_DADOS_PROCESSADOS / "indice_espacial.parquet")
-    for _, linha in manifesto.iterrows():
-        centro_lat = (linha["lat_min"] + linha["lat_max"]) / 2
-        centro_lon = (linha["lon_min"] + linha["lon_max"]) / 2
-        registrar_celula_pg(linha["fonte"], centro_lat, centro_lon)
-    print(f"migradas {len(manifesto)} celulas do manifesto em arquivo para o PostGIS")
-
-    print(buscar_por_coordenada_pg("gpm", 36.6, -119.7))
+    caminho_manifesto = RAIZ_DADOS_PROCESSADOS / "indice_espacial.parquet"
+    if not caminho_manifesto.exists():
+        print("indice_espacial.parquet nao existe ainda -- nenhuma celula pre-indexada pra migrar.")
+    else:
+        manifesto = pd.read_parquet(caminho_manifesto)
+        for _, linha in manifesto.iterrows():
+            centro_lat = (linha["lat_min"] + linha["lat_max"]) / 2
+            centro_lon = (linha["lon_min"] + linha["lon_max"]) / 2
+            registrar_celula_pg(linha["fonte"], centro_lat, centro_lon)
+        print(f"indice espacial no PostGIS atualizado: {len(manifesto)} celulas (todas as fontes).")
