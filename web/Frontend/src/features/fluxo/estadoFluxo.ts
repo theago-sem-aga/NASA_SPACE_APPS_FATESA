@@ -92,6 +92,20 @@ export const formatarCoordenada = (latitude: number, longitude: number) => `${la
 
 export const descreverLocal = (local: Local | null) => (local ? (local.uf ? `${local.municipio} (${local.uf})` : local.municipio) : '');
 
+/**
+ * "32.78, -96.80" (ou com espaço/ponto-e-vírgula no lugar da vírgula) → coordenada.
+ * Pra testar um ponto sem GPS físico ali (ex.: Texas, Oklahoma) e sem precisar
+ * de município cadastrado: não inventa local, só aceita a coordenada digitada.
+ */
+export function parseCoordenada(texto: string): { latitude: number; longitude: number } | null {
+  const m = texto.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const latitude = Number(m[1]);
+  const longitude = Number(m[2]);
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
+}
+
 export type SituacaoAnalise =
   | { situacao: 'ociosa' }
   | { situacao: 'carregando' }
