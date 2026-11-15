@@ -5,6 +5,7 @@ import { fraseGeada, linhaTecnicaGeada } from '../features/fluxo/FaixaGeada';
 import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 import { NOME_MES } from '../features/fluxo/rotulos';
 import { ResumoVisual } from './ResumoVisual';
+import { fraseTendencia, linhaTecnicaTendencia } from '../features/fluxo/FaixaTendenciaHidrica';
 
 /** Folha para levar ao agrônomo. Escondida na tela; só aparece na impressão / PDF. */
 export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise: Analise }) {
@@ -29,6 +30,12 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
       {analise.precipitacao_extrema && (
         <p>
           <strong>Chuva extrema:</strong> {fraseChuvaExtrema(analise.precipitacao_extrema)}
+        </p>
+      )}
+      {analise.tendencia_hidrica && (
+        <p>
+          <strong>Chuva ao longo dos anos:</strong> {fraseTendencia(analise.tendencia_hidrica)}{' '}
+          ({linhaTecnicaTendencia(analise.tendencia_hidrica)} NASA POWER é reanálise em grade, não pluviômetro.)
         </p>
       )}
 

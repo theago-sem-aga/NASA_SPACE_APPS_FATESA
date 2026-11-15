@@ -42,8 +42,29 @@ GEADA_FIXTURE = {
 }
 
 
+TENDENCIA_FIXTURE = {
+    "tendencia": "secando",
+    "mm_por_decada": -174.0,
+    "pct_por_decada": -15.0,
+    "p_valor": 0.0001,
+    "alfa": 0.05,
+    "media_anual_mm": 1161.0,
+    "reta_inicio_mm": 1400.0,
+    "reta_fim_mm": 880.0,
+    "anos": [{"ano": 2011 + i, "chuva_mm": 1300.0 - 40 * i} for i in range(10)],
+    "periodo_inicio": 2011,
+    "periodo_fim": 2020,
+    "anos_analisados": 10,
+    "metodo": "fixture",
+    "fonte": "fixture",
+    "variavel": "precipitacao_acumulada_mm",
+    "tipo_acesso": "pre_processado",
+}
+
+
 def preparar(monkeypatch, repositorio):
     monkeypatch.setattr(servico, "risco_geada", lambda *args: GEADA_FIXTURE)
+    monkeypatch.setattr(servico, "tendencia_hidrica", lambda *args: TENDENCIA_FIXTURE)
     monkeypatch.setattr(servico, "RepositorioAnalises", lambda: repositorio)
     monkeypatch.setattr(rotas, "RepositorioAnalises", lambda: repositorio)
     monkeypatch.setattr(
@@ -183,3 +204,26 @@ def test_falha_da_geada_nao_derruba_a_analise(cliente, monkeypatch, repositorio,
     corpo = resposta.json()
     assert corpo["geada"] is None and corpo["talhao"]["risco_geada"] is None
     assert {"fonte": "nasa_power_geada", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]
+
+
+def test_analise_traz_tendencia_hidrica(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["tendencia_hidrica"]["tendencia"] == "secando"
+    assert corpo["tendencia_hidrica"]["mm_por_decada"] == -174.0
+    assert len(corpo["tendencia_hidrica"]["anos"]) == 10
+    assert any("Tendência da chuva" in t for t in corpo["limitacoes"])
+
+
+def test_falha_da_tendencia_nao_derruba_a_analise(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+
+    def falhar(*args):
+        raise ValueError("série com 5 anos completos")
+
+    monkeypatch.setattr(servico, "tendencia_hidrica", falhar)
+    resposta = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json"))
+    assert resposta.status_code == 201, resposta.text
+    corpo = resposta.json()
+    assert corpo["tendencia_hidrica"] is None
+    assert {"fonte": "nasa_power_tendencia_hidrica", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]

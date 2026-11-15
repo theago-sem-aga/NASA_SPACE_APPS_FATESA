@@ -51,6 +51,7 @@ def verificar():
             "fonte_clima",
             "clima_mensal",
             "geada",
+            "tendencia_hidrica",
             "estrategias",
             "limitacoes",
         )

@@ -31,6 +31,7 @@ export function TelaEstrategias({ analise, prioridades, aoAbrir, aoCorrigir, aoV
         talhao={analise.talhao}
         geada={analise.geada}
         precipitacaoExtrema={analise.precipitacao_extrema}
+        tendenciaHidrica={analise.tendencia_hidrica}
         aoCorrigir={aoCorrigir}
       />
 

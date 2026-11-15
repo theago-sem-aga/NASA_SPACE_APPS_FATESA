@@ -10,6 +10,7 @@ import { Icone } from './Icone';
 import { Medidor } from './Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from './Pictograma';
 import { nivelComFaixa } from '../features/fluxo/FaixaGeada';
+import { ROTULO_TENDENCIA } from '../features/fluxo/FaixaTendenciaHidrica';
 
 const CRITERIOS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
 /** Na tela, só os dois pontos que mais separam os caminhos; a versão impressa mostra os quatro. */
@@ -70,6 +71,9 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
                   : `${analise.precipitacao_extrema.dias_chuva_extrema_30d} ${analise.precipitacao_extrema.dias_chuva_extrema_30d === 1 ? 'dia' : 'dias'}`
               }
             />
+          )}
+          {analise.tendencia_hidrica && (
+            <Ficha pictograma="chuva" rotulo="Chuva ao longo dos anos" valor={ROTULO_TENDENCIA[analise.tendencia_hidrica.tendencia]} />
           )}
           {!compacto && (Object.keys(ROTULO_REQUISITO) as RequisitoId[]).map(r => {
             const resp = dados.recursos_disponiveis[r];

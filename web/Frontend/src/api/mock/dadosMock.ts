@@ -3,12 +3,14 @@
 // com o técnico de campo e citam práticas reais da reforma de canavial em SP,
 // mas TODOS precisam ser conferidos nas referências antes de ir para o produto.
 // As referências listadas NÃO foram verificadas: são indicações de onde buscar.
-// EXCEÇÃO: o risco de geada (geadaMock.ts) e a precipitação extrema
-// (precipitacaoExtremaMock.ts) são REAIS (NASA POWER), só congelados.
+// EXCEÇÃO: o risco de geada (geadaMock.ts), a precipitação extrema
+// (precipitacaoExtremaMock.ts) e a tendência da chuva (tendenciaHidricaMock.ts)
+// são REAIS (NASA POWER), só congelados.
 import type { Analise, CaracteristicasTalhao, CorrecoesTalhao, Cultura, Local, RiscoGeada } from '../tipos';
 import { GEADA_SJRP } from './geadaMock';
 import { ESTRATEGIAS_PADRAO } from './montarEstrategias';
 import { PRECIPITACAO_EXTREMA_SJRP } from './precipitacaoExtremaMock';
+import { TENDENCIA_SJRP } from './tendenciaHidricaMock';
 
 export const CULTURAS_MOCK: Cultura[] = [
   { cultura_id: 'cana_de_acucar', nome: 'Cana-de-açúcar', tem_demonstracao: true },
@@ -59,6 +61,7 @@ export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   eh_mock: true,
   geada: GEADA_SJRP,
   precipitacao_extrema: PRECIPITACAO_EXTREMA_SJRP,
+  tendencia_hidrica: TENDENCIA_SJRP,
   fonte_clima: {
     fonte_id: 'nasa_power',
     nome: 'NASA POWER',

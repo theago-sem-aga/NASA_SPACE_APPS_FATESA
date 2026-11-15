@@ -265,6 +265,36 @@ export interface RiscoPrecipitacaoExtrema {
   tipo_acesso: TipoAcesso;
 }
 
+export interface ChuvaAno {
+  ano: number;
+  chuva_mm: number;
+}
+
+/**
+ * A chuva do ano vem caindo, subindo ou está estável? (REAL, calculado no backend em
+ * app/domain/tendencia_hidrica.py: Mann-Kendall + inclinação de Sen.) O front só exibe.
+ */
+export interface TendenciaHidrica {
+  /** 'estavel' = sem tendência clara (p-valor >= alfa), mesmo que a chuva varie muito. */
+  tendencia: 'secando' | 'estavel' | 'mais_chuvoso';
+  mm_por_decada: number;
+  pct_por_decada: number;
+  p_valor: number;
+  alfa: number;
+  media_anual_mm: number;
+  /** Ponta inicial e final da reta de tendência (mm), para desenhar a linha. */
+  reta_inicio_mm: number;
+  reta_fim_mm: number;
+  anos: ChuvaAno[];
+  periodo_inicio: number;
+  periodo_fim: number;
+  anos_analisados: number;
+  metodo: string;
+  fonte: string;
+  variavel: string;
+  tipo_acesso: TipoAcesso;
+}
+
 export interface Analise {
   analise_id: string;
   /** true = dados fictícios de demonstração. A UI deve deixar isso visível. */
@@ -278,6 +308,8 @@ export interface Analise {
   geada: RiscoGeada | null;
   /** null = a série de precipitação diária não respondeu para o ponto. */
   precipitacao_extrema: RiscoPrecipitacaoExtrema | null;
+  /** null = faltam anos completos na série de chuva, ou a fonte não respondeu. */
+  tendencia_hidrica: TendenciaHidrica | null;
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];

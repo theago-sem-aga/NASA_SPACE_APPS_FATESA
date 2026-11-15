@@ -160,6 +160,32 @@ class RiscoPrecipitacaoExtrema(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class ChuvaAno(BaseModel):
+    ano: int
+    chuva_mm: float = Field(ge=0)
+
+
+class TendenciaHidrica(BaseModel):
+    # Regra em app/domain/tendencia_hidrica.py: Mann-Kendall + inclinação de Sen
+    # sobre a chuva anual da NASA POWER. "estavel" = sem tendência significativa.
+    tendencia: Literal["secando", "estavel", "mais_chuvoso"]
+    mm_por_decada: float
+    pct_por_decada: float
+    p_valor: float = Field(ge=0, le=1)
+    alfa: float
+    media_anual_mm: float
+    reta_inicio_mm: float
+    reta_fim_mm: float
+    anos: list[ChuvaAno]
+    periodo_inicio: int
+    periodo_fim: int
+    anos_analisados: int
+    metodo: str
+    fonte: str
+    variavel: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -224,6 +250,8 @@ class Analise(BaseModel):
     geada: RiscoGeada | None = None
     # None = sem série de precipitação diária para o ponto (fonte fora do ar).
     precipitacao_extrema: RiscoPrecipitacaoExtrema | None = None
+    # None = série de chuva sem anos completos suficientes ou fonte fora do ar.
+    tendencia_hidrica: TendenciaHidrica | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

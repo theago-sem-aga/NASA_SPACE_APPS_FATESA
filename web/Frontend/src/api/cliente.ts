@@ -20,6 +20,7 @@ import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 import { GEADA_FRESNO, GEADA_SJRP } from './mock/geadaMock';
+import { TENDENCIA_FRESNO, TENDENCIA_SJRP } from './mock/tendenciaHidricaMock';
 import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
@@ -47,7 +48,7 @@ export class FalhaApi extends Error {
   }
 }
 
-// Permite demonstrar os estados da tela no mock: ?simular=erro | dados_insuficientes | lento | sem_gps | geada
+// Permite demonstrar os estados da tela no mock: ?simular=erro | dados_insuficientes | lento | sem_gps | fresno (ou geada)
 export function simulacaoPedida(): string | null {
   return new URLSearchParams(window.location.search).get('simular');
 }
@@ -221,9 +222,10 @@ function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
   // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
   const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
-  // Geada e chuva extrema REAIS da NASA POWER (congeladas). ?simular=geada mostra
-  // Fresno, onde geia todo inverno e chove mais fora do padrão em novembro.
-  const emFresno = simulacaoPedida() === 'geada';
+  // Geada, chuva extrema e tendência da chuva REAIS da NASA POWER (congeladas).
+  // ?simular=fresno (ou o antigo ?simular=geada) mostra Fresno: geia todo inverno,
+  // chove mais fora do padrão em novembro e a chuva do ano não tem tendência.
+  const emFresno = simulacaoPedida() === 'fresno' || simulacaoPedida() === 'geada';
   const geada = emFresno ? GEADA_FRESNO : GEADA_SJRP;
   const precipitacaoExtrema = emFresno ? PRECIPITACAO_EXTREMA_FRESNO : PRECIPITACAO_EXTREMA_SJRP;
   return {
@@ -232,6 +234,7 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
     talhao: montarTalhaoMock(entrada.correcoes, geada),
     geada,
     precipitacao_extrema: precipitacaoExtrema,
+    tendencia_hidrica: emFresno ? TENDENCIA_FRESNO : TENDENCIA_SJRP,
     estrategias,
     limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
   };

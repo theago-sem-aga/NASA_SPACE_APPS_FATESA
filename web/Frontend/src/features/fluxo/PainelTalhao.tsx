@@ -1,9 +1,10 @@
 import { useId, useState } from 'react';
-import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TexturaSolo } from '../../api/tipos';
+import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
 import { FaixaGeada, nivelComFaixa } from './FaixaGeada';
 import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
+import { FaixaTendenciaHidrica, ROTULO_TENDENCIA } from './FaixaTendenciaHidrica';
 import { PICTO_RELEVO, PICTO_TEXTURA, ROTULO_RELEVO, ROTULO_RISCO, ROTULO_TEXTURA } from './rotulos';
 
 interface PainelTalhaoProps {
@@ -12,6 +13,8 @@ interface PainelTalhaoProps {
   geada: RiscoGeada | null;
   /** Dias de chuva extrema nos últimos 30; null = sem dado. */
   precipitacaoExtrema: RiscoPrecipitacaoExtrema | null;
+  /** A chuva do ano vem caindo, subindo ou estável; null = sem dado. */
+  tendenciaHidrica: TendenciaHidrica | null;
   aoCorrigir: (correcoes: CorrecoesTalhao) => void;
 }
 
@@ -37,7 +40,7 @@ const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
  * O que os dados acharam sobre o talhão (solo, terreno, riscos), em vez de perguntar.
  * A pessoa pode discordar: "Não é bem assim" reenvia a análise com a correção.
  */
-export function PainelTalhao({ talhao, geada, precipitacaoExtrema, aoCorrigir }: PainelTalhaoProps) {
+export function PainelTalhao({ talhao, geada, precipitacaoExtrema, tendenciaHidrica, aoCorrigir }: PainelTalhaoProps) {
   const id = useId();
   const [corrigindo, setCorrigindo] = useState(false);
 
@@ -64,9 +67,15 @@ export function PainelTalhao({ talhao, geada, precipitacaoExtrema, aoCorrigir }:
         <Item pictograma="erosao" rotulo="Risco de erosão" valor={risco(talhao.risco_erosao)} />
         <Item pictograma="falta_agua" rotulo="Risco de seca" valor={risco(talhao.risco_seca)} />
         <Item pictograma="geada" rotulo="Risco de geada" valor={geada ? nivelComFaixa(geada) : risco(talhao.risco_geada)} />
+        <Item
+          pictograma="chuva"
+          rotulo="Chuva ao longo dos anos"
+          valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : 'Sem dado'}
+        />
       </ul>
       {geada && <FaixaGeada geada={geada} />}
       {precipitacaoExtrema && <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} />}
+      {tendenciaHidrica && <FaixaTendenciaHidrica tendencia={tendenciaHidrica} />}
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (

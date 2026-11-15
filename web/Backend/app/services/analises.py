@@ -15,13 +15,14 @@ from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.geada import risco_geada
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
+from app.services.tendencia_hidrica import tendencia_hidrica
 from app.services.solo import buscar_textura_ponto
 
 
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -31,6 +32,7 @@ def criar_analise(entrada):
             resumo_precipitacao_extrema, entrada.latitude, entrada.longitude
         )
         solo_pendente = executor.submit(buscar_textura_ponto, entrada.latitude, entrada.longitude)
+        tendencia_pendente = executor.submit(tendencia_hidrica, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -45,6 +47,13 @@ def criar_analise(entrada):
             precipitacao_extrema = None
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_precipitacao_extrema", "motivo": "falha_fonte"}
+            )
+        try:
+            tendencia = tendencia_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            tendencia = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "nasa_power_tendencia_hidrica", "motivo": "falha_fonte"}
             )
         try:
             solo = solo_pendente.result()
@@ -105,6 +114,14 @@ def criar_analise(entrada):
         )
     else:
         limitacoes.append("Risco de geada sem dado: a série de temperatura mínima não respondeu.")
+    if tendencia:
+        limitacoes.append(
+            f"Tendência da chuva: {tendencia['metodo']}, {tendencia['periodo_inicio']}–{tendencia['periodo_fim']}. "
+            "NASA POWER é reanálise em grade, não pluviômetro: uma tendência forte deve ser conferida com estação "
+            "meteorológica antes de decisão cara. Tendência do passado não garante o futuro."
+        )
+    else:
+        limitacoes.append("Tendência da chuva sem dado: faltam anos completos na série de chuva.")
     if precipitacao_extrema:
         limitacoes.append(
             f"Precipitação extrema: {precipitacao_extrema['metodo']}. Grade regional da NASA POWER, "
@@ -149,6 +166,7 @@ def criar_analise(entrada):
         clima_mensal=clima["clima_mensal"],
         geada=geada,
         precipitacao_extrema=precipitacao_extrema,
+        tendencia_hidrica=tendencia,
         estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
         limitacoes=limitacoes,
         versao_motor=VERSAO,
