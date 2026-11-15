@@ -84,7 +84,7 @@ function roteiroClima(a: Analise, e: Estrategia): string {
 }
 
 export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise | null, estrategia: Estrategia | null): string {
-  const aviso = analise?.eh_mock && SINALIZAR_MOCK ? 'Lembrete: estes números são de exemplo, inventados para teste. ' : '';
+  const aviso = analise?.eh_mock && SINALIZAR_MOCK ? 'Lembrete: estes números são uma simulação de teste, ainda sem conferência de um agrônomo. ' : '';
   const v = vocabulario(dados.cultura_atual_id, dados.nomeCultura);
   switch (etapa) {
     case 'inicio':

@@ -8,7 +8,7 @@ export function AvisoDemonstracao({ ehMock }: { ehMock: boolean }) {
     <p className="aviso-demonstracao">
       <Icone nome="info" tamanho={20} />
       <span>
-        <strong>Exemplo de teste:</strong> os números e textos desta tela são inventados, só para mostrar como a ferramenta vai funcionar. Não use para decidir.
+        <strong>Simulação:</strong> os números e textos desta tela são uma hipótese de teste, ainda sem conferência de um agrônomo. Converse com um agrônomo antes de decidir.
       </span>
     </p>
   );

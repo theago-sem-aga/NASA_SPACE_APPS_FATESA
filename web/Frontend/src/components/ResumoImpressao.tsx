@@ -16,7 +16,7 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
     <section className="resumo-impressao" aria-hidden="true">
       <h1>Rotação de culturas: resumo para o agrônomo</h1>
       <p>
-        Gerado em {hoje}. {analise.eh_mock && SINALIZAR_MOCK && 'ATENÇÃO: dados de exemplo.'}
+        Gerado em {hoje}. {analise.eh_mock && SINALIZAR_MOCK && 'ATENÇÃO: simulação de teste, ainda sem conferência de um agrônomo.'}
       </p>
       <ResumoVisual dados={dados} analise={analise} />
       {analise.geada && (
