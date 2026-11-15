@@ -304,8 +304,8 @@ def criar_analise(entrada):
             limitacoes.append(t("Localização aproximada por referência regional, sem precisão de talhão.",
                                 "Approximate location from a regional reference, without field precision."))
         else:
-            limitacoes.append(t("Coordenada informada manualmente; a precisão do ponto não foi verificada no local.",
-                                "Coordinate entered by hand; the precision of the point was not checked on site."))
+            limitacoes.append(t("Coordenada informada manualmente (ou centro de uma cidade fora do Brasil escolhida na lista); a precisão do ponto não foi verificada no local.",
+                                "Coordinate entered by hand (or the center of a town outside Brazil picked from the list); the precision of the point was not checked on site."))
     talhao_base = caracterizar_talhao(entrada)
     usa_textura_calculada = talhao_base.textura_solo is None and textura_calculada is not None
     usa_declividade_calculada = talhao_base.relevo is None and declividade is not None

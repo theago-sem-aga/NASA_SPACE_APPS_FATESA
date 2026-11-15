@@ -2,7 +2,6 @@ import { LegendaMedidor } from '../../components/LegendaMedidor';
 import { NomeCientifico } from '../../components/NomeCientifico';
 import { useState } from 'react';
 import type { Analise, AtributosEstrategia, Estrategia, Nivel } from '../../api/tipos';
-import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { BotaoFigura } from '../../components/BotaoFigura';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
@@ -64,7 +63,6 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
 
   return (
     <>
-      <AvisoDemonstracao ehMock={analise.eh_mock} />
       <h1 tabIndex={-1}>{tx('Lado a lado', 'Side by side')}</h1>
       <LegendaMedidor menosEhMelhor />
 

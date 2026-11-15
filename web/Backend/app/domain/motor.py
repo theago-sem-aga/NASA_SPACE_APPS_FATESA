@@ -82,15 +82,15 @@ def gerar_cenarios(entrada, clima_mensal=None):
                 t("A localização é aproximada e não representa os limites do seu talhão.",
                   "The location is approximate and does not represent the boundaries of your field.")
                 if entrada.codigo_ibge
-                else t("Coordenada digitada: confirme se o ponto representa o talhão.",
-                       "Typed coordinate: confirm that the point represents your field.")
+                else t("Coordenada digitada (ou centro de uma cidade fora do Brasil): confirme se o ponto representa o talhão.",
+                       "Typed coordinate (or the center of a town outside Brazil): confirm that the point represents your field.")
             )
         estrategias.append(
             Estrategia(
                 estrategia_id=identificador,
                 nome=nome,
-                resumo=t("Cenário simulado para explorar a conversa com um técnico. Não é recomendação validada para o seu talhão.",
-                         "Simulated scenario to explore the conversation with an advisor. It is not a validated recommendation for your field."),
+                resumo=t("Planejamento baseado em um número limitado de dados; precisa ser revisado por um agrônomo.",
+                         "Planning based on a limited amount of data; it needs to be reviewed by an agronomist."),
                 eh_pratica_atual=indice == 0,
                 objetivo=t("Comparar hipóteses de manejo entre ciclos da cultura principal.",
                            "Compare management hypotheses between cycles of the main crop."),

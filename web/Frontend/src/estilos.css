@@ -1158,3 +1158,6 @@ details.detalhes.cartao[open] > summary { margin-bottom: 10px; }
   display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-top: 8px; padding-bottom: 10px;
   font-size: 0.9rem; color: var(--cor-texto); background: var(--cor-alerta-clara); border-top: 1px solid var(--cor-borda);
 }
+
+/* Cartão do caminho sem abas: subtítulos de cada parte. */
+.carrossel-subtitulo { margin: 14px 0 4px; font-size: 1rem; font-weight: 700; color: var(--cor-texto); }

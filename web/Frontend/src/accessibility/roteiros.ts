@@ -3,11 +3,12 @@
 // Regras: nada de sigla solta ("SP" vira o nome da cidade), nada de lista colada
 // com ponto e vírgula, sempre terminar dizendo o que fazer em seguida.
 // Cada frase existe em português e inglês (i18n/idioma.ts).
-import { SINALIZAR_MOCK, USANDO_MOCK } from '../api/cliente';
-import type { Analise, Estrategia, PrioridadeId, ProblemaId, RequisitoId } from '../api/tipos';
+import { culturasCarregadas, SINALIZAR_MOCK, USANDO_MOCK } from '../api/cliente';
+import type { Analise, AtributosEstrategia, Estrategia, PrioridadeId, ProblemaId, RequisitoId, Resposta } from '../api/tipos';
 import type { DadosFluxo, Etapa } from '../features/fluxo/estadoFluxo';
 import {
-  NOME_MES, ROTULO_CONFIANCA, ROTULO_PRIORIDADE, ROTULO_PROBLEMA, ROTULO_RELEVO, ROTULO_REQUISITO, ROTULO_RISCO, ROTULO_TEXTURA
+  NOME_MES, ROTULO_ATRIBUTO, ROTULO_COBERTURA, ROTULO_CONFIANCA, ROTULO_NIVEL, ROTULO_PRIORIDADE, ROTULO_PROBLEMA, ROTULO_RELEVO,
+  ROTULO_REQUISITO, ROTULO_RISCO, ROTULO_TEXTURA
 } from '../features/fluxo/rotulos';
 import { AJUDA_NIVEL, PONTO_DO_PROBLEMA } from '../features/fluxo/CarrosselEstrategias';
 import { fraseCalor } from '../features/fluxo/FaixaCalor';
@@ -69,7 +70,7 @@ function roteiroTalhao(a: Analise): string {
   const t = a.talhao;
   const partes: string[] = [];
   if (t.textura_solo) partes.push(tx(`Pelos mapas, a terra aí é ${minuscula(ROTULO_TEXTURA[t.textura_solo].nome)}.`, `From the maps, the soil there is ${minuscula(ROTULO_TEXTURA[t.textura_solo].nome)}.`));
-  if (t.relevo) partes.push(tx(`O terreno é ${minuscula(ROTULO_RELEVO[t.relevo].nome)}.`, `The terrain is a ${minuscula(ROTULO_RELEVO[t.relevo].nome)}.`));
+  if (t.relevo) partes.push(tx(`O terreno é ${minuscula(ROTULO_RELEVO[t.relevo].nome)}.`, `Terrain: ${minuscula(ROTULO_RELEVO[t.relevo].nome)}.`));
   if (t.risco_erosao) partes.push(tx(`O risco de a chuva levar terra é ${minuscula(ROTULO_RISCO[t.risco_erosao])}.`, `The risk of rain washing soil away is ${minuscula(ROTULO_RISCO[t.risco_erosao])}.`));
   if (t.risco_seca) partes.push(tx(`O risco de seca é ${minuscula(ROTULO_RISCO[t.risco_seca])}.`, `The drought risk is ${minuscula(ROTULO_RISCO[t.risco_seca])}.`));
   if (t.risco_geada) partes.push(tx(`O risco de geada é ${minuscula(ROTULO_RISCO[t.risco_geada])}.`, `The frost risk is ${minuscula(ROTULO_RISCO[t.risco_geada])}.`));
@@ -83,25 +84,65 @@ function roteiroTalhao(a: Analise): string {
   return partes.join(' ');
 }
 
-function roteiroEstrategia(e: Estrategia): string {
+/** Os mesmos 4 pontos que a tela mostra de cara (TelaEstrategia). */
+const PONTOS_PRINCIPAIS: (keyof AtributosEstrategia)[] = ['protecao_solo', 'materia_organica', 'renda_direta', 'trabalho_custo'];
+
+const pontoFalado = (e: Estrategia, a: keyof AtributosEstrategia) => `${ROTULO_ATRIBUTO[a].nome}: ${minuscula(ROTULO_NIVEL[e.atributos[a]])}.`;
+
+/** "Mês a mês" falado em trechos: "de outubro a dezembro, adubo verde; ...". */
+function calendarioFalado(e: Estrategia): string {
+  const trechos: { de: number; ate: number; cobertura: string }[] = [];
+  for (const m of e.calendario) {
+    const ultimo = trechos[trechos.length - 1];
+    if (ultimo && ultimo.cobertura === m.cobertura) ultimo.ate = m.mes;
+    else trechos.push({ de: m.mes, ate: m.mes, cobertura: m.cobertura });
+  }
+  const partes = trechos.map(t => {
+    const nome = minuscula(ROTULO_COBERTURA[t.cobertura as keyof typeof ROTULO_COBERTURA].nome);
+    return t.de === t.ate
+      ? `${tx('em', 'in')} ${NOME_MES[t.de - 1]}, ${nome}`
+      : `${tx('de', 'from')} ${NOME_MES[t.de - 1]} ${tx('a', 'to')} ${NOME_MES[t.ate - 1]}, ${nome}`;
+  });
+  return `${tx('Mês a mês:', 'Month by month:')} ${partes.join('; ')}.`;
+}
+
+const SITUACAO_FALADA: Record<Resposta, string> = traduzivel({
+  sim: L('você tem', 'you have it'),
+  nao: L('você não tem', 'you do not have it'),
+  nao_sei: L('você não sabe', 'you are not sure')
+});
+
+function roteiroEstrategia(e: Estrategia, recursos: Record<RequisitoId, Resposta | null>): string {
+  const outrosPontos = (Object.keys(ROTULO_ATRIBUTO) as (keyof AtributosEstrategia)[]).filter(a => !PONTOS_PRINCIPAIS.includes(a));
   return [
     `${e.nome}.`,
-    e.resumo,
-    e.objetivo ? `${tx('A ideia é:', 'The idea is:')} ${minuscula(e.objetivo)}` : '',
-    e.beneficios.length ? `${tx('O que você ganha.', 'What you gain.')} ${e.beneficios.join(' ')}` : '',
-    e.riscos.length ? `${tx('Agora, os cuidados.', 'Now, the cautions.')} ${e.riscos.join(' ')}` : '',
-    e.lacunas.length ? `${tx('O que ainda não sabemos.', 'What we do not know yet.')} ${e.lacunas.join(' ')}` : '',
+    e.objetivo ? `${tx('Para quê:', 'Goal:')} ${e.objetivo}` : '',
     tx(
       'Logo abaixo do objetivo está o ano da sua terra. Toque em: ver o ano passar, para ver mês a mês como fica o chão e quanta chuva cai.',
       'Right below the goal is your field’s year. Tap: watch the year go by, to see month by month how the ground looks and how much rain falls.'
     ),
-    `${tx('Uma boa pergunta para levar ao agrônomo:', 'A good question to take to the agronomist:')} ${e.pergunta_especialista}`,
+    `${tx('Num olhar.', 'At a glance.')} ${PONTOS_PRINCIPAIS.map(a => pontoFalado(e, a)).join(' ')}`,
+    ...e.requisitos.map(r => `${tx('Precisa de', 'Needs')} ${minuscula(ROTULO_REQUISITO[r].nome)}: ${SITUACAO_FALADA[recursos[r] ?? 'nao_sei']}.`),
+    e.beneficios.length ? `${tx('O que você ganha.', 'What you gain.')} ${e.beneficios.join(' ')}` : '',
+    e.riscos.length ? `${tx('Cuidado com.', 'Watch out for.')} ${e.riscos.join(' ')}` : '',
+    `${tx('Pergunte ao agrônomo:', 'Ask the agronomist:')} ${e.pergunta_especialista}`,
     e.confianca === 'baixa'
       ? tx(
           'Atenção: há pouco volume de dados de referência para este caminho. Confira com um consultor agrônomo.',
           'Note: there is little reference data for this option. Check with an agronomist.'
         )
       : `${tx('Nível de certeza:', 'How sure:')} ${minuscula(ROTULO_CONFIANCA[e.confianca])}.`,
+    `${tx('Como funciona.', 'How it works.')} ${e.resumo} ${e.motivos.join(' ')}`,
+    calendarioFalado(e),
+    `${tx('Os outros pontos.', 'The other criteria.')} ${outrosPontos.map(a => pontoFalado(e, a)).join(' ')}`,
+    e.evidencias.length || e.explicacao_confianca
+      ? `${tx('Por que dizemos isso.', 'Why we say this.')} ${e.evidencias.join(' ')} ${e.explicacao_confianca}`
+      : '',
+    e.lacunas.length ? `${tx('O que ainda não sabemos.', 'What we do not know yet.')} ${e.lacunas.join(' ')}` : '',
+    // Endereço de site não se fala: lê só o nome da fonte.
+    e.referencias.length
+      ? `${tx('Onde conferir.', 'Where to check.')} ${e.referencias.map(r => r.replace(/\s*\(?\d{4}\)?\s*:?\s*https?:\/\/\S+/g, '').replace(/:?\s*https?:\/\/\S+/g, '').trim()).join('. ')}.`
+      : '',
     tx('Para ver a chuva do lugar, toque em: ver a chuva.', 'To see the rain for the place, tap: see the rain.')
   ]
     .filter(Boolean)
@@ -162,7 +203,12 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
             'Which town is the field in? Type the name in the box. When the town shows up below, tap it.'
           );
     case 'cultura':
-      return tx('O que está plantado aí hoje? Toque na figura.', 'What is planted there today? Tap a picture.');
+      return culturasCarregadas().length
+        ? tx(
+            `O que está plantado aí hoje? As opções são: ${emFrase(culturasCarregadas().map(c => c.nome))}. Toque na figura.`,
+            `What is planted there today? The options are: ${emFrase(culturasCarregadas().map(c => c.nome))}. Tap a picture.`
+          )
+        : tx('O que está plantado aí hoje? Toque na figura.', 'What is planted there today? Tap a picture.');
     case 'maquinas_graos':
     case 'comprador_graos':
     case 'irrigacao':
@@ -208,16 +254,15 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
         : tx('Estou montando os caminhos. Só um instante.', 'I am building the options. Just a moment.');
     case 'comparar':
       return (
-        aviso +
         tx(
           'Aqui os caminhos estão lado a lado. Os tracinhos verdes são bons para você. Os laranja são pontos de atenção. Quanto mais tracinhos, mais forte. Em gasta água e em dá trabalho e gasto, menos é melhor. Para reorganizar, toque no que mais importa para você, por exemplo: segura a terra na chuva. O melhor caminho naquilo vai para a frente, com uma estrela. Depois, escolha o seu caminho lá embaixo.',
           'Here the options are side by side. Green dashes are good for you. Orange ones are watch points. The more dashes, the stronger. For uses water and for work and cost, less is better. To reorder, tap what matters most to you, for example: holds soil in the rain. The best option for that moves to the front, with a star. Then choose your option at the bottom.'
         )
       );
     case 'estrategia':
-      return estrategia ? aviso + roteiroEstrategia(estrategia) : '';
+      return estrategia ? roteiroEstrategia(estrategia, dados.recursos_disponiveis) : '';
     case 'clima':
-      return analise && estrategia ? aviso + roteiroClima(analise, estrategia) : '';
+      return analise && estrategia ? roteiroClima(analise, estrategia) : '';
     case 'decisao':
       return estrategia
         ? tx(

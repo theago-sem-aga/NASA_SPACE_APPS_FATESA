@@ -105,7 +105,7 @@ def test_motor_beta_em_ingles(entrada):
     pt = gerar_cenarios(entrada)
     assert [e.estrategia_id for e in en] == [e.estrategia_id for e in pt]
     assert any(e.nome == "Explore a legume cover crop" for e in en)
-    assert all("Simulated scenario" in e.resumo for e in en)
+    assert all("needs to be reviewed by an agronomist" in e.resumo for e in en)
 
 
 def test_painel_de_colheita_em_ingles_sem_inventar_traducao():
