@@ -19,7 +19,7 @@ Precisa do Node.js 20 ou mais recente.
 - **Dois modos**, escolhidos por `VITE_FONTE_DADOS` (veja `.env.example`):
   - `api` (padrão): usa o backend FastAPI e verifica suas rotas pelo `/openapi.json`. Rota ausente, falha ou falta de cobertura são informadas, sem substituição automática por mock.
   - `mock`: precisa ser escolhido explicitamente; permite avaliar a interface com exemplos.
-- **Modo `api`:** catálogos, localização, criação de análises, produção, previsão e acompanhamento usam as rotas reais. A previsão vem do boletim oficial transcrito no backend; não é uma previsão gerada ao vivo. Fotos reais exigem GPS no talhão; uma cidade escolhida na busca não identifica a plantação.
+- **Modo `api`:** catálogos, localização, criação de análises, produção, previsão e acompanhamento usam as rotas reais. A previsão vem do boletim oficial transcrito no backend; não é uma previsão gerada ao vivo. Fotos reais usam o GPS no talhão ou a coordenada digitada; uma cidade escolhida na busca não identifica a plantação.
 - **Avisos de "dados de exemplo":** mantenha `VITE_SINALIZAR_MOCK=true`. No modo `api`, a sinalização fica sempre ligada. Para impedir também os cenários beta no servidor, configure `HABILITAR_CENARIOS_BETA=false` em `web/.env`; atualmente apenas cana tem catálogo fora desse modo. O catálogo ainda tem atributos agronômicos pendentes de validação.
 
 Para testar a integração local, copie `.env.example` para `.env.local`, mantenha

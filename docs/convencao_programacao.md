@@ -336,6 +336,18 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 
 ### Decisões já tomadas
 
+- **2026-11-15 — entrega técnica do levantamento frontend:** a pedido de Ghabriel,
+  o escopo desta entrega é o arquivo da Julya e os comentários do front, sem assumir
+  os itens de requisitos-faltantes atribuídos a Tiago/Thiago. Sem mudar enums ou nomes
+  JSON, a escolha manual sem código IBGE/UF identifica a opção de coordenada digitada;
+  o centroide municipal continua aproximado. Relevo brasileiro usa SRTMGL1 v003 oficial,
+  preparado fora do POST em Parquet por célula, mantendo a grade de 1 segundo de arco
+  e a proveniência. Reutiliza o cálculo de cinco elevações já existente; não usa a
+  amplitude de elevação da célula de 0,1° como declividade. Recortes de SJRP/Olímpia
+  acompanham o Git; o startup os reincorpora mesmo com manifesto GCS antigo. Novas
+  coordenadas exigem preparação explícita; sem download de raster no fluxo do agricultor.
+  Não se aprovam nesta entrega regras novas de calor, erosão, pragas ou pesos do motor.
+
 - **2026-11-15 — estabilidade do relevo:** consultas completas e válidas do USGS
   3DEP ficam em cache local por coordenada exata, pelo `CACHE_TTL_S` já configurado
   (24 h por padrão). Ausências e falhas não são guardadas; dados expirados não

@@ -26,16 +26,28 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
     if (chuva !== null && chuva !== undefined && chuva < POUCA_CHUVA_MM) lista.push('seca');
     return lista;
   };
-  const meses = Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, alertas: alertas(i + 1) }));
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    const mes = i + 1;
+    const chuva = clima.find(c => c.mes === mes)?.precipitacao_acumulada_mm;
+    const incompleto = !calor?.meses.some(m => m.mes === mes)
+      || !geada?.meses.some(m => m.mes === mes) || chuva === null || chuva === undefined;
+    return { mes, alertas: alertas(mes), incompleto };
+  });
   const comAlerta = meses.filter(m => m.alertas.length > 0);
+  const dadosIncompletos = meses.some(m => m.incompleto);
   const resumo =
     comAlerta.length === 0
-      ? 'Nenhum mês com calor forte, geada ou pouca chuva no histórico.'
+      ? dadosIncompletos
+        ? 'Não há alertas nos dados disponíveis. Faltam dados para avaliar todos os riscos.'
+        : 'Nenhum mês com calor forte, geada ou pouca chuva no histórico.'
       : `${comAlerta.length} meses pedem atenção. Os mais delicados são os que juntam mais de um problema.`;
 
   return (
     <div className="meses-atencao">
       <p className="faixa-geada-frase">{resumo}</p>
+      {dadosIncompletos && comAlerta.length > 0 && (
+        <p className="texto-apoio">Avaliação parcial: os riscos sem dados não estão incluídos.</p>
+      )}
       <SeloFonte fonte={calor?.fonte ?? geada?.fonte} />
       <ol className="meses-atencao-lista">
         {meses.map(m => (
@@ -46,7 +58,7 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
             </span>
             <span className="meses-atencao-alertas">
               {m.alertas.length === 0 ? (
-                <span className="meses-atencao-ok">sem alerta</span>
+                <span className="meses-atencao-ok">{m.incompleto ? 'dados incompletos' : 'sem alerta'}</span>
               ) : (
                 m.alertas.map(a => (
                   <span key={a} className={`etiqueta meses-atencao-${a}`}>

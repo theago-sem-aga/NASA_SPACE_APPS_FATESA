@@ -1,11 +1,7 @@
 // DTOs do contrato front <-> API.
-// Duas partes:
-//  - REAL (fim do arquivo): Variavel / RespostaAnalise, já implementados no backend
-//    e descritos em /openapi.json ou /docs (gerados a partir dos schemas reais).
-//  - PROPOSTA (o resto): o que o front precisa para as telas e o backend ainda não
-//    tem (culturas, locais, municípios, POST /analises com estratégias). Nomes seguem
-//    a convenção (snake_case, sem acento, unidade no nome) e precisam ser aprovados
-//    com o backend (Ghabriel) antes de virar contrato.
+// Catálogos, locais, análises, produção, previsão e acompanhamento já têm rotas.
+// O contrato vigente é /openapi.json ou /docs, gerado dos schemas Pydantic.
+// EstresseTermico continua uma proposta de integração, explicitamente marcada.
 //
 // Para o back: tudo o que o front espera e ainda não está na convenção está
 // marcado com "BACKEND:" (busque esse texto em src/). As rotas estão em
@@ -59,7 +55,8 @@ export type ProblemaId = 'solo_cansado' | 'nematoides_pragas' | 'preco_baixo';
 /** Recursos que uma estratégia exige e que o produtor informa se tem (uma pergunta por tela). */
 export type RequisitoId = 'maquinas_graos' | 'comprador_graos' | 'irrigacao';
 
-/** Como o local foi obtido. 'municipio' = centro do município, precisão de dezenas de km. */
+/** GPS ou escolha manual. Com codigo_ibge, 'municipio' usa centroide aproximado;
+ * sem código/UF, pode ser a opção "Usar o ponto" digitado. */
 export type OrigemLocal = 'gps' | 'municipio';
 
 /**
@@ -88,7 +85,7 @@ export interface CorrecoesTalhao {
 export interface AnaliseEntrada {
   latitude: number;
   longitude: number;
-  /** BACKEND: com 'municipio', a análise é mais grosseira; refletir isso na `confianca` e nas `limitacoes`. */
+  /** Com município identificado, informar precisão regional nas limitações. */
   origem_local: OrigemLocal;
   codigo_ibge: string | null;
   cultura_atual_id: string;
@@ -194,7 +191,8 @@ export interface CaracteristicasTalhao {
   declividade_pct: number | null;
   /** BACKEND: combinar declividade, textura e chuva forte do histórico (regra explicável, sem caixa-preta). */
   risco_erosao: Nivel | null;
-  /** BACKEND: a partir da tendência de chuva e da umidade do solo (POWER/SMAP). */
+  /** Déficit de chuva recente contra o mesmo período histórico (NASA POWER);
+   * não é índice de umidade das raízes nem balanço hídrico da cultura. */
   risco_seca: Nivel | null;
   /** REAL: frequência de noites frias na mínima diária da NASA POWER (detalhe em `Analise.geada`). */
   risco_geada: Nivel | null;
@@ -362,9 +360,26 @@ export interface Analise {
   tendencia_hidrica: TendenciaHidrica | null;
   /** null = ainda não há série de NDVI do MODIS guardada para esta região. */
   estresse_vegetal: EstresseVegetal | null;
+  /** Detalhe real do déficit de chuva; opcional nas cópias mock antigas. */
+  risco_seca?: {
+    nivel: Nivel;
+    chuva_recente_mm: number;
+    chuva_normal_mm: number;
+    proporcao_normal_pct: number | null;
+    data_referencia: string;
+    metodo: string;
+    fonte: string;
+    variavel: string;
+    tipo_acesso: TipoAcesso;
+  } | null;
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];
+  /** Metadados já publicados pelo backend; mocks antigos podem não tê-los. */
+  versao_motor?: string;
+  criada_em_utc?: string;
+  fontes_indisponiveis?: FonteIndisponivel[];
+  estado_recomendacoes?: 'simulacao_beta' | 'dados_insuficientes' | 'catalogo_real';
 }
 
 // ---------------------------------------------------------------------------
@@ -412,7 +427,7 @@ export interface ErroApi {
 }
 
 // ---------------------------------------------------------------------------
-// PROPOSTA: painel "Sua colheita" (GET /api/v1/producao?codigo_ibge=...).
+// REAL: painel "Sua colheita" (GET /api/v1/producao?codigo_ibge=...).
 // Montado em web/Backend/app/modelos/painel_producao.py: TODA regra (situação,
 // cenários) fica no backend; o front só desenha. Ver /openapi.json ou /docs.
 
@@ -503,7 +518,7 @@ export interface PainelProducao {
 }
 
 // ---------------------------------------------------------------------------
-// PROPOSTA: acompanhamento da área pelo satélite
+// REAL: acompanhamento da área pelo satélite
 // (GET /api/v1/acompanhamento?latitude=&longitude=). Montado por
 // web/Backend/app/pipelines/acompanhamento_sentinel2.py; regras no backend.
 

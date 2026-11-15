@@ -7,6 +7,12 @@
 
 ## Teste usado
 
+**Atualização da entrega técnica — Ghabriel/Codex, 15/11/2026:** o teste original
+abaixo foi preservado como histórico. Nesta entrega foram corrigidos nome da cidade,
+relevo dos pontos brasileiros, continuidade sem colheita, mensagens de dados ausentes,
+acompanhamento de coordenada digitada, tipos/comentários da integração e ausência
+de cobertura do OpenET no hemisfério sul. Ver o estado detalhado no fim do arquivo.
+
 `POST /api/v1/analises` com análise nova (sem reaproveitar resultado), prioridade "tratar o gado":
 
 | Campo | S. J. do Rio Preto (-20,82, -49,38; cana) | Olímpia (-20,70, -48,96; cana) | Ames, EUA (42,10, -93,65; milho) |
@@ -127,3 +133,51 @@ ao OpenAPI local e inspeção das células/arquivos de SJRP, Olímpia e Ames e d
 do GRACE bruto. Não foram implementados os requisitos nem executadas novas ingestões
 ou testes científicos nesta etapa. Os registros de consultas anteriores não devem
 ser tratados como promessa de disponibilidade permanente dos serviços externos.
+
+## Entrega técnica dos comentários e deste levantamento — 15/11/2026
+
+Não inclui a implementação dos itens de `requisitos-faltantes.md`, atribuídos a
+Tiago/Thiago. Não aprova pesos, limiares ou regras agronômicas novas.
+
+| Pendência | Resultado desta entrega |
+|---|---|
+| Nome da cidade | Resolvido para código IBGE conhecido: `descricao_local` mostra nome e UF e é preservada na recuperação. Código desconhecido mantém coordenada, sem inventar nome. |
+| Relevo no Brasil | Implementada leitura de grade SRTMGL1 v003, preservada em Parquet por célula. Cinco elevações locais alimentam o cálculo de declividade já existente. Não utiliza média/min/max de uma célula como inclinação. |
+| Pontos de SJRP e Olímpia | Preparados quatro recortes, também cobrindo os centroides da busca municipal; manifesto e PostGIS com 135 entradas neste ambiente. Rasters originais e metadados de aquisição ficam em `data/raw/srtm/`; apenas os recortes pequenos são versionados. |
+| Dataset preparado mas ainda fora do bucket | O importador do índice reincorpora os recortes locais SRTM reconhecidos. Um manifesto antigo baixado do GCS não faz esses recortes desaparecerem do índice. Não foi feito upload ao bucket nesta entrega. |
+| Falha de produção bloqueia questionário | A tela continua oferecendo tentar novamente, mas permite continuar explicitamente sem o histórico. Nenhum mock substitui o dado indisponível. |
+| Falta de dado apresentada como segurança | Meses de atenção indicam avaliação parcial/dados incompletos. Calendário com chuva ausente em meses descobertos não é descrito como sem exposição a chuva forte. Limiares anteriores não foram alterados. |
+| Coordenada digitada e fotos | O cliente aceita a opção existente "Usar o ponto" (escolha manual sem código IBGE/UF), preservando as coordenadas. Busca municipal com centroide continua impedida de se passar por talhão. Sem novos valores no enum público; a precisão manual é declarada nas limitações. |
+| Motivos de ausência | Textura ambígua/ausente e elevações ausentes são registradas explicitamente. No hemisfério sul, OpenET retorna ausência de cobertura sem gastar uma chamada; isso não é uma máscara global completa da cobertura. |
+| Tipos/comentários | Corrigidos cabeçalhos que diziam que rotas existentes eram apenas propostas. Declarados os metadados adicionais já enviados pelo backend. O método de seca descrito no frontend agora corresponde ao indicador de chuva implementado. |
+| Concorrência do cache | Corrigida possibilidade de travamento por colisão de travas entre consultas aninhadas; mantida a coalescência de requisições da mesma chave. Teste específico de regressão. |
+
+Consultas reais do POST e recuperação persistida, nas coordenadas do relatório:
+
+| Coordenada | Nome retornado | Declividade | Classe atual |
+|---|---|---|---|
+| -20.82, -49.38 | São José do Rio Preto (SP) | 5,71% | suave_ondulado |
+| -20.70, -48.96 | Olímpia (SP) | 9,74% | ondulado |
+
+Esses números são da coordenada, não de toda a cidade. A seleção pelo nome usa
+outro ponto (centroide), portanto pode retornar outra declividade. SRTM é uma
+superfície histórica; não substitui levantamento topográfico atual.
+
+### O que permanece separado
+
+- **Calor:** integração ainda depende do indicador/implementação de Tiago; não há
+  limiar agronômico novo nesta entrega. A ausência agora é tratada corretamente.
+- **SoilGrids/NDVI de Olímpia e GRACE fora dos recortes:** dependem de preparar e
+  distribuir os respectivos dados (Tiago). O novo pacote fecha relevo, não essas fontes.
+  O centroide municipal de SJRP (-20.7972795, -49.3575799) também cai fora da célula
+  NDVI do ponto -20.82, -49.38; buscar pelo nome pode ficar sem NDVI embora o ponto
+  do relatório o tenha. Não foi copiada uma série de outro pixel para esconder a lacuna.
+- **Erosão:** continua sem regra validada e sem valor fabricado.
+- **Problemas no ranking e fases da cultura:** a proposta da Julya foi preservada;
+  pesos, garantias e respostas específicas a pragas não foram adotados automaticamente.
+- **Malha municipal exata:** continua a aproximação por centroide documentada. Não
+  foi introduzida uma nova base geográfica ou serviço de geocodificação.
+
+Para repetir a preparação do relevo em outros pontos, ver `web/Backend/README.md`.
+Os computadores que atualizarem estes recortes pelo Git só precisam do startup
+normal para importar o índice; não precisam baixar os HGT na requisição.

@@ -1,4 +1,4 @@
-# Backend — piloto Fresno
+# Backend — Field Shift
 
 FastAPI + PostgreSQL/PostGIS, com ingestão existente preservada e contratos
 snake_case compartilhados com `web/Frontend/src/api/tipos.ts`.
@@ -24,9 +24,39 @@ npm.cmd run dev
 
 Neste dispositivo o `.env.local` do frontend foi configurado como `api` e o beta
 local foi habilitado em `web/.env`. Nenhuma credencial é versionada.
-O catálogo só habilita `milho` para explorar cenários simulados; ele não declara
-aptidão regional nem uma lista de culturas aprovada para produção.
-Na busca, use `Califórnia` ou `Fresno`. GPS brasileiro fica fora do piloto.
+Com `HABILITAR_CENARIOS_BETA=true`, os cinco cultivos cadastrados podem ser
+explorados; os cenários beta são simulados. Cana tem catálogo próprio, com
+atributos ainda pendentes de validação agronômica. Fontes têm coberturas distintas;
+uma cultura liberada não significa aptidão regional validada.
+
+## Relevo SRTM nos pontos brasileiros
+
+Os recortes dos pontos de São José do Rio Preto e Olímpia já acompanham o código
+em `data/processed/srtm_relevo/`. Para eles, basta atualizar o repositório e iniciar
+o backend pelo script normal. Para preparar novos pontos ou regenerar os dados,
+na pasta `web/Backend`, com `EARTHDATA_TOKEN` válido em `web/.env`:
+
+```powershell
+..\..\.venv\Scripts\python.exe -m app.pipelines.preparar_relevo_srtm -20.82 -49.38 -20.70 -48.96 --municipios 3549805 3533908
+```
+
+O pipeline descobre os rasters SRTMGL1 v003 no catálogo oficial NASA CMR, baixa
+os tiles necessários em `data/raw/srtm/` (ignorado pelo Git) e recorta as células
+de 0,1° necessárias em Parquet. A grade original de 1 segundo de arco é preservada,
+com produto, origem, extração e hash nos metadados, sem reduzir a elevação a uma
+média por célula. O manifesto e o PostGIS são atualizados.
+Os quatro recortes preparados cobrem os pontos citados e os centroides municipais
+usados pela busca dessas cidades. Novos pontos exigem cobertura das cinco amostras
+ao redor da coordenada; não se promete cobertura global. Nenhum download é iniciado
+pelo POST, que lê apenas o recorte processado da célula.
+
+Depois da preparação, reinicie o backend e refaça a análise. A leitura local usa
+interpolação dos pixels e o cálculo de declividade já existente. Não confundir
+`elevacao_ponto_m` com média de uma célula. É elevação histórica, não levantamento
+topográfico atual da propriedade. O download GCS do startup cobre apenas `processed/`;
+ele não distribui os rasters brutos. A importação do índice reincorpora os recortes
+locais de relevo mesmo se o manifesto do bucket ainda não os listar. Nos EUA
+continua o USGS 3DEP.
 
 ## Instalação reproduzível
 
@@ -53,7 +83,7 @@ Na pasta `web/Backend`:
 ```
 
 Preparar banco cria o banco se ausente (exige privilégio de criação), habilita
-PostGIS, aplica Alembic e importa o manifesto existente (60 células no momento).
+PostGIS, aplica Alembic e importa as células do manifesto existente.
 Reexecutar não remove análises nem datasets. Em produção, executar migrações com
 credencial administrativa separada, e conceder à aplicação somente os acessos necessários.
 `verificar_demo` usa fontes externas reais, grava uma análise e testa sua recuperação;

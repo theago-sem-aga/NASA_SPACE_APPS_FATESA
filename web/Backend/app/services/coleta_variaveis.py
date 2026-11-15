@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.configuracao import configuracao
 from app.integrations import nasa_power, openet, usda_soil_data_access
+from app.integrations.srtm_local import buscar_elevacao_local
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
 from app.services.grace import grace_do_ponto
@@ -31,7 +32,7 @@ CAMPOS = {
     "openet": {"evapotranspiracao_mm"},
     "gpm": {"precipitacao_acumulada_mm"},
     "smap": {"umidade_solo_cm3_cm3"},
-    "srtm": {"elevacao_media_m", "elevacao_min_m", "elevacao_max_m"},
+    "srtm": {"elevacao_media_m", "elevacao_min_m", "elevacao_max_m", "elevacao_ponto_m"},
     "ecostress": {"temperatura_superficie_media_c"},
     "landsat": {"ndvi_medio"},
     "grace": {"armazenamento_agua_anomalia_cm"},
@@ -78,6 +79,10 @@ def _buscar(fonte, lat, lon):
     if fonte == "usda_soil_data_access":
         return usda_soil_data_access.buscar_solo_ponto(lat, lon, timeout_s=timeout)
     if fonte == "openet":
+        # O produto disponível cobre os EUA, não o hemisfério sul. Esta exclusão
+        # não pretende ser uma máscara completa de cobertura do serviço.
+        if lat < 0:
+            return {"disponivel": False, "motivo": "fora_da_cobertura"}
         if not os.getenv("OPENET_API_KEY"):
             return {"disponivel": False, "motivo": "chave_nao_configurada"}
         fim = (hoje.replace(day=1) - dt.timedelta(days=1)).replace(day=1) - dt.timedelta(days=1)
@@ -105,6 +110,15 @@ def _buscar(fonte, lat, lon):
             }],
             "tipo_acesso": "pre_processado",
         }
+    if fonte == "srtm":
+        agregado = buscar_celula(fonte, lat, lon)
+        if agregado is not None:
+            return agregado
+        elevacao = buscar_elevacao_local(lat, lon)
+        if elevacao is None:
+            return None
+        # Ponto interpolado do raster local; não chamar de média de uma célula.
+        return {"serie": [{"elevacao_ponto_m": elevacao}], "tipo_acesso": "pre_processado"}
     return buscar_celula(fonte, lat, lon)
 
 
