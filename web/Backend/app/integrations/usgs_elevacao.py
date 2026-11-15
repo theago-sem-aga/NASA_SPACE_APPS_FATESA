@@ -15,7 +15,7 @@ from app.integrations.http import requisitar
 EPQS_URL = "https://epqs.nationalmap.gov/v1/json"
 
 
-def buscar_elevacao_ponto(latitude: float, longitude: float, timeout_s: int = 15) -> float | None:
+def buscar_elevacao_ponto(latitude: float, longitude: float, timeout_s: int = 30) -> float | None:
     """Elevação (m) de um ponto, via USGS 3DEP. None fora da cobertura (fora
     dos EUA, ou ponto no mar) -- a API responde HTTP 200 com texto simples
     ("Invalid or missing input parameters."), não JSON, nesses casos."""

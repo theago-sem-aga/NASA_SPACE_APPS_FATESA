@@ -15,13 +15,13 @@ from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.declividade import declividade_do_ponto
+from app.services.estresse_vegetal import estresse_vegetal
 from app.services.geada import risco_geada
 from app.services.locais import buscar_por_codigo
 from app.services.precipitacao_extrema import resumo_precipitacao_extrema
 from app.services.risco_seca import resumo_risco_seca
-from app.services.tendencia_hidrica import tendencia_hidrica
-from app.services.estresse_vegetal import estresse_vegetal
 from app.services.solo import buscar_textura_ponto
+from app.services.tendencia_hidrica import tendencia_hidrica
 
 # Cultura com catalogo real (ZARC), ligado ao backend (ver docs/requisitos-faltantes.md).
 # Outras culturas ainda caem no motor beta generico, simulado.
@@ -114,7 +114,11 @@ def criar_analise(entrada):
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_historico", "motivo": "falha_fonte"}
             )
-    textura_calculada = classificar_textura(solo["areia_pct"], solo["argila_pct"]) if solo else None
+    textura_calculada = None
+    if solo:
+        textura_calculada = solo.get("textura_solo") or classificar_textura(
+            solo["areia_pct"], solo["argila_pct"]
+        )
 
     catalogo_real = entrada.cultura_atual_id in CULTURAS_COM_CATALOGO_REAL
     beta = configuracao()["cenarios_beta"]
@@ -189,6 +193,12 @@ def criar_analise(entrada):
             f"da camada superficial ({solo['fonte']}); não é o triângulo textural completo e "
             "está pendente de revisão agronômica."
         )
+        if solo.get("componentes_considerados", 1) > 1:
+            limitacoes.append(
+                "A unidade de solo tem múltiplos componentes principais, todos na mesma "
+                "classe simplificada exibida. Não foi escolhido um componente nem feita "
+                "média dos percentuais; o mapa não identifica qual componente há no talhão."
+            )
     else:
         limitacoes.append(
             "Textura do solo sem dado: fonte indisponível, unidade de mapeamento ambígua, ou "

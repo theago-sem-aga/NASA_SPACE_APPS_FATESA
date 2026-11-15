@@ -336,6 +336,23 @@ Se já houver uma arquitetura funcional no repositório, **preservá-la** e segu
 
 ### Decisões já tomadas
 
+- **2026-11-15 — solo e relevo no teste de Iowa:** múltiplos componentes
+  principais do USDA podem fornecer a classe simplificada somente quando
+  todos têm percentuais válidos e resultam na mesma classe já usada pelo domínio.
+  Não escolher componente dominante nem inventar percentuais médios; divergência
+  continua sem classificação. Falha do USDA permite tentar SoilGrids pré-processado.
+  Timeout do USGS 3DEP passa de 15 para 30 segundos após resposta real em ~16 s.
+  Contratos públicos preservados. O NDVI do ponto 42.10, -93.65 é preparado pelo
+  pipeline existente, fora da requisição; não se promete cobertura automática global.
+
+- **2026-11-15 — teste integrado em modo API:** a pedido de Ghabriel, o frontend
+  passa a usar `api` por padrão, sem substituir rotas ausentes ou falhas por mocks.
+  O mock exige configuração explícita. No ambiente local, cenários beta ficam
+  desativados; cana continua disponível por ter catálogo próprio, ainda sujeito
+  à validação agronômica dos atributos. Previsão oficial transcrita passa a ser
+  servida pelo backend, com schema no OpenAPI. Fotos reais exigem ponto do GPS,
+  sem usar o talhão de exemplo quando a pessoa escolheu apenas uma cidade.
+
 - **2026-11-14 — entrega backend 0.2:** Ghabriel confirma Califórnia como primeira
   entrega e Brasil depois; autoriza avançar o beta e preparar o ambiente local.
   Implementação agora inclui catálogos do piloto, POST/recuperação de análises,

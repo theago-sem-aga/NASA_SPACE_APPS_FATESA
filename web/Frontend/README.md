@@ -17,10 +17,21 @@ Precisa do Node.js 20 ou mais recente.
 ## Estado atual
 
 - **Dois modos**, escolhidos por `VITE_FONTE_DADOS` (veja `.env.example`):
-  - `mock` (padrão): tudo fictício, sem servidor.
-  - `api`: o front lê o `/openapi.json` do backend e usa **toda rota real que já existir**. Rota que ainda não existe cai no mock, e a tela avisa que é exemplo. Quando o back criar a rota, o front passa a usá-la sem mudar código.
-- **Hoje no modo `api`:** a única rota real é `GET /api/v1/analises`, que devolve as variáveis por fonte (`RespostaAnalise`). O front já busca essas variáveis, mas os caminhos, a terra e a chuva ainda vêm do mock (`eh_mock: true`), porque o back ainda não monta estratégias. Na tela "Antes de decidir", as limitações dizem quais fontes reais responderam para o ponto e quais não têm dado.
-- **Avisos de "dados de exemplo":** no modo `mock` ficam desligados por padrão, para avaliar o visual final. Ligue com `VITE_SINALIZAR_MOCK=true` em qualquer apresentação pública com mock (convenção §0.3: mock não pode parecer observação real). No modo `api` ficam sempre ligados e só aparecem quando algo veio do mock.
+  - `api` (padrão): usa o backend FastAPI e verifica suas rotas pelo `/openapi.json`. Rota ausente, falha ou falta de cobertura são informadas, sem substituição automática por mock.
+  - `mock`: precisa ser escolhido explicitamente; permite avaliar a interface com exemplos.
+- **Modo `api`:** catálogos, localização, criação de análises, produção, previsão e acompanhamento usam as rotas reais. A previsão vem do boletim oficial transcrito no backend; não é uma previsão gerada ao vivo. Fotos reais exigem GPS no talhão; uma cidade escolhida na busca não identifica a plantação.
+- **Avisos de "dados de exemplo":** mantenha `VITE_SINALIZAR_MOCK=true`. No modo `api`, a sinalização fica sempre ligada. Para impedir também os cenários beta no servidor, configure `HABILITAR_CENARIOS_BETA=false` em `web/.env`; atualmente apenas cana tem catálogo fora desse modo. O catálogo ainda tem atributos agronômicos pendentes de validação.
+
+Para testar a integração local, copie `.env.example` para `.env.local`, mantenha
+`VITE_FONTE_DADOS=api` e inicie o backend em outro terminal PowerShell, na raiz:
+
+```powershell
+.\web\Backend\scripts\iniciar_backend.ps1
+```
+
+O backend precisa de PostgreSQL/PostGIS configurado em `web/.env` e das dependências
+do projeto na `.venv`. O contrato vigente fica em `http://127.0.0.1:8000/docs`.
+Após alterar variáveis Vite, reinicie `npm run dev`. Testes do cliente: `npm run test:api`.
 - **Visual para quem lê pouco:** toda escolha e todo resultado têm pictograma + palavra curta (`src/components/Pictograma.tsx`, desenhos próprios). Rotação em faixa de figuras (`FaixaRotacao`), medidores de 3 tracinhos (`Medidor`), rosca da chuva (`GraficoRosca`) e resumo visual (`ResumoVisual`), também usado na impressão.
 - Para ver os estados de tela no mock, acrescente à URL: `?simular=erro`, `?simular=dados_insuficientes`, `?simular=lento` ou `?simular=sem_gps`.
 - O front **não** ordena nem pontua estratégias e **não** aplica regra agronômica. Ele só exibe o que a API devolver. A única conta feita no front é a soma da chuva nos meses de solo descoberto.

@@ -1,14 +1,12 @@
 // Cliente da API. Escolhe entre mock e backend real por configuração
 // (VITE_FONTE_DADOS), como pede a convenção §6.
 //
-// No modo 'api', o front lê o /openapi.json do backend uma vez e usa cada rota
-// real que já existir. Rota que ainda não existe cai no mock, sempre sinalizado
-// na tela (convenção §0.3). Assim, quando o backend implementar uma rota, o front
-// passa a usá-la sem mudar nada aqui.
+// No modo 'api', uma rota ausente ou fonte indisponível produz erro/ausência
+// explícita. Nunca substituir uma resposta real por dados de src/api/mock.
 //
 // Situação hoje (ver /openapi.json ou /docs do backend):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
-//  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
+//  - REAL:      GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
 //               GET /producao → PainelProducao, GET /previsao → PrevisaoClima | null
 //  - REAL:      GET /acompanhamento → Acompanhamento (fotos do satélite do ponto do GPS)
 //
@@ -25,20 +23,18 @@ import { ESTRESSE_FRESNO, ESTRESSE_SJRP } from './mock/estresseVegetalMock';
 import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
-const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
+const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'api';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';
 
-export const USANDO_MOCK = FONTE_DADOS !== 'api';
+export const USANDO_MOCK = FONTE_DADOS === 'mock';
 
 /**
  * Mostra na tela os avisos de "dados de exemplo" quando a análise é mock.
- * - Modo 'mock': desligado por padrão, para avaliar o visual final. LIGUE
- *   (VITE_SINALIZAR_MOCK=true) em qualquer apresentação pública com mock.
- * - Modo 'api': sempre ligado. Se alguma parte cair no mock porque o backend ainda
- *   não tem a rota, ela não pode parecer observação real (convenção §0.3).
+ * - Modo 'mock': ligado por padrão (VITE_SINALIZAR_MOCK=true).
+ * - Modo 'api': sempre ligado, inclusive se o servidor declarar uma análise beta.
  * Os componentes só mostram o aviso quando `analise.eh_mock` é true.
  */
-export const SINALIZAR_MOCK = USANDO_MOCK ? import.meta.env.VITE_SINALIZAR_MOCK === 'true' : true;
+export const SINALIZAR_MOCK = USANDO_MOCK ? import.meta.env.VITE_SINALIZAR_MOCK !== 'false' : true;
 
 export class FalhaApi extends Error {
   constructor(
@@ -118,7 +114,10 @@ function carregarRotas(): Promise<Set<string>> {
 /** true se o backend já implementa a rota (no modo mock, sempre false). */
 async function backendTem(metodo: 'GET' | 'POST', caminho: string): Promise<boolean> {
   if (USANDO_MOCK) return false;
-  return (await carregarRotas()).has(`${metodo} ${caminho}`);
+  if (!(await carregarRotas()).has(`${metodo} ${caminho}`)) {
+    throw new FalhaApi('rota_indisponivel', `O servidor não disponibiliza ${metodo} ${caminho}. Reinicie a versão atual da API.`);
+  }
+  return true;
 }
 
 // --- Rotas -----------------------------------------------------------------------
@@ -129,7 +128,7 @@ function normalizar(texto: string) {
 }
 
 /**
- * GET /api/v1/culturas → Cultura[]   (PROPOSTA, ainda não existe no backend)
+ * GET /api/v1/culturas → Cultura[]
  * BACKEND: lista fixa por enquanto; ordem = ordem de exibição.
  */
 export async function listarCulturas(): Promise<Cultura[]> {
@@ -142,7 +141,7 @@ export async function listarCulturas(): Promise<Cultura[]> {
 const DISTANCIA_MAXIMA_MOCK_GRAUS = 1;
 
 /**
- * GET /api/v1/locais?latitude=-20.73&longitude=-48.91 → Local   (PROPOSTA, ainda não existe)
+ * GET /api/v1/locais?latitude=-20.73&longitude=-48.91 → Local
  * Coordenada do GPS → município (para a tela "Você está perto de …").
  * BACKEND:
  *  - ponto dentro de qual município (malha IBGE, ST_Intersects);
@@ -174,7 +173,7 @@ export async function buscarLocalPorCoordenada(latitude: number, longitude: numb
 }
 
 /**
- * GET /api/v1/municipios?busca=olim&limite=8 → Local[]   (PROPOSTA, ainda não existe)
+ * GET /api/v1/municipios?busca=olim&limite=8 → Local[]
  * Busca para quem prefere digitar a cidade. Chamado a cada letra (com pausa de 250 ms).
  * BACKEND:
  *  - ignorar acento e maiúscula ("sao jose" acha "São José do Rio Preto");
@@ -201,35 +200,6 @@ export function coletarVariaveis(latitude: number, longitude: number): Promise<R
   return requisitar<RespostaAnalise>(`/analises?latitude=${latitude}&longitude=${longitude}`);
 }
 
-/** Nome curto de cada `fonte` do backend, para o texto da tela. */
-const NOME_FONTE: Record<string, string> = {
-  nasa_power: 'NASA POWER',
-  usda_soil_data_access: 'solo do USDA',
-  openet: 'OpenET',
-  gpm: 'GPM',
-  smap: 'SMAP',
-  srtm: 'SRTM',
-  ecostress: 'ECOSTRESS',
-  landsat: 'Landsat'
-};
-const MOTIVO_FONTE: Record<string, string> = {
-  fora_da_regiao_pre_processada: 'fora da área já processada',
-  fora_da_cobertura: 'não cobre este lugar'
-};
-const nomeFonte = (fonte: string) => NOME_FONTE[fonte] ?? fonte;
-
-/** Só descreve o que a API devolveu (quais fontes têm dado). Não interpreta valor nenhum. */
-function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
-  const comDado = [...new Set(coleta.variaveis.filter(v => v.valor !== null).map(v => nomeFonte(v.fonte)))];
-  const linhas = ['Os caminhos, a terra e a chuva destas telas ainda são exemplo: o servidor ainda não monta as estratégias.'];
-  if (comDado.length > 0) linhas.push(`Já chegam dados reais deste ponto de: ${comDado.join(', ')}.`);
-  if (coleta.fontes_indisponiveis.length > 0) {
-    const semDado = coleta.fontes_indisponiveis.map(f => `${nomeFonte(f.fonte)} (${MOTIVO_FONTE[f.motivo] ?? f.motivo})`);
-    linhas.push(`Sem dado para este ponto: ${semDado.join(', ')}.`);
-  }
-  return linhas;
-}
-
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
   // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
   const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
@@ -253,7 +223,7 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
 }
 
 /**
- * POST /api/v1/analises  (corpo: AnaliseEntrada) → Analise   (PROPOSTA, ainda não existe)
+ * POST /api/v1/analises  (corpo: AnaliseEntrada) → Analise
  * BACKEND:
  *  - devolver ≥3 estratégias já ordenadas, a prática atual incluída (o front não pontua);
  *  - preencher `talhao` com solo/relevo/riscos dos mapas, respeitando `correcoes`;
@@ -262,18 +232,12 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
  *  - erro 422 com codigo 'dados_insuficientes' quando não houver dado para o ponto;
  *  - se demorar mais de ~10 s, combinar processamento assíncrono (convenção §6).
  *
- * Enquanto o POST não existe, o modo 'api' busca as variáveis reais (GET acima) e
- * mostra os caminhos do mock com eh_mock = true, dizendo em `limitacoes` quais
- * fontes reais responderam para o ponto.
+ * No modo 'api', usa exclusivamente o POST real. Se a rota estiver ausente,
+ * informa o erro; os caminhos fictícios só existem no modo 'mock' explícito.
  */
 export async function criarAnalise(entrada: AnaliseEntrada, descricaoLocal: string): Promise<Analise> {
   if (await backendTem('POST', '/analises')) {
     return requisitar<Analise>('/analises', { method: 'POST', body: JSON.stringify(entrada) });
-  }
-  if (!USANDO_MOCK) {
-    const coleta = await coletarVariaveis(entrada.latitude, entrada.longitude);
-    const mock = analiseMock(entrada, descricaoLocal);
-    return { ...mock, eh_mock: true, limitacoes: [...limitacoesDaColeta(coleta), ...mock.limitacoes] };
   }
   const simular = simulacaoPedida();
   await esperar(simular === 'lento' ? 4000 : 900);
@@ -296,9 +260,12 @@ export const CODIGO_IBGE_EXEMPLO = '3549805';
  * fora das duas coberturas, ou município/condado sem dado pré-processado.
  *
  * Sem código IBGE (fora do Brasil) tenta a coordenada; local null (ninguém
- * escolheu lugar ainda) usa a cópia de exemplo congelada.
+ * escolheu lugar ainda) só usa a cópia de exemplo no modo mock.
  */
 export async function buscarPainelProducao(local: Local | null): Promise<PainelProducao> {
+  if (!USANDO_MOCK && local === null) {
+    throw new FalhaApi('local_nao_informado', 'Escolha a localização da plantação para consultar a API.');
+  }
   const codigoIbge = local?.codigo_ibge || (local === null ? CODIGO_IBGE_EXEMPLO : '');
   if (await backendTem('GET', '/producao')) {
     if (codigoIbge) {
@@ -333,9 +300,12 @@ async function backendTemSemFalhar(metodo: 'GET' | 'POST', caminho: string): Pro
  * Usa a rota sempre que o ponto veio do GPS e o servidor está no ar, MESMO no modo
  * mock: é a única tela que precisa do ponto exato (o resto do fluxo usa a cidade).
  * Sem servidor, ou com a cidade escolhida na busca (o centro da cidade mostraria
- * casas), usa a cópia local: talhão de EXEMPLO da cidade (ponto_exemplo = true).
+ * casas), só usa a cópia local no modo mock. No modo api informa a limitação.
  */
 export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | null): Promise<Acompanhamento> {
+  if (!USANDO_MOCK && origem !== 'gps') {
+    throw new FalhaApi('dados_insuficientes', 'As fotos precisam da coordenada da plantação. Use o GPS no local; o centro da cidade não identifica o seu talhão.');
+  }
   const pontoReal = origem === 'gps';
   if (pontoReal && (USANDO_MOCK ? await backendTemSemFalhar('GET', '/acompanhamento') : await backendTem('GET', '/acompanhamento'))) {
     return requisitar<Acompanhamento>(`/acompanhamento?latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`);
@@ -354,12 +324,13 @@ export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | n
 }
 
 /**
- * GET /api/v1/previsao?codigo_ibge=3530300 → PrevisaoClima | null   (PROPOSTA, ainda não existe)
+ * GET /api/v1/previsao?codigo_ibge=3530300 → PrevisaoClima | null
  * Previsão oficial dos próximos meses para a região do município (o boletim do INMET
  * fala por região, ex.: noroeste paulista). null = não temos previsão para essa região.
  * BACKEND: previsao_do_municipio() em web/Backend/app/modelos/painel_producao.py.
  */
 export async function buscarPrevisao(codigoIbge: string): Promise<PrevisaoClima | null> {
+  if (!codigoIbge) return null; // sem região brasileira identificada, sem previsão
   if (await backendTem('GET', '/previsao')) {
     return requisitar<PrevisaoClima | null>(`/previsao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
   }

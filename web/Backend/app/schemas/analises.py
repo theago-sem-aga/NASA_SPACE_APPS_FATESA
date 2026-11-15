@@ -260,6 +260,7 @@ class AtributosEstrategia(BaseModel):
     renda_direta: Nivel
     demanda_agua: Nivel
     trabalho_custo: Nivel
+    valor_forragem: Nivel
 
 
 class EtapaRotacao(BaseModel):
@@ -352,6 +353,31 @@ class ClimaAno(BaseModel):
     periodo_normal: str
 
 
+class MesPrevisao(BaseModel):
+    mes: str
+    nome: str
+    chuva: Literal["irregular", "melhora", "normal", "excesso"]
+
+
+class DicaPrevisao(BaseModel):
+    figura: str
+    frase: str
+
+
+class PrevisaoClima(BaseModel):
+    """Boletim oficial transcrito, com origem e publicação; null fora da cobertura."""
+    abrangencia: str
+    periodo: str
+    chuva: Literal["acima", "normal", "abaixo"]
+    temperatura: Literal["acima", "normal", "abaixo"]
+    meses: list[MesPrevisao]
+    dicas: list[DicaPrevisao]
+    fonte: str
+    url_fonte: str
+    publicado_em: str
+    tipo_dado: Literal["previsao"]
+
+
 class PainelProducao(BaseModel):
     # Brasil: codigo_ibge/municipio/uf. EUA: condado/estado. Um dos dois pares.
     codigo_ibge: str | None = None
@@ -362,9 +388,8 @@ class PainelProducao(BaseModel):
     culturas: list[ColheitaCultura]
     # None no caminho dos EUA hoje: clima vem por outra via (POWER multi-regional).
     clima: ClimaAno | None = None
-    # Previsão oficial transcrita (INMET/INPE/FUNCEME); forma ainda não fixada
-    # em schema próprio, só existe pro Brasil.
-    previsao: dict | None = None
+    # Previsão oficial transcrita (INMET/INPE/FUNCEME), disponível só no Brasil.
+    previsao: PrevisaoClima | None = None
     fontes: list[str]
     limitacoes: list[str]
     tipo_dado: Literal["observacao_historica", "previsao", "simulacao"]

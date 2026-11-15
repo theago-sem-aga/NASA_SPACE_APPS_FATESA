@@ -103,6 +103,7 @@ def gerar_cenarios(entrada, clima_mensal=None):
                     "renda_direta": "nenhum",
                     "demanda_agua": "medio" if indice else "nenhum",
                     "trabalho_custo": "medio" if indice else "baixo",
+                    "valor_forragem": "nenhum",
                 },
                 etapas_rotacao=[
                     {

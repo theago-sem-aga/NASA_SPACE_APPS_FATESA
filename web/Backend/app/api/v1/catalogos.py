@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from app.configuracao import configuracao
 from app.schemas.analises import Cultura, Local
+from app.services.analises import CULTURAS_COM_CATALOGO_REAL
 from app.services.locais import buscar_por_nome, localizar_por_coordenada
 
 roteador = APIRouter(tags=["catalogos"])
@@ -16,7 +17,7 @@ def culturas():
     # específica de cultura -- então o selo de demonstração segue só o modo beta.
     beta = configuracao()["cenarios_beta"]
     return [
-        Cultura(cultura_id=c, nome=n, tem_demonstracao=beta)
+        Cultura(cultura_id=c, nome=n, tem_demonstracao=beta or c in CULTURAS_COM_CATALOGO_REAL)
         for c, n in [
             ("milho", "Milho"),
             ("cana_de_acucar", "Cana-de-açúcar"),

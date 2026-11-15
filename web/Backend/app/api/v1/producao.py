@@ -10,9 +10,19 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, Query
 
 from app.modelos import painel_producao, painel_producao_eua
-from app.schemas.analises import PainelProducao
+from app.schemas.analises import PainelProducao, PrevisaoClima
 
 roteador = APIRouter(tags=["producao"])
+
+
+@roteador.get("/previsao", response_model=PrevisaoClima | None)
+def previsao(codigo_ibge: str = Query(pattern=r"^\d{7}$")):
+    """Consulta o boletim oficial disponível no backend para o município.
+
+    Não usa o arquivo mock do frontend nem inventa previsão onde não há boletim.
+    O campo publicado_em permite conferir a data da transcrição.
+    """
+    return painel_producao.previsao_do_municipio(codigo_ibge)
 
 
 def _erro(status: int, codigo: str, mensagem: str):
