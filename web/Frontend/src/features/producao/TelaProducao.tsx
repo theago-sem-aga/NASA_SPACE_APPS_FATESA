@@ -120,11 +120,21 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
 // ---------- tela ----------
 
 export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, aoContinuar }: TelaProducaoProps) {
-  const codigo = local?.codigo_ibge || CODIGO_IBGE_EXEMPLO;
-  const ehExemplo = !local?.codigo_ibge;
-  const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
+  // "Exemplo" só quando NINGUÉM escolheu local ainda (local === null). Quando um
+  // local real foi escolhido mas não tem código IBGE (fora do Brasil), não existe
+  // um "exemplo" válido pra mostrar no lugar — isso mostraria o número REAL de
+  // outra cidade como se fosse do lugar da pessoa, o que não pode acontecer.
+  const ehExemplo = local === null;
+  const foraDoBrasil = local !== null && !local.codigo_ibge;
+  const codigo = local?.codigo_ibge || (ehExemplo ? CODIGO_IBGE_EXEMPLO : null);
+  const [estado, setEstado] = useState<Situacao>(
+    foraDoBrasil
+      ? { situacao: 'falha', codigo: 'dados_insuficientes', mensagem: 'Ainda não temos os números da colheita fora do Brasil.' }
+      : { situacao: 'carregando' }
+  );
 
   const carregar = useCallback(async () => {
+    if (!codigo) return;
     setEstado({ situacao: 'carregando' });
     try {
       setEstado({ situacao: 'sucesso', painel: await buscarPainelProducao(codigo) });
@@ -135,8 +145,8 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   }, [codigo]);
 
   useEffect(() => {
-    void carregar();
-  }, [carregar]);
+    if (codigo) void carregar();
+  }, [carregar, codigo]);
 
   const painel = estado.situacao === 'sucesso' ? estado.painel : null;
   useEffect(() => {
