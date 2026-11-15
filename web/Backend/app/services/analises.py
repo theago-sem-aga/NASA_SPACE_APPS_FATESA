@@ -15,6 +15,7 @@ from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.declividade import declividade_do_ponto
+from app.services.estresse_termico import estresse_termico_do_ponto
 from app.services.estresse_vegetal import estresse_vegetal
 from app.services.geada import risco_geada
 from app.services.locais import buscar_por_codigo
@@ -31,7 +32,7 @@ CULTURAS_COM_CATALOGO_REAL = {"cana_de_acucar"}
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=9) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -45,6 +46,9 @@ def criar_analise(entrada):
         estresse_pendente = executor.submit(estresse_vegetal, entrada.latitude, entrada.longitude)
         declividade_pendente = executor.submit(declividade_do_ponto, entrada.latitude, entrada.longitude)
         risco_seca_pendente = executor.submit(resumo_risco_seca, entrada.latitude, entrada.longitude)
+        estresse_termico_pendente = executor.submit(
+            estresse_termico_do_ponto, entrada.latitude, entrada.longitude
+        )
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -94,6 +98,13 @@ def criar_analise(entrada):
         except (requests.RequestException, ValueError, KeyError, OSError):
             risco_seca = None
             coleta["fontes_indisponiveis"].append({"fonte": "nasa_power_risco_seca", "motivo": "falha_fonte"})
+        try:
+            estresse_termico = estresse_termico_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            estresse_termico = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "nasa_power_estresse_termico", "motivo": "falha_fonte"}
+            )
         try:
             clima = clima_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
@@ -218,6 +229,15 @@ def criar_analise(entrada):
         )
     else:
         limitacoes.append("Risco de seca sem dado: a série diária de chuva não respondeu.")
+    if estresse_termico:
+        limitacoes.append(
+            f"Estresse térmico: frequência de dias com máxima do ar a 2 m de ao menos "
+            f"{estresse_termico['limiar_c']:g} °C ({estresse_termico['periodo_inicio']}–"
+            f"{estresse_termico['periodo_fim']}, NASA POWER). Grade regional, não estação no "
+            "talhão; limiar e cortes de nível ainda sem referência agronômica validada por cultura."
+        )
+    else:
+        limitacoes.append("Estresse térmico sem dado: a série de temperatura máxima não respondeu.")
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
     talhao_base = caracterizar_talhao(entrada)
@@ -270,6 +290,7 @@ def criar_analise(entrada):
         tendencia_hidrica=tendencia,
         estresse_vegetal=estresse,
         risco_seca=risco_seca,
+        estresse_termico=estresse_termico,
         estrategias=estrategias,
         limitacoes=limitacoes,
         versao_motor=VERSAO,
