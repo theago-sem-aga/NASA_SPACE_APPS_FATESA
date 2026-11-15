@@ -88,13 +88,13 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
       <h2 id={`${id}-titulo`} className="titulo-secao">Sua terra, pelos mapas</h2>
       <ul className="fichas fichas-compactas">
         <Item
-          pictograma={talhao.textura_solo ? PICTO_TEXTURA[talhao.textura_solo] : 'nao_sei'}
+          pictograma={talhao.textura_solo ? PICTO_TEXTURA[talhao.textura_solo] : 'solo_sem_dado'}
           rotulo="Terra"
           valor={talhao.textura_solo ? ROTULO_TEXTURA[talhao.textura_solo].nome : 'Sem dado'}
           corrigido={talhao.fonte_textura === 'informado_produtor'}
         />
         <Item
-          pictograma={talhao.relevo ? PICTO_RELEVO[talhao.relevo] : 'nao_sei'}
+          pictograma={talhao.relevo ? PICTO_RELEVO[talhao.relevo] : 'terreno_sem_dado'}
           rotulo="Terreno"
           valor={valorRelevo}
           corrigido={talhao.fonte_relevo === 'informado_produtor'}
