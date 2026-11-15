@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import type { RiscoPrecipitacaoExtrema } from '../../api/tipos';
 import { Pictograma } from '../../components/Pictograma';
@@ -30,6 +31,7 @@ export function FaixaPrecipitacaoExtrema({ precipitacaoExtrema: p }: { precipita
         <SeloFonte fonte={p.fonte} />
         <details className="como-ler">
           <summary>Como ler este dado</summary>
+          <p className="termos-relacionados">Palavras deste quadro: <Termo id="chuva_extrema" /></p>
           <p className="texto-apoio faixa-chuva-extrema-legenda">
             Limiar = chuva diária que só ocorre em 1 de cada 20 dias daquele mês, pelo histórico da NASA POWER
             até {p.data_referencia.split('-').reverse().slice(0, 2).join('/')}. Grade regional, não é pluviômetro no talhão.

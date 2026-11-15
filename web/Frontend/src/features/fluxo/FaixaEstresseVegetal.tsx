@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { useId, useState } from 'react';
 import type { EstresseVegetal } from '../../api/tipos';
 
@@ -18,28 +19,42 @@ const dataCurta = (iso: string) => {
 const num = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const ROTULO_ESTRESSE: Record<EstresseVegetal['situacao'], string> = {
-  normal: 'Verde como de costume',
-  abaixo: 'Um pouco menos verde',
-  muito_abaixo: 'Bem menos verde que o normal',
-  acima: 'Mais verde que o normal',
-  sem_vegetacao: 'Sem planta no ponto'
+  normal: 'Normal para a época',
+  abaixo: 'Abaixo do normal (atenção)',
+  muito_abaixo: 'Bem abaixo do normal (estresse)',
+  acima: 'Acima do normal',
+  sem_vegetacao: 'Sem vegetação no ponto'
 };
 
-/** Frase curta do estresse vegetal, também usada na narração e na folha impressa. */
+/**
+ * Frase do estresse vegetal com os números (também usada na narração e na folha impressa).
+ * A regra é do backend (app/domain/estresse_vegetal.py): posição da foto entre os anos
+ * anteriores na mesma época (cortes de 10%, 25% e 90%, sem fonte agronômica).
+ */
 export function fraseEstresse(e: EstresseVegetal): string {
-  const foto = `Na foto do satélite de ${dataLonga(e.data_foto)}`;
-  const comparacao = `Dos ${e.anos_comparados} anos anteriores, ${e.anos_mais_verdes} estavam mais verdes nesta mesma época.`;
+  if (e.situacao === 'sem_vegetacao') {
+    return (
+      `Neste ponto quase nunca há planta: o índice de vegetação (NDVI) típico do lugar é ${num(e.ndvi_mediano_geral)}, ` +
+      `abaixo de ${num(e.limiar_sem_vegetacao)}, o que indica cidade, água ou terra sem cultivo. Não dá para medir o estresse da lavoura aqui. ` +
+      `Marque o ponto em cima da plantação.`
+    );
+  }
+  const medida =
+    `Índice de vegetação (NDVI) medido pelo satélite MODIS em ${dataLonga(e.data_foto)}: ${num(e.ndvi_atual)}. ` +
+    `Nesta mesma época do ano, o normal é ${num(e.normal_mediana)}, e em 8 de cada 10 anos o valor fica entre ${num(e.normal_p10)} e ${num(e.normal_p90)}.`;
+  const pct = Math.abs(e.anomalia_pct).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  const diferenca =
+    e.anomalia_pct >= 0 ? `Está ${pct}% acima do normal` : `Está ${pct}% abaixo do normal`;
+  const posicao = `${diferenca}: dos ${e.anos_comparados} anos anteriores, ${e.anos_mais_verdes} tiveram mais folha verde nesta época.`;
   switch (e.situacao) {
-    case 'sem_vegetacao':
-      return `No ponto do satélite quase nunca há planta (cidade, água ou terra sem cultivo), então não dá para medir o estresse da lavoura. Marque o ponto em cima da plantação.`;
     case 'normal':
-      return `${foto}, a planta está tão verde quanto costuma estar nesta época do ano. Não há sinal de estresse. ${comparacao}`;
+      return `${medida} ${posicao} Fica dentro do comum para a época: sem sinal de estresse.`;
     case 'acima':
-      return `${foto}, a planta está mais verde do que costuma estar nesta época do ano. Não há sinal de estresse. ${comparacao}`;
+      return `${medida} ${posicao} Passa do que se vê em 9 de cada 10 anos: vegetação mais vigorosa que o normal, sem sinal de estresse.`;
     case 'abaixo':
-      return `${foto}, a planta está um pouco menos verde do que costuma estar nesta época. ${comparacao} Pode ser começo de estresse (falta de água, calor, praga) ou só colheita ou preparo da terra.`;
+      return `${medida} ${posicao} Fica entre os 25% de anos mais baixos para a época: atenção. Pode ser começo de estresse (falta de água, calor, praga ou doença) ou só colheita ou preparo do solo.`;
     case 'muito_abaixo':
-      return `${foto}, a planta está bem menos verde do que o normal para esta época. ${comparacao} É sinal de estresse (falta de água, calor, praga), a não ser que a lavoura tenha sido colhida ou a terra esteja sendo preparada. Vale ir olhar.`;
+      return `${medida} ${posicao} Fica abaixo do que se vê em 9 de cada 10 anos: sinal de estresse (falta de água, calor, praga ou doença), a não ser que a área tenha sido colhida ou esteja em preparo. Vale ir ao campo conferir.`;
   }
 }
 
@@ -98,13 +113,13 @@ export function FaixaEstresseVegetal({ estresse }: { estresse: EstresseVegetal }
       {!semPlanta && fotos.length > 1 && (
         <figure className="grafico-chuva-anos">
           <figcaption id={`${id}-titulo`} className="grafico-chuva-anos-titulo">
-            Verdor da planta no último ano e o normal da época
+            NDVI (folha verde) no último ano e o normal da época
           </figcaption>
           <svg viewBox={`0 0 ${L} ${A}`} role="img" aria-labelledby={`${id}-titulo`} onMouseLeave={() => setAtivo(null)}>
             <line x1={M.esq} x2={L - M.dir} y1={y(0)} y2={y(0)} className="grafico-base" />
             <line x1={M.esq} x2={L - M.dir} y1={y(1)} y2={y(1)} className="grafico-grade" />
-            <text x={M.esq} y={y(1) + 10} className="grafico-eixo-texto">muito verde</text>
-            <text x={M.esq} y={y(0) - 4} className="grafico-eixo-texto">sem planta</text>
+            <text x={M.esq} y={y(1) + 10} className="grafico-eixo-texto">1,0 · muita folha verde</text>
+            <text x={M.esq} y={y(0) - 4} className="grafico-eixo-texto">0 · sem planta</text>
             {faixa && <path d={faixa} className="grafico-ndvi-faixa" />}
             {mediana && <path d={mediana} className="grafico-ndvi-normal" />}
             <path d={linha} className="grafico-ndvi-linha" />
@@ -137,11 +152,11 @@ export function FaixaEstresseVegetal({ estresse }: { estresse: EstresseVegetal }
           </svg>
           <p className="grafico-ndvi-legenda texto-apoio">
             <span className="grafico-ndvi-amostra-linha" aria-hidden="true" /> Este ano
-            <span className="grafico-ndvi-amostra-faixa" aria-hidden="true" /> Onde ficam 8 de cada 10 anos
+            <span className="grafico-ndvi-amostra-faixa" aria-hidden="true" /> Faixa normal da época (8 de cada 10 anos, de P10 a P90)
           </p>
           <p className="grafico-chuva-anos-detalhe" aria-live="polite">
             {fotoAtiva
-              ? `${dataLonga(fotoAtiva.data)}: verdor ${num(fotoAtiva.ndvi)}${fotoAtiva.normal_mediana !== null ? `; o normal da época é ${num(fotoAtiva.normal_mediana)}` : ''}.`
+              ? `${dataLonga(fotoAtiva.data)}: NDVI ${num(fotoAtiva.ndvi)}${fotoAtiva.normal_mediana !== null ? `; o normal da época é ${num(fotoAtiva.normal_mediana)}` : ''}.`
               : 'Toque no gráfico para ver cada foto.'}
           </p>
           <table className="visualmente-oculto">
@@ -163,11 +178,26 @@ export function FaixaEstresseVegetal({ estresse }: { estresse: EstresseVegetal }
       )}
       <details className="como-ler">
         <summary>Como ler este dado</summary>
+        <p className="termos-relacionados">Palavras deste quadro: <Termo id="ndvi" /></p>
         <p className="texto-apoio faixa-tendencia-legenda">
-          O satélite MODIS (NASA) mede o quanto a planta está verde (NDVI, de 0 = sem planta a 1 = muito verde) a cada 16
-          dias, num quadrado de 250 m. Comparamos a foto mais recente com os anos anteriores na mesma época. Planta menos
-          verde pode ser estresse (falta de água, calor, praga), mas também colheita, preparo da terra ou troca de cultura:
-          quem conhece a lavoura confirma. Fotos com nuvem ficam de fora.
+          <strong>O que é medido.</strong> O NDVI (índice de vegetação por diferença normalizada) compara a luz vermelha, que a
+          clorofila da folha absorve, com o infravermelho próximo, que a folha sadia reflete. Vai de −1 a 1. Na prática, perto de
+          0,1 a 0,2 é terra exposta; 0,3 a 0,5, vegetação rala ou seca; 0,6 a 0,9, lavoura ou mata com muita folha verde.
+        </p>
+        <p className="texto-apoio faixa-tendencia-legenda">
+          <strong>Como comparamos.</strong> Satélite MODIS da NASA (produto {estresse.produto}), um valor a cada 16 dias, num quadrado
+          de 250 m. A foto mais recente é comparada com o mesmo período de 16 dias de cada ano anterior, desde {estresse.periodo_inicio}.
+          Fotos com nuvem ficam de fora; o ano da foto não entra no próprio normal.
+        </p>
+        <p className="texto-apoio faixa-tendencia-legenda">
+          <strong>Como classificamos.</strong> Abaixo dos 10% de anos mais baixos: bem menos verde (sinal de estresse). Abaixo dos 25%: um
+          pouco menos verde. Acima dos 90%: mais verde que o normal. Entre esses cortes: normal. Os cortes são posição estatística entre
+          os anos, escolhidos pela equipe sem fonte agronômica, e precisam de revisão de especialista.
+        </p>
+        <p className="texto-apoio faixa-tendencia-legenda">
+          <strong>Limites.</strong> NDVI baixo também acontece depois da colheita, no preparo do solo ou na troca de cultura: quem conhece a
+          lavoura confirma. O quadrado de 250 m mistura o talhão com o vizinho; o centro dele fica a{' '}
+          {estresse.distancia_pixel_km.toLocaleString('pt-BR')} km do ponto marcado.
         </p>
       </details>
     </div>

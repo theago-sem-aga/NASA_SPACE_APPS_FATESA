@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import { useState } from 'react';
 import type { CalorMensal, EstresseTermico } from '../../api/tipos';
@@ -103,6 +104,7 @@ export function FaixaCalor({ calor, minimas }: { calor: EstresseTermico; minimas
       </p>
       <details className="como-ler">
         <summary>Como ler este dado</summary>
+        <p className="termos-relacionados">Palavras deste quadro: <Termo id="estresse_termico" /> <Termo id="dado_em_grade" /></p>
         <p className="texto-apoio">
           Não é a média: é o recorde de cada mês, a temperatura do ar mais alta já medida, de{' '}
           {calor.periodo_inicio} a {calor.periodo_fim} (NASA POWER). A cor fica mais forte quanto mais quente. O sol marca os meses com dia acima de {grau(calor.limiar_c)} em pelo menos metade dos anos. Esse limite

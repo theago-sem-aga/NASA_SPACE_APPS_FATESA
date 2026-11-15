@@ -107,7 +107,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
           rotulo="Chuva ao longo dos anos"
           valor={tendenciaHidrica ? ROTULO_TENDENCIA[tendenciaHidrica.tendencia] : 'Sem dado'}
         />
-        <Item pictograma="planta" rotulo="Verdor da planta" valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : 'Sem dado'} />
+        <Item pictograma="planta" rotulo="Vegetação (NDVI)" valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : 'Sem dado'} />
       </ul>
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
@@ -189,7 +189,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
             ? [{ id: 'chuva-anos', titulo: 'Chuva ao longo dos anos', pictograma: 'chuva' as const, conteudo: <FaixaTendenciaHidrica tendencia={tendenciaHidrica} /> }]
             : []),
           ...(estresseVegetal
-            ? [{ id: 'verdor', titulo: 'A planta está verde?', pictograma: 'planta' as const, conteudo: <FaixaEstresseVegetal estresse={estresseVegetal} /> }]
+            ? [{ id: 'verdor', titulo: 'Vigor da vegetação (NDVI)', pictograma: 'planta' as const, conteudo: <FaixaEstresseVegetal estresse={estresseVegetal} /> }]
             : [])
         ]}
       />
