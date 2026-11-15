@@ -15,7 +15,9 @@ from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
 from app.services.precipitacao_extrema import precipitacao_extrema_do_ponto
 
-FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace")
+FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace", "soilgrids")
+# Camada superficial (0-5cm): mesma profundidade que o USDA Soil Data Access usa (hzdept_r = 0).
+SOILGRIDS_PROFUNDIDADE = "0-5cm"
 CAMPOS = {
     "nasa_power": set(nasa_power._MAPA_PARAMETROS.values()),
     "usda_soil_data_access": {
@@ -34,6 +36,9 @@ CAMPOS = {
     "landsat": {"ndvi_medio"},
     "grace": {"armazenamento_agua_anomalia_cm"},
     "precipitacao_extrema": {"dias_chuva_extrema_30d", "limiar_chuva_extrema_mm_dia"},
+    # Mesmos nomes do usda_soil_data_access: mesma grandeza fisica (areia/argila/silte
+    # da camada superficial), só a fonte muda (SoilGrids cobre fora dos EUA).
+    "soilgrids": {"areia_pct", "argila_pct", "silte_pct"},
 }
 
 
@@ -81,6 +86,25 @@ def _buscar(fonte, lat, lon):
         # Multi-regional: usa o cache local se existir (pontos piloto), senao
         # busca ao vivo na NASA POWER o recorte necessario (ver services/precipitacao_extrema.py).
         return precipitacao_extrema_do_ponto(lat, lon)
+    if fonte == "soilgrids":
+        # Formato longo (uma linha por variavel x profundidade) -- achata so a
+        # camada superficial pros mesmos nomes de campo do usda_soil_data_access.
+        bruto = buscar_celula(fonte, lat, lon)
+        if bruto is None:
+            return None
+        camada = {
+            r["variavel"]: r["valor"]
+            for r in bruto["serie"]
+            if r.get("profundidade") == SOILGRIDS_PROFUNDIDADE
+        }
+        return {
+            "serie": [{
+                "areia_pct": camada.get("areia"),
+                "argila_pct": camada.get("argila"),
+                "silte_pct": camada.get("silte"),
+            }],
+            "tipo_acesso": "pre_processado",
+        }
     return buscar_celula(fonte, lat, lon)
 
 

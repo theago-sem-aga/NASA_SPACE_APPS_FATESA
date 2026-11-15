@@ -8,7 +8,9 @@ import requests
 
 from app.configuracao import configuracao
 from app.domain.motor import VERSAO, caracterizar_talhao, gerar_cenarios
+from app.domain.solo import classificar_textura
 from app.integrations.clima_historico import buscar_clima
+from app.integrations.usda_soil_data_access import buscar_solo_ponto
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
@@ -23,7 +25,7 @@ def dentro_piloto(lat, lon):
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -32,6 +34,7 @@ def criar_analise(entrada):
         precipitacao_extrema_pendente = executor.submit(
             resumo_precipitacao_extrema, entrada.latitude, entrada.longitude
         )
+        solo_pendente = executor.submit(buscar_solo_ponto, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -46,6 +49,13 @@ def criar_analise(entrada):
             precipitacao_extrema = None
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_precipitacao_extrema", "motivo": "falha_fonte"}
+            )
+        try:
+            solo = solo_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            solo = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "usda_soil_data_access_textura", "motivo": "falha_fonte"}
             )
         try:
             clima = clima_pendente.result()
@@ -67,6 +77,13 @@ def criar_analise(entrada):
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_historico", "motivo": "falha_fonte"}
             )
+    componentes_solo = solo["componentes"] if solo and solo.get("disponivel") else []
+    textura_calculada = None
+    if len(componentes_solo) == 1:
+        c = componentes_solo[0]
+        if c["areia_pct"] is not None and c["argila_pct"] is not None:
+            textura_calculada = classificar_textura(c["areia_pct"], c["argila_pct"])
+
     beta = configuracao()["cenarios_beta"]
     limitacoes = [
         "Piloto restrito ao recorte processado de Fresno, Califórnia. Dados regionais não substituem levantamento do talhão.",
@@ -106,15 +123,40 @@ def criar_analise(entrada):
         )
     else:
         limitacoes.append("Precipitação extrema sem dado: a série diária de chuva não respondeu.")
+    if entrada.correcoes.textura_solo:
+        pass  # o produtor corrigiu; não há limitação a registrar sobre a fonte.
+    elif textura_calculada:
+        limitacoes.append(
+            "Textura do solo: classificação simplificada em 3 faixas a partir de areia/argila "
+            "da camada superficial (USDA Soil Data Access / SSURGO); não é o triângulo textural "
+            "completo e está pendente de revisão agronômica."
+        )
+    elif len(componentes_solo) > 1:
+        limitacoes.append(
+            "Textura do solo sem dado: a unidade de mapeamento tem mais de um tipo de solo, sem "
+            "como escolher automaticamente qual representa o talhão."
+        )
+    else:
+        limitacoes.append("Textura do solo sem dado: fonte indisponível ou ponto fora da cobertura do SSURGO.")
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
+    talhao_base = caracterizar_talhao(entrada)
+    usa_textura_calculada = talhao_base.textura_solo is None and textura_calculada is not None
+    bases = []
+    if geada:
+        bases.append("NASA POWER")
+    if usa_textura_calculada:
+        bases.append("USDA Soil Data Access")
     resultado = Analise(
         analise_id=str(uuid4()),
         eh_mock=beta,
         descricao_local="Região piloto de Fresno (CA)",
-        talhao=caracterizar_talhao(entrada).model_copy(
-            update={"risco_geada": geada["nivel"] if geada else None,
-                    "bases": ["NASA POWER"] if geada else []}
+        talhao=talhao_base.model_copy(
+            update={
+                "risco_geada": geada["nivel"] if geada else None,
+                "textura_solo": textura_calculada if usa_textura_calculada else talhao_base.textura_solo,
+                "bases": bases,
+            }
         ),
         fonte_clima=clima["fonte_clima"],
         clima_mensal=clima["clima_mensal"],
