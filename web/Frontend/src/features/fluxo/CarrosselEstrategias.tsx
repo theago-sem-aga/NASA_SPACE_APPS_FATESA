@@ -33,15 +33,6 @@ interface CarrosselEstrategiasProps {
   aoAbrir: (estrategiaId: string) => void;
 }
 
-type Parte = 'resumo' | 'ganha' | 'cuidados' | 'agronomo';
-
-const PARTES: { id: Parte; rotulo: string }[] = traduzivel([
-  { id: 'resumo', rotulo: L('Resumo', 'Summary') },
-  { id: 'ganha', rotulo: L('O que ganha', 'Gains') },
-  { id: 'cuidados', rotulo: L('Cuidados', 'Cautions') },
-  { id: 'agronomo', rotulo: L('Agrônomo', 'Agronomist') }
-]);
-
 /** "a", "a e b", "a, b e c". */
 function emFrase(itens: string[]) {
   return itens.length <= 1 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} ${tx('e', 'and')} ${itens[itens.length - 1]}`;
@@ -149,8 +140,7 @@ interface CartaoCaminhoProps {
   aoAbrir: () => void;
 }
 
-function CartaoCaminho({ estrategia: e, prioridades, problemas, vocab, idBase, aoAbrir }: CartaoCaminhoProps) {
-  const [parte, setParte] = useState<Parte>('resumo');
+function CartaoCaminho({ estrategia: e, prioridades, problemas, vocab, aoAbrir }: CartaoCaminhoProps) {
   const atendidas = e.prioridades_atendidas.filter(p => prioridades.includes(p));
 
   return (
@@ -161,80 +151,63 @@ function CartaoCaminho({ estrategia: e, prioridades, problemas, vocab, idBase, a
         {e.eh_pratica_atual && <span className="etiqueta etiqueta-neutra">{tx('O jeito de hoje, para comparar', 'Today’s practice, for comparison')}</span>}
       </div>
 
-      <div className="abas" role="tablist" aria-label={tx('Partes deste caminho', 'Parts of this option')}>
-        {PARTES.map(p => (
-          <button
-            key={p.id}
-            type="button"
-            role="tab"
-            id={`${idBase}-aba-${p.id}`}
-            aria-selected={parte === p.id}
-            aria-controls={`${idBase}-painel`}
-            className={`aba ${parte === p.id ? 'aba-atual' : ''}`}
-            onClick={() => setParte(p.id)}
-          >
-            {p.rotulo}
-          </button>
-        ))}
-      </div>
-
-      <div id={`${idBase}-painel`} role="tabpanel" aria-labelledby={`${idBase}-aba-${parte}`} className="carrossel-painel">
-        {parte === 'resumo' && (
-          <>
-            <FaixaRotacao etapas={e.etapas_rotacao} tamanho={36} />
-            <p>{e.resumo}</p>
-            {atendidas.length > 0 && (
-              <p className="cartao-estrategia-ajuda">
-                <Icone nome="ok" tamanho={20} />
-                <span>
-                  {tx('Atende ao que você escolheu:', 'Matches what you chose:')} {emFrase(atendidas.map(p => ROTULO_PRIORIDADE[p].nome.toLowerCase()))}
-                </span>
-              </p>
-            )}
-            {prioridades.length > 0 && atendidas.length === 0 && !e.eh_pratica_atual && (
-              <p className="cartao-estrategia-ajuda cartao-estrategia-nao-atende">
-                <Icone nome="info" tamanho={20} />
-                <span>{tx('Não atende direto ao que você escolheu; entrou como a melhor opção que sobrou.', 'It does not directly match what you chose; it is the best remaining option.')}</span>
-              </p>
-            )}
-            {problemas.length > 0 && (
-              <ul className="problemas-caminho" aria-label={tx('Os problemas que você marcou', 'The problems you marked')}>
-                {problemas.map(pr => {
-                  const a = AJUDA_NIVEL[e.atributos[PONTO_DO_PROBLEMA[pr]]];
-                  return (
-                    <li key={pr} className={a.classe}>
-                      <strong>{ROTULO_PROBLEMA[pr]}:</strong> {a.texto}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </>
+      {/* Tudo de uma vez, sem abas: o resumo, o que ganha, os cuidados e a pergunta ao agrônomo. */}
+      <div className="carrossel-painel">
+        <FaixaRotacao etapas={e.etapas_rotacao} tamanho={36} />
+        <p>{e.resumo}</p>
+        {atendidas.length > 0 && (
+          <p className="cartao-estrategia-ajuda">
+            <Icone nome="ok" tamanho={20} />
+            <span>
+              {tx('Atende ao que você escolheu:', 'Matches what you chose:')} {emFrase(atendidas.map(p => ROTULO_PRIORIDADE[p].nome.toLowerCase()))}
+            </span>
+          </p>
         )}
-        {parte === 'ganha' && (
-          <ul className="lista-pontos">
-            {e.beneficios.map(b => (
-              <li key={b}>
-                <Icone nome="ok" /> <span>{b}</span>
-              </li>
-            ))}
+        {prioridades.length > 0 && atendidas.length === 0 && !e.eh_pratica_atual && (
+          <p className="cartao-estrategia-ajuda cartao-estrategia-nao-atende">
+            <Icone nome="info" tamanho={20} />
+            <span>{tx('Não atende direto ao que você escolheu; entrou como a melhor opção que sobrou.', 'It does not directly match what you chose; it is the best remaining option.')}</span>
+          </p>
+        )}
+        {problemas.length > 0 && (
+          <ul className="problemas-caminho" aria-label={tx('Os problemas que você marcou', 'The problems you marked')}>
+            {problemas.map(pr => {
+              const a = AJUDA_NIVEL[e.atributos[PONTO_DO_PROBLEMA[pr]]];
+              return (
+                <li key={pr} className={a.classe}>
+                  <strong>{ROTULO_PROBLEMA[pr]}:</strong> {a.texto}
+                </li>
+              );
+            })}
           </ul>
         )}
-        {parte === 'cuidados' && (
-          <ul className="lista-pontos lista-cuidados">
-            {e.riscos.map(r => (
-              <li key={r}>
-                <Icone nome="alerta" /> <span>{r}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {parte === 'agronomo' && (
+        {e.beneficios.length > 0 && (
           <>
-            <p className="texto-apoio">{tx('Pergunte ao agrônomo.', 'Ask an agronomist.')} {vocab.ondeAgronomo}</p>
-            <p className="destaque destaque-neutro">“{e.pergunta_especialista}”</p>
+            <h3 className="carrossel-subtitulo">{tx('O que você ganha', 'What you gain')}</h3>
+            <ul className="lista-pontos">
+              {e.beneficios.map(b => (
+                <li key={b}>
+                  <Icone nome="ok" /> <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           </>
         )}
+        {e.riscos.length > 0 && (
+          <>
+            <h3 className="carrossel-subtitulo">{tx('Cuidado com', 'Watch out for')}</h3>
+            <ul className="lista-pontos lista-cuidados">
+              {e.riscos.map(r => (
+                <li key={r}>
+                  <Icone nome="alerta" /> <span>{r}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <h3 className="carrossel-subtitulo">{tx('Pergunte ao agrônomo', 'Ask an agronomist')}</h3>
+        <p className="texto-apoio">{vocab.ondeAgronomo}</p>
+        <p className="destaque destaque-neutro">“{e.pergunta_especialista}”</p>
       </div>
 
       <button type="button" className="botao botao-contorno botao-largo carrossel-detalhe" onClick={aoAbrir}>

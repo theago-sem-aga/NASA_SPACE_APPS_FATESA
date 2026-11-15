@@ -1,6 +1,5 @@
 import { SeloFonte } from '../../components/SeloFonte';
 import type { Analise, Estrategia } from '../../api/tipos';
-import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { GraficoClima } from '../../components/GraficoClima';
 import { GraficoRosca } from '../../components/GraficoRosca';
 import { Pictograma } from '../../components/Pictograma';
@@ -33,7 +32,6 @@ export function TelaClima({ analise, estrategia, aoVoltar, aoAvancar }: TelaClim
 
   return (
     <>
-      <AvisoDemonstracao ehMock={analise.eh_mock} />
       <h1 tabIndex={-1}>{tx('Como costuma chover aí', 'How it usually rains there')}</h1>
       <SeloFonte fonte={fonte.fonte_id} />
       <p className="texto-apoio">

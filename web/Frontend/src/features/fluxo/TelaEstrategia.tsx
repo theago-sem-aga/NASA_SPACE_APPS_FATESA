@@ -2,7 +2,6 @@ import { LegendaMedidor } from '../../components/LegendaMedidor';
 import { NomeCientificoCaminho } from '../../components/NomeCientifico';
 import type { AtributosEstrategia, ClimaMensal, Estrategia, RequisitoId, Resposta } from '../../api/tipos';
 import { AnoDaTerra } from '../../components/AnoDaTerra';
-import { AvisoDemonstracao } from '../../components/AvisoDemonstracao';
 import { CalendarioCobertura } from '../../components/CalendarioCobertura';
 import { FaixaRotacao } from '../../components/FaixaRotacao';
 import { Foto } from '../../components/Foto';
@@ -46,12 +45,11 @@ function Lista({ itens }: { itens: string[] }) {
  * Detalhe de um caminho. De cara: faixa da rotação, para que serve, 4 pontos,
  * o bom, o cuidado e a pergunta ao agrônomo. O resto fica em sanfonas fechadas.
  */
-export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteClima, aoVoltar, aoAvancar }: TelaEstrategiaProps) {
+export function TelaEstrategia({ estrategia: e, recursos, clima, fonteClima, aoVoltar, aoAvancar }: TelaEstrategiaProps) {
   const imagem = IMAGEM_ESTRATEGIA[e.estrategia_id];
   const nivelConfianca = NIVEIS_CONFIANCA.indexOf(e.confianca);
   return (
     <>
-      <AvisoDemonstracao ehMock={ehMock} />
       {e.eh_pratica_atual && <p className="sobretitulo">{tx('O jeito de hoje, para comparar', 'Today’s practice, for comparison')}</p>}
       <h1 tabIndex={-1}>{e.nome}</h1>
       <NomeCientificoCaminho estrategia={e} />

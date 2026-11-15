@@ -133,9 +133,17 @@ function normalizar(texto: string) {
  * GET /api/v1/culturas → Cultura[]
  * lista fixa por enquanto; ordem = ordem de exibição.
  */
+let ultimasCulturas: Cultura[] = [];
+/** A última lista mostrada na tela (para a narração ler as opções no idioma da tela). */
+export const culturasCarregadas = () => ultimasCulturas;
+
 export async function listarCulturas(): Promise<Cultura[]> {
-  if (await backendTem('GET', '/culturas')) return requisitar<Cultura[]>(`/culturas?idioma=${idiomaAtual()}`);
+  if (await backendTem('GET', '/culturas')) {
+    ultimasCulturas = await requisitar<Cultura[]>(`/culturas?idioma=${idiomaAtual()}`);
+    return ultimasCulturas;
+  }
   if (USANDO_MOCK) await esperar(300);
+  ultimasCulturas = CULTURAS_MOCK;
   return CULTURAS_MOCK;
 }
 
