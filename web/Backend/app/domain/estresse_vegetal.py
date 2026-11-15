@@ -23,8 +23,10 @@ Limites (devem aparecer na UI):
 - NDVI baixo também é colheita, preparo do solo ou troca de cultura, não só
   estresse. Quem conhece o talhão confirma.
 - Pixel de 250 m: o talhão pequeno se mistura com o vizinho.
-- Cortes de 10%/25%/90% são estatísticos (posição entre os anos), não
-  agronômicos; pendentes de revisão.
+- Os cortes de 10%/25%/90% e o LIMIAR_SEM_VEGETACAO de 0,20 foram escolhidos
+  no desenvolvimento (Claude), SEM fonte agronômica ou bibliográfica. São
+  posição estatística entre os anos, não limiares agronômicos. Pendentes de
+  revisão por especialista antes de virar regra validada.
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ from collections.abc import Iterable, Mapping
 from statistics import median
 
 CONFIABILIDADE_ACEITA = (0, 1)  # 0 bom, 1 marginal
-LIMIAR_SEM_VEGETACAO = 0.20
+LIMIAR_SEM_VEGETACAO = 0.20  # escolha sem fonte; ver Limites acima
 MINIMO_ANOS = 8
 DIAS_POR_PERIODO = 16
 PERIODOS_NO_GRAFICO = 23  # um ano de fotos de 16 dias
