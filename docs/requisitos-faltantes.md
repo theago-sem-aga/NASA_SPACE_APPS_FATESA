@@ -24,19 +24,22 @@
 
 ## Faltante
 
-- Estresse térmico — a variável existe, falta calcular o índice
+> Ordenado do mais fácil pro mais difícil de implementar (pra quem for pegar tarefa rápida, comece de cima).
+
+- Glossário com os termos científicos que o desafio pede (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico) — só texto, sem fonte de dado nova nem backend
+- Estresse térmico — a variável já existe, falta só calcular o índice (parecido com o que já foi feito pro risco de seca)
+- Busca de local nos EUA por nome (digitar cidade/condado) — a tela de localização só busca por nome no Brasil hoje; nos EUA é só GPS ou coordenada digitada. O painel de colheita (`GET /producao`) já geocodifica a coordenada pro condado via Census, mas isso é depois de o usuário já ter um ponto. Dá pra seguir o mesmo padrão da base de municípios do Brasil (IBGE), só que com a lista de condados dos EUA (Census)
+- Conversão do rendimento dos EUA (NASS, em BU/ACRE, LB/ACRE etc.) pra kg/ha — deixado de lado por variar o peso do bushel por cultura; só é seguro de fazer achando uma tabela oficial (USDA/NIST) de peso padrão do bushel por cultura, senão é inventar dado
+- Vulnerabilidade sazonal da cultura atual — não calculado; precisa decidir a fórmula/janela antes de codar
+- Redução de demanda de água calculada (hoje é rótulo estático) — precisa de uma referência real de consumo de água por cultura de cobertura; risco de inventar número sem fonte
+- Janelas de campo vazio reais (hoje só no calendário simulado) — precisa de um calendário agrícola real por região (tipo CONAB ou USDA), não só a data
+- Quebra de ciclo de pragas e renda direta calculadas para as culturas fora do catálogo real (hoje é fixo ou atribuído manualmente no motor beta) — exigiria montar um catálogo curado tipo o do Matheus pra cada cultura/região, trabalho grande de levantamento de dado
+- Melhoria de infiltração — não modelado; precisa de um modelo científico e ainda não tem fonte confiável escolhida
+- Erosão (RUSLE) — deixado de lado por não ter fonte confiável pro fator K do solo sem arriscar inventar dado
+- Comparação de abordagens de modelagem (só existe regressão linear, com resultado nulo — R² ≈ 0 — e não está em uso) — exigiria treinar/validar outro(s) modelo(s) do zero
 - Um único motor de decisão — hoje são dois:
   - motor beta genérico (todas as culturas exceto cana-de-açúcar; texto simulado)
   - catálogo real do ZARC do Matheus (só cana-de-açúcar; mais rigoroso, mas ainda não cobre as outras culturas)
-- Catálogo do ZARC revisado por agrônomo (atributos ainda não conferidos)
-- Janelas de campo vazio reais (hoje só no calendário simulado)
-- Vulnerabilidade sazonal da cultura atual — não calculado
-- Quebra de ciclo de pragas e renda direta calculadas para as culturas fora do catálogo real (hoje é fixo ou atribuído manualmente no motor beta)
-- Redução de demanda de água calculada (hoje é rótulo estático)
-- Melhoria de infiltração — não modelado
-- Erosão (RUSLE) — deixado de lado por não ter fonte confiável pro fator K do solo sem arriscar inventar dado
-- Conversão do rendimento dos EUA (NASS, em BU/ACRE, LB/ACRE etc.) pra kg/ha — deixado de lado por variar o peso do bushel por cultura, sem fonte pra conversão seria inventar dado
-- Glossário com os termos científicos que o desafio pede (evapotranspiração, anomalia de umidade, NDVI, geada, balanço hídrico)
-- Comparação de abordagens de modelagem (só existe regressão linear, com resultado nulo — R² ≈ 0 — e não está em uso)
-- Mapas interativos, visualização por campo, linha do tempo/slider — explicitamente adiados
-- Busca de local nos EUA por nome (digitar cidade/condado) — a tela de localização só busca por nome no Brasil; nos EUA é só GPS ou coordenada digitada. O painel de colheita (`GET /producao`) já geocodifica a coordenada pro condado via Census, mas isso é depois de o usuário já ter um ponto
+  - unificar exigiria o catálogo real cobrir toda cultura/região, não é só código
+- Catálogo do ZARC revisado por agrônomo (atributos ainda não conferidos) — não é tarefa de código, depende de revisão humana de um agrônomo
+- Mapas interativos, visualização por campo, linha do tempo/slider — explicitamente adiados; feature grande de GIS/frontend, maior esforço da lista
