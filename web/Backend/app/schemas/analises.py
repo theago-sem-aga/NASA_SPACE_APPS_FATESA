@@ -277,6 +277,53 @@ class Analise(BaseModel):
     estado_recomendacoes: Literal["simulacao_beta", "dados_insuficientes"]
 
 
+class ColheitaCultura(BaseModel):
+    cultura_id: str
+    nome: str
+    situacao: Literal["acima", "normal", "abaixo", "sem_plantio"]
+    ano: int | None = None
+    area_plantada_ha: float | None = None
+    rendimento_kg_ha: float | None = None
+    rendimento_medio_anterior_kg_ha: float | None = None
+    # Só presentes quando a unidade NÃO é kg/ha (hoje: EUA/NASS). bushel pesa
+    # diferente por cultura -- nunca convertido pra kg/ha sem fonte segura.
+    rendimento_nativo: float | None = None
+    rendimento_unidade: str | None = None
+    rendimento_medio_anterior_nativo: float | None = None
+
+
+class ClimaAno(BaseModel):
+    ano: int
+    chuva_mm: float
+    chuva_normal_mm: float
+    situacao_chuva: Literal["pouca", "normal", "muita"]
+    gotas_em_10: int
+    tmax_c: float
+    tmax_normal_c: float
+    situacao_calor: Literal["mais_quente", "normal", "mais_frio"]
+    graus_de_diferenca: int
+    periodo_normal: str
+
+
+class PainelProducao(BaseModel):
+    # Brasil: codigo_ibge/municipio/uf. EUA: condado/estado. Um dos dois pares.
+    codigo_ibge: str | None = None
+    municipio: str | None = None
+    uf: str | None = None
+    condado: str | None = None
+    estado: str | None = None
+    culturas: list[ColheitaCultura]
+    # None no caminho dos EUA hoje: clima vem por outra via (POWER multi-regional).
+    clima: ClimaAno | None = None
+    # Previsão oficial transcrita (INMET/INPE/FUNCEME); forma ainda não fixada
+    # em schema próprio, só existe pro Brasil.
+    previsao: dict | None = None
+    fontes: list[str]
+    limitacoes: list[str]
+    tipo_dado: Literal["observacao_historica", "previsao", "simulacao"]
+    gerado_em: str
+
+
 class CorpoErro(BaseModel):
     codigo: str
     mensagem: str

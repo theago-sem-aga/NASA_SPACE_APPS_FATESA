@@ -374,10 +374,19 @@ export interface ColheitaCultura {
   cultura_id: string;
   nome: string;
   situacao: SituacaoColheita;
-  ano: number;
+  ano: number | null;
   area_plantada_ha: number | null;
   rendimento_kg_ha: number | null;
   rendimento_medio_anterior_kg_ha: number | null;
+  /**
+   * Só presentes quando a unidade NÃO é kg/ha (hoje: condados dos EUA, via
+   * USDA NASS QuickStats). Bushel pesa diferente por cultura, então o
+   * backend nunca converte pra kg/ha sem fonte segura — mostra nativo
+   * (ex.: "137 BU / ACRE") em vez de arriscar uma conversão errada.
+   */
+  rendimento_nativo?: number | null;
+  rendimento_unidade?: string | null;
+  rendimento_medio_anterior_nativo?: number | null;
 }
 
 export interface ClimaAno {
@@ -425,11 +434,15 @@ export interface PrevisaoClima {
 }
 
 export interface PainelProducao {
-  codigo_ibge: string;
-  municipio: string;
-  uf: string;
+  /** Brasil: codigo_ibge/municipio/uf. EUA: condado/estado. Só um dos pares. */
+  codigo_ibge: string | null;
+  municipio: string | null;
+  uf: string | null;
+  condado?: string | null;
+  estado?: string | null;
   culturas: ColheitaCultura[];
-  clima: ClimaAno;
+  /** null = a série de clima (NASA POWER) não respondeu ou está incompleta. */
+  clima: ClimaAno | null;
   /** null = ainda não temos a previsão oficial transcrita para esta cidade. */
   previsao: PrevisaoClima | null;
   fontes: string[];
