@@ -48,7 +48,7 @@ export const GLOSSARIO = {
   },
   ndvi: {
     termo: 'NDVI (índice de vegetação)',
-    texto: 'Número que o satélite calcula comparando a luz vermelha, que a folha verde absorve, com a luz infravermelha, que ela reflete. Vai de -1 a 1: planta verde e vigorosa fica perto de 0,6 a 0,9; terra pelada, perto de 0,1 a 0,2.'
+    texto: 'Número que o satélite calcula comparando a luz vermelha, que a clorofila da folha absorve, com a luz infravermelha, que a folha sadia reflete. Vai de -1 a 1: de -1 a -0,1, água, neve ou nuvem; perto de 0, solo nu ou rocha; de 0,2 a 0,5, vegetação esparsa ou estressada; de 0,6 a 1, vegetação densa e saudável. (Faixas do artigo da EOSDA sobre NDVI na agricultura.)'
   },
   anomalia_umidade: {
     termo: 'Anomalia de umidade do solo',

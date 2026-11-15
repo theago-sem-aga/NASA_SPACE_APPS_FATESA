@@ -55,7 +55,7 @@ export function montarTalhaoMock(correcoes: CorrecoesTalhao, geada: RiscoGeada |
     risco_erosao: 'alto',
     risco_seca: 'medio',
     risco_geada: geada?.nivel ?? null,
-    bases: ['SRTM', 'SoilGrids', 'NASA POWER']
+    bases: ['SRTM', 'SoilGrids', 'NASA POWER', 'MODIS']
   };
 }
 

@@ -11,6 +11,7 @@ import pytest
 
 from app.domain.estresse_vegetal import (
     calcular_estresse_vegetal,
+    faixa_ndvi,
     fotos_validas,
     periodo_do_ano,
     quantil,
@@ -104,3 +105,20 @@ def test_grafico_traz_o_ultimo_ano_com_o_normal():
 def test_quantil_igual_ao_numpy():
     assert quantil([1, 2, 3, 4], 0.5) == 2.5
     assert quantil([10, 20, 30, 40, 50], 0.1) == pytest.approx(14)
+
+
+def test_faixas_da_tabela_de_referencia():
+    # Tabela do artigo da EOSDA: -1,0 a -0,1 água/neve/nuvem; 0 a 0,2 solo nu;
+    # 0,2 a 0,5 vegetação esparsa ou estressada; 0,6 a 1,0 vegetação densa e saudável.
+    assert faixa_ndvi(-0.5) == "agua_neve_nuvem"
+    assert faixa_ndvi(0.13) == "solo_nu"
+    assert faixa_ndvi(0.2) == faixa_ndvi(0.33) == faixa_ndvi(0.5) == "vegetacao_esparsa_ou_estressada"
+    assert faixa_ndvi(0.6) == faixa_ndvi(0.74) == "vegetacao_densa_saudavel"
+    # Onde a fonte não dá intervalo, não inventamos nome.
+    assert faixa_ndvi(0.55) == faixa_ndvi(-0.05) == "entre_faixas"
+
+
+def test_resultado_traz_a_faixa_e_a_fonte():
+    r = calcular_estresse_vegetal(serie(lavoura, ultima=0.665))
+    assert r["faixa_ndvi_atual"] == "vegetacao_densa_saudavel"
+    assert "EOSDA" in r["fonte_referencia"]
