@@ -10,6 +10,25 @@ type Alerta = 'calor' | 'geada' | 'seca';
 
 const ROTULO: Record<Alerta, string> = { calor: 'Calor forte', geada: 'Geada', seca: 'Pouca chuva' };
 
+const lista = (meses: number[]) => {
+  const nomes = meses.map(m => NOME_MES[m - 1].toLowerCase());
+  return nomes.length <= 1 ? nomes[0] ?? '' : `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
+};
+
+/** Frase para ouvir: quais meses têm calor forte, geada e pouca chuva. */
+export function fraseMesesAtencao(calor: EstresseTermico | null, geada: RiscoGeada | null, clima: ClimaMensal[]): string {
+  const secos = clima
+    .filter(c => c.precipitacao_acumulada_mm !== null && c.precipitacao_acumulada_mm < POUCA_CHUVA_MM)
+    .map(c => c.mes)
+    .sort((a, b) => a - b);
+  const partes: string[] = [];
+  if (calor?.meses_com_risco.length) partes.push(`calor forte em ${lista(calor.meses_com_risco)}`);
+  if (geada?.meses_com_risco.length) partes.push(`geada em ${lista(geada.meses_com_risco)}`);
+  if (secos.length) partes.push(`pouca chuva em ${lista(secos)}`);
+  if (partes.length === 0) return 'Meses de atenção: nenhum mês com calor forte, geada ou pouca chuva no histórico.';
+  return `Meses de atenção: ${partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join('; ')}; e ${partes[partes.length - 1]}`}.`;
+}
+
 /**
  * "Meses de atenção": junta, mês a mês, o que os outros itens já mostram
  * (calor forte, geada e pouca chuva), para ver num olhar quando a lavoura sofre mais.

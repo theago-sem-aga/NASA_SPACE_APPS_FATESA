@@ -1095,3 +1095,9 @@ p { margin: 0; }
   .comparacao-item li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: var(--raio-pequeno); }
   .comparacao-item-nome { font-weight: 700; }
 }
+
+.glossario-ouvir {
+  margin-left: auto; margin-right: 8px; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px;
+  border: 1.5px solid #ffffff; border-radius: 999px; background: transparent; color: #ffffff; font: inherit; font-weight: 600;
+}
+.glossario-ouvir[aria-pressed='true'] { background: #ffffff; color: var(--cor-mata); }

@@ -9,12 +9,12 @@ import { ROTULO_PRIORIDADE, ROTULO_PROBLEMA } from './rotulos';
  * Qual ponto do caminho responde a cada problema marcado. Só lê os atributos que já vêm
  * com o caminho; não muda a escolha do motor (BACKEND: o motor ainda não usa os problemas).
  */
-const PONTO_DO_PROBLEMA: Record<ProblemaId, keyof AtributosEstrategia> = {
+export const PONTO_DO_PROBLEMA: Record<ProblemaId, keyof AtributosEstrategia> = {
   nematoides_pragas: 'quebra_pragas',
   solo_cansado: 'materia_organica',
   preco_baixo: 'renda_direta'
 };
-const AJUDA_NIVEL: Record<Nivel, { texto: string; classe: string }> = {
+export const AJUDA_NIVEL: Record<Nivel, { texto: string; classe: string }> = {
   alto: { texto: 'ajuda bastante', classe: 'problema-ajuda-forte' },
   medio: { texto: 'ajuda', classe: 'problema-ajuda' },
   baixo: { texto: 'ajuda pouco', classe: 'problema-ajuda-pouca' },

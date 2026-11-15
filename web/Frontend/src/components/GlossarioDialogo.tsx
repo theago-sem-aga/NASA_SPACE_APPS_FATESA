@@ -1,14 +1,22 @@
 import { useEffect, useRef } from 'react';
 import { GLOSSARIO } from '../accessibility/glossario';
+import { useNarracao } from '../accessibility/useNarracao';
+import { Icone } from './Icone';
 
 /** Glossário inteiro numa janela, aberta pelo rodapé de qualquer tela. */
 export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFechar: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const narracao = useNarracao();
+  const pararRef = useRef(narracao.parar);
+  pararRef.current = narracao.parar;
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
     if (aberto && !d.open) d.showModal();
-    else if (!aberto && d.open) d.close();
+    else if (!aberto && d.open) {
+      d.close();
+      pararRef.current(); // só ao fechar: não corta a narração das telas
+    }
   }, [aberto]);
 
   const itens = Object.values(GLOSSARIO).slice().sort((a, b) => a.termo.localeCompare(b.termo, 'pt-BR'));
@@ -27,6 +35,21 @@ export function GlossarioDialogo({ aberto, aoFechar }: { aberto: boolean; aoFech
     >
       <div className="glossario-cabeca">
         <h2 id="glossario-titulo">Glossário</h2>
+        {narracao.suportado && (
+          <button
+            type="button"
+            className="glossario-ouvir"
+            aria-pressed={narracao.falando}
+            onClick={() =>
+              narracao.falando
+                ? narracao.parar()
+                : narracao.falar(`Glossário. As palavras da NASA e do campo, em linguagem simples. ${itens.map(i => `${i.termo}. ${i.texto}`).join(' ')}`)
+            }
+          >
+            <Icone nome={narracao.falando ? 'parar' : 'ouvir'} tamanho={20} />
+            {narracao.falando ? 'Parar' : 'Ouvir'}
+          </button>
+        )}
         <button type="button" className="glossario-fechar" onClick={aoFechar} aria-label="Fechar o glossário">
           ✕
         </button>
