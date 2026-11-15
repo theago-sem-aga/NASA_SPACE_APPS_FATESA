@@ -18,12 +18,12 @@ export const NOME_MES = [
  * qualquer cultura cadastrada.
  */
 export const ROTULO_PRIORIDADE: Record<PrioridadeId, { nome: string; explicacao: string }> = {
-  reducao_erosao: { nome: 'Não deixar a chuva levar a terra', explicacao: 'Evita que a enxurrada arraste o solo fértil e abra valetas.' },
-  materia_organica: { nome: 'Deixar a terra mais rica', explicacao: 'Mais palha e raízes no solo, que se transformam em nutrientes para a {safra}.' },
-  fixacao_nitrogenio: { nome: 'Gastar menos adubo', explicacao: 'Plantas que deixam nitrogênio no solo e reduzem o adubo da {safra}.' },
-  uso_agua: { nome: 'Aguentar a seca', explicacao: 'Culturas que exigem pouca água ou ajudam o solo a reter umidade.' },
-  adequacao_mercado: { nome: 'Ter renda até o próximo plantio', explicacao: 'Uma lavoura com compradores na região, que gere receita até o próximo plantio.' },
-  valor_forragem: { nome: 'Tratar o gado', explicacao: 'Produção de pasto, silagem ou feno para alimentar os animais.' }
+  reducao_erosao: { nome: 'Não deixar a chuva levar a terra', explicacao: 'Isso evita que a enxurrada arraste o solo fértil e abra valetas.' },
+  materia_organica: { nome: 'Deixar a terra mais rica', explicacao: 'Sobra mais palha e raiz no solo, e isso se transforma em nutriente para a {safra}.' },
+  fixacao_nitrogenio: { nome: 'Gastar menos adubo', explicacao: 'São plantas que deixam nitrogênio no solo e, com isso, reduzem o adubo da {safra}.' },
+  uso_agua: { nome: 'Aguentar a seca', explicacao: 'São culturas que exigem pouca água ou que ajudam o solo a reter umidade.' },
+  adequacao_mercado: { nome: 'Ter renda até o próximo plantio', explicacao: 'É uma lavoura com comprador na região, que gera receita até o próximo plantio.' },
+  valor_forragem: { nome: 'Tratar o gado', explicacao: 'É a produção de pasto, silagem ou feno para alimentar os animais.' }
 };
 
 export const ORDEM_PRIORIDADES: PrioridadeId[] = [
@@ -38,14 +38,14 @@ export const ROTULO_PROBLEMA: Record<ProblemaId, string> = {
 
 /** Nome curto para o que os mapas mostram, com uma frase de como a pessoa reconhece no chão. */
 export const ROTULO_TEXTURA: Record<TexturaSolo, { nome: string; dica: string }> = {
-  arenosa: { nome: 'Arenosa', dica: 'Solta, esfarela na mão e seca rápido.' },
-  media: { nome: 'Mista', dica: 'Nem muito solta nem muito grudenta.' },
-  argilosa: { nome: 'Argilosa', dica: 'Vermelha ou roxa, gruda na bota quando molha.' }
+  arenosa: { nome: 'Arenosa', dica: 'A terra solta, esfarela na mão e seca rápido.' },
+  media: { nome: 'Mista', dica: 'A terra não é muito solta nem muito grudenta.' },
+  argilosa: { nome: 'Argilosa', dica: 'A terra é vermelha ou roxa e gruda na bota quando molha.' }
 };
 
 export const ROTULO_RELEVO: Record<Relevo, { nome: string; dica: string }> = {
   plano: { nome: 'Plano', dica: 'A água da chuva quase não corre.' },
-  suave_ondulado: { nome: 'Pouco inclinado', dica: 'Tem caimento, mas a máquina trabalha bem.' },
+  suave_ondulado: { nome: 'Pouco inclinado', dica: 'O terreno tem caimento, mas a máquina trabalha bem.' },
   ondulado: { nome: 'Bem inclinado', dica: 'A enxurrada corre forte.' }
 };
 
@@ -53,17 +53,17 @@ export const ROTULO_RELEVO: Record<Relevo, { nome: string; dica: string }> = {
 export const ROTULO_REQUISITO: Record<RequisitoId, { pergunta: string; porque: string; nome: string }> = {
   maquinas_graos: {
     pergunta: 'Você tem máquina para plantar e colher grão?',
-    porque: 'Pode ser sua, alugada ou de um vizinho. Amendoim e soja precisam disso.',
+    porque: 'Pode ser sua, alugada ou de um vizinho, já que amendoim e soja precisam disso.',
     nome: 'Máquina para grão'
   },
   comprador_graos: {
     pergunta: 'Tem para quem vender grão aqui perto?',
-    porque: 'Uma cerealista, cooperativa ou indústria que compre a safra.',
+    porque: 'Vale uma cerealista, cooperativa ou indústria que compre a safra.',
     nome: 'Para quem vender'
   },
   irrigacao: {
     pergunta: 'Esse talhão tem irrigação ou recebe vinhaça?',
-    porque: 'Com água garantida, dá para plantar mais cedo sem esperar a chuva.',
+    porque: 'Com água garantida, dá para plantar mais cedo, sem esperar a chuva.',
     nome: 'Irrigação'
   }
 };
@@ -87,14 +87,14 @@ export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; 
 
 /** O que cada ponto quer dizer, em uma frase (legenda de "Todos os pontos"). */
 export const DESCRICAO_ATRIBUTO: Record<keyof AtributosEstrategia, string> = {
-  protecao_solo: 'Quanto a planta ou a palha cobrem o chão e seguram a terra contra a enxurrada.',
-  materia_organica: 'Quanto de palha e raiz fica no solo e vira matéria orgânica, que guarda água e nutriente.',
-  fixacao_nitrogenio: 'Plantas como crotalária e mucuna tiram nitrogênio do ar e deixam no solo; isso reduz o adubo da próxima lavoura.',
-  quebra_pragas: 'Trocar de planta corta o ciclo de pragas e doenças que vivem na lavoura principal.',
-  renda_direta: 'Se o intervalo dá alguma colheita para vender antes do próximo plantio.',
-  demanda_agua: 'Quanta água a planta do intervalo precisa. Aqui, menos é melhor.',
-  trabalho_custo: 'Semente, máquina e mão de obra que o caminho pede. Aqui, menos é melhor.',
-  valor_forragem: 'Se a planta do intervalo serve de alimento para o gado.'
+  protecao_solo: 'É o quanto a planta ou a palha cobrem o chão e seguram a terra contra a enxurrada.',
+  materia_organica: 'É o quanto de palha e raiz fica no solo e vira matéria orgânica, que guarda água e nutriente.',
+  fixacao_nitrogenio: 'São plantas como crotalária e mucuna, que tiram nitrogênio do ar e deixam no solo, reduzindo o adubo da próxima lavoura.',
+  quebra_pragas: 'É quando trocar de planta corta o ciclo de pragas e doenças que vivem na lavoura principal.',
+  renda_direta: 'Diz se o intervalo dá alguma colheita para vender antes do próximo plantio.',
+  demanda_agua: 'É quanta água a planta do intervalo precisa; aqui, menos é melhor.',
+  trabalho_custo: 'É a semente, a máquina e a mão de obra que o caminho pede; aqui, menos é melhor.',
+  valor_forragem: 'Diz se a planta do intervalo serve de alimento para o gado.'
 };
 
 export const ROTULO_CONFIANCA: Record<Confianca, string> = {
