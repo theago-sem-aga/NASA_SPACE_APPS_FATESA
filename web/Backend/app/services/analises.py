@@ -18,10 +18,6 @@ from app.services.precipitacao_extrema import resumo_precipitacao_extrema
 from app.services.solo import buscar_textura_ponto
 
 
-def dentro_piloto(lat, lon):
-    return 36.4 <= lat < 36.8 and -119.9 <= lon < -119.5
-
-
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá

@@ -138,10 +138,19 @@ def test_cors_post_e_falha_banco(cliente, monkeypatch, entrada):
     assert "SENHA" not in r.text
 
 
-def test_california_e_fora_cobertura(cliente):
-    assert cliente.get("/api/v1/municipios?busca=califórnia").json()[0]["uf"] == "CA"
-    assert cliente.get("/api/v1/locais?latitude=36.6&longitude=-119.7").json()["codigo_ibge"] == ""
-    assert cliente.get("/api/v1/locais?latitude=-20&longitude=-49").status_code == 404
+def test_municipios_cobrem_o_brasil_real_fora_dele_404(cliente):
+    # Base real do IBGE (ingestao_municipios_brasil.py): "Califórnia" é um
+    # município real do Paraná, não o piloto antigo da Califórnia (EUA).
+    resultado = cliente.get("/api/v1/municipios?busca=califórnia").json()
+    assert resultado[0]["uf"] == "PR"
+    assert resultado[0]["codigo_ibge"]
+
+    local = cliente.get("/api/v1/locais?latitude=-20.78&longitude=-49.36").json()
+    assert local["municipio"] == "São José do Rio Preto"
+    assert local["uf"] == "SP"
+
+    # Fresno, CA (EUA): fora do Brasil, sem reconhecimento ainda.
+    assert cliente.get("/api/v1/locais?latitude=36.6&longitude=-119.7").status_code == 404
 
 
 def test_openapi_rotas_e_snake_case(cliente):

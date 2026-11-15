@@ -1,17 +1,13 @@
-"""Catálogos do piloto. Não promete cobertura administrativa ou brasileira."""
-
-import unicodedata
+"""Catálogos. /locais e /municipios cobrem o Brasil (base real do IBGE);
+fora do Brasil (ou sem reverse geocoding ainda, como os EUA), 404 honesto."""
 
 from fastapi import APIRouter, HTTPException, Query
 
 from app.configuracao import configuracao
 from app.schemas.analises import Cultura, Local
-from app.services.analises import dentro_piloto
+from app.services.locais import buscar_por_nome, localizar_por_coordenada
 
 roteador = APIRouter(tags=["catalogos"])
-PILOTO = Local(
-    codigo_ibge="", municipio="Região piloto de Fresno", uf="CA", latitude=36.6, longitude=-119.7
-)
 
 
 @roteador.get("/culturas", response_model=list[Cultura])
@@ -36,30 +32,25 @@ def local(
     latitude: float = Query(ge=-90, le=90, allow_inf_nan=False),
     longitude: float = Query(ge=-180, le=180, allow_inf_nan=False),
 ):
-    if not dentro_piloto(latitude, longitude):
+    encontrado = localizar_por_coordenada(latitude, longitude)
+    if encontrado is None:
         raise HTTPException(
             404,
             {
                 "erro": {
                     "codigo": "fora_da_cobertura",
-                    "mensagem": "Local fora do recorte piloto de Fresno, Califórnia.",
+                    "mensagem": "Sem reconhecimento de município para esta coordenada ainda "
+                    "(hoje só cobrimos o Brasil).",
                     "detalhes": [],
                     "requisicao_id": None,
                 }
             },
         )
-    return PILOTO.model_copy(update={"latitude": latitude, "longitude": longitude})
+    return Local(**encontrado)
 
 
 @roteador.get("/municipios", response_model=list[Local])
 def municipios(
     busca: str = Query(default="", max_length=120), limite: int = Query(default=8, ge=1, le=20)
 ):
-    termo = "".join(
-        c
-        for c in unicodedata.normalize("NFD", busca.strip().lower())
-        if not unicodedata.combining(c)
-    )
-    if len(termo) < 2:
-        return []
-    return [PILOTO][:limite] if termo in "regiao piloto fresno california ca estados unidos" else []
+    return [Local(**m) for m in buscar_por_nome(busca, limite)]
