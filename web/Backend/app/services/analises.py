@@ -12,6 +12,7 @@ from app.integrations.clima_historico import buscar_clima
 from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
+from app.services.geada import risco_geada
 
 
 def dentro_piloto(lat, lon):
@@ -21,12 +22,20 @@ def dentro_piloto(lat, lon):
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
         clima_pendente = executor.submit(buscar_clima, entrada.latitude, entrada.longitude)
+        geada_pendente = executor.submit(risco_geada, entrada.latitude, entrada.longitude)
         coleta = coleta_pendente.result()
+        try:
+            geada = geada_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            geada = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "nasa_power_geada", "motivo": "falha_fonte"}
+            )
         try:
             clima = clima_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
@@ -71,15 +80,27 @@ def criar_analise(entrada):
         limitacoes.append(
             "Fonte histórica indisponível ao atualizar; usando cópia anterior com data de extração preservada."
         )
+    if geada:
+        limitacoes.append(
+            f"Risco de geada: frequência de noites com mínima do ar a 2 m de até {geada['limiar_c']:g} °C "
+            f"({geada['periodo_inicio']}–{geada['periodo_fim']}, NASA POWER). A folha esfria mais que o ar e "
+            "baixadas geiam mais que a média da grade; limiar e faixas ainda sem referência validada."
+        )
+    else:
+        limitacoes.append("Risco de geada sem dado: a série de temperatura mínima não respondeu.")
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
     resultado = Analise(
         analise_id=str(uuid4()),
         eh_mock=beta,
         descricao_local="Região piloto de Fresno (CA)",
-        talhao=caracterizar_talhao(entrada),
+        talhao=caracterizar_talhao(entrada).model_copy(
+            update={"risco_geada": geada["nivel"] if geada else None,
+                    "bases": ["NASA POWER"] if geada else []}
+        ),
         fonte_clima=clima["fonte_clima"],
         clima_mensal=clima["clima_mensal"],
+        geada=geada,
         estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
         limitacoes=limitacoes,
         versao_motor=VERSAO,
