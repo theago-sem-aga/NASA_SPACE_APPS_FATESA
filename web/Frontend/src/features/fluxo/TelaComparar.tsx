@@ -44,7 +44,9 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
     ? analise.estrategias.map((e, k) => ({ e, k })).sort((x, y) => notaPara(y.e, criterio) - notaPara(x.e, criterio) || x.k - y.k).map(x => x.e)
     : analise.estrategias;
   const melhorNota = criterio ? notaPara(estrategias[0], criterio) : null;
-  const ehMelhor = (e: Estrategia) => criterio !== null && notaPara(e, criterio) === melhorNota;
+  // Em ponto onde mais é melhor, "nada" (nota 0) não é vitória: se o melhor é "nada", nenhum caminho ajuda nisso.
+  const ninguemAjuda = criterio !== null && criterio !== 'descoberto' && ROTULO_ATRIBUTO[criterio].maiorEhMelhor && melhorNota === 0;
+  const ehMelhor = (e: Estrategia) => criterio !== null && !ninguemAjuda && notaPara(e, criterio) === melhorNota;
   const [maisOpcoes, setMaisOpcoes] = useState(false);
   // De cara, só os pontos principais; os outros aparecem em "+ mais pontos" (ou se um deles estiver escolhido).
   const opcoesCriterio: Criterio[] =
@@ -79,7 +81,9 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
         </div>
         <p className="ordenar-por-estado" aria-live="polite">
           {criterio
-            ? `Melhor em "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' e ')}.`
+            ? ninguemAjuda
+              ? `Nenhum destes caminhos ajuda em "${nomeCriterio(criterio).toLowerCase()}".`
+              : `Melhor em "${nomeCriterio(criterio).toLowerCase()}": ${estrategias.filter(ehMelhor).map(nomeCurto).join(' e ')}.`
             : 'Na ordem sugerida pelas suas escolhas; o jeito de hoje fica por último, para comparar.'}
         </p>
       </div>
