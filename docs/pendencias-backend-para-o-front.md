@@ -5,6 +5,22 @@
 > Nada foi alterado em `web/Backend`. A proposta sobre os problemas marcados (praga/nematoide etc.) está em
 > `docs/proposta-motor-problemas.md`.
 
+## Situação em 15/11/2026, 12h (conferida com análise nova no back local)
+
+| Pendência | Situação | Quem |
+|---|---|---|
+| Calor (`estresse_termico`) | ✅ **Entregue.** Campos idênticos ao contrato do front; SJRP bate com o cálculo da equipe (alto, setembro, ago–nov, 39,5 dias/ano). Limiar de 35 °C segue provisório. | Tiago |
+| Nome da cidade (`descricao_local`) | ✅ **Entregue.** "São José do Rio Preto (SP)", "Olímpia (SP)". Ponto do GPS sem cidade continua como coordenada. | Ghabriel |
+| Relevo e declividade no Brasil | ✅ **Entregue.** 5 pontos de elevação do NASA SRTMGL1: SJRP suave ondulado (5,71%), Olímpia ondulado (9,74%). | Ghabriel |
+| OpenET fora dos EUA | ✅ **Corrigido.** Agora aparece como "fora da cobertura", e não como falha. | Ghabriel |
+| Continuar sem histórico de colheita | ✅ **Entregue** (botão na tela da colheita). | Ghabriel |
+| Risco de erosão | ⛔ **Descartado** (sem fonte confiável para o fator do solo). O front mostra "Sem dado". | Tiago |
+| Umidade da terra (SMAP) | ⛔ **Descartado** para o hackathon. O front tirou a opção do gráfico. | Equipe |
+| Tipo de terra, NDVI e GRACE em Olímpia | ⏳ **Pendente** (pontos não pré-processados). | Tiago / Ghabriel |
+| Motor usar os problemas marcados | ⏳ **Pendente** (`docs/proposta-motor-problemas.md`). | Back |
+| Catálogo real para outras culturas (some o aviso de "Simulação") | ⏳ **Pendente.** Hoje só a cana tem catálogo real. | Back |
+| Textos do back na norma padrão ("pra" → "para") | ⏳ **Pendente.** | Tiago |
+
 ## Teste usado
 
 **Atualização da entrega técnica — Ghabriel/Codex, 15/11/2026:** o teste original

@@ -1,3 +1,4 @@
+import { SelosFontes } from '../../components/SeloFonte';
 import { useId, useState } from 'react';
 import type { ClimaMensal, EstresseTermico, EstresseVegetal, CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
@@ -110,6 +111,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
         <Item pictograma="planta" rotulo="Vegetação (NDVI)" valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : 'Sem dado'} />
       </ul>
       <div className="painel-talhao-rodape">
+        {talhao.bases.length > 0 && <SelosFontes fontes={talhao.bases} />}
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (
           <button type="button" className="link-discreto" onClick={abrir} aria-expanded={false}>

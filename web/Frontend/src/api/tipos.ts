@@ -40,15 +40,15 @@ export interface Cultura {
 export type Nivel = 'nenhum' | 'baixo' | 'medio' | 'alto';
 export type Confianca = 'baixa' | 'media' | 'alta';
 
-/** BACKEND: textura vem dos dados de solo (ex.: SoilGrids/FAO); o usuário não informa mais. */
+/** Textura vem dos dados de solo (USDA nos EUA, SoilGrids no Brasil, só nos pontos preparados); o usuário pode corrigir. */
 export type TexturaSolo = 'arenosa' | 'media' | 'argilosa';
-/** BACKEND: relevo vem da declividade do SRTM. Sugestão de faixas: plano < 3%, suave_ondulado 3–8%, ondulado > 8%. */
+/** Relevo pela declividade de 5 pontos de elevação: USGS 3DEP nos EUA e NASA SRTMGL1 no Brasil. Faixas: plano < 3%, suave_ondulado 3–8%, ondulado > 8%. */
 export type Relevo = 'plano' | 'suave_ondulado' | 'ondulado';
 export type Resposta = 'sim' | 'nao' | 'nao_sei';
 
 /**
  * Problemas que só o produtor sabe dizer. Erosão e seca saíram da pergunta:
- * BACKEND: estimar a partir dos dados e devolver em `talhao.risco_erosao` e `talhao.risco_seca`.
+ * `talhao.risco_seca` vem da NASA POWER. `talhao.risco_erosao` fica null: o back decidiu não calcular sem fonte confiável para o fator do solo.
  */
 export type ProblemaId = 'solo_cansado' | 'nematoides_pragas' | 'preco_baixo';
 
@@ -189,7 +189,7 @@ export interface CaracteristicasTalhao {
   fonte_relevo: FonteTalhao;
   /** Declividade média do entorno, em %. */
   declividade_pct: number | null;
-  /** BACKEND: combinar declividade, textura e chuva forte do histórico (regra explicável, sem caixa-preta). */
+  /** Sempre null por decisão do back (sem fonte confiável para o fator do solo). O front mostra "Sem dado". */
   risco_erosao: Nivel | null;
   /** Déficit de chuva recente contra o mesmo período histórico (NASA POWER);
    * não é índice de umidade das raízes nem balanço hídrico da cultura. */

@@ -1101,3 +1101,6 @@ p { margin: 0; }
   border: 1.5px solid #ffffff; border-radius: 999px; background: transparent; color: #ffffff; font: inherit; font-weight: 600;
 }
 .glossario-ouvir[aria-pressed='true'] { background: #ffffff; color: var(--cor-mata); }
+
+.selos-fontes { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.selos-fontes .selo-fonte { margin: 0; }
