@@ -1,5 +1,5 @@
 """Deteccao de evento extremo de precipitacao a partir do historico real da
-NASA POWER (ver docs/requisitos-faltantes.md, secao 2 -- "Precipitacao extrema").
+NASA POWER.
 
 Usa o cache de 30+ anos gerado por pipelines/ingestao_power_historico.py.
 Sem esse cache pra celula pedida, a fonte fica indisponivel (mesma semantica

@@ -7,7 +7,7 @@ import { ROTULO_PRIORIDADE, ROTULO_PROBLEMA } from './rotulos';
 
 /**
  * Qual ponto do caminho responde a cada problema marcado. Só lê os atributos que já vêm
- * com o caminho; não muda a escolha do motor (BACKEND: o motor ainda não usa os problemas).
+ * com o caminho; não muda a escolha do motor.
  */
 export const PONTO_DO_PROBLEMA: Record<ProblemaId, keyof AtributosEstrategia> = {
   nematoides_pragas: 'quebra_pragas',

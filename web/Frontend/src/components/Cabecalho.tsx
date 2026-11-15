@@ -21,7 +21,6 @@ export function Cabecalho({ progresso, tituloPasso, subtitulo, narracao }: Cabec
             <path d="M7 20c3-1.5 6-1.5 9 0s6 1.5 9 0M7 14c3-1.5 6-1.5 9 0s6 1.5 9 0" stroke="#E9D9A6" strokeWidth="2" strokeLinecap="round" />
           </svg>
           <span>
-            {/* Nome do produto ainda não definido pela equipe (convenção §10) */}
             <span className="marca-nome">{tx('Rotação de culturas', 'Crop rotation')}</span>
             <span className="marca-sub">{subtitulo}</span>
           </span>

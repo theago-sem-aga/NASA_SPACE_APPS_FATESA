@@ -25,7 +25,7 @@ from app.services.risco_seca import resumo_risco_seca
 from app.services.solo import buscar_textura_ponto
 from app.services.tendencia_hidrica import tendencia_hidrica
 
-# Cultura com catalogo real (ZARC), ligado ao backend (ver docs/requisitos-faltantes.md).
+# Cultura com catalogo real (ZARC), ligado ao backend.
 # Outras culturas ainda caem no motor beta generico, simulado.
 CULTURAS_COM_CATALOGO_REAL = {"cana_de_acucar"}
 

@@ -5,8 +5,7 @@ Ver /openapi.json ou /docs. A logica fica em pipelines/acompanhamento_sentinel2.
 EXCECAO A CONVENCAO (secao 7, satelite so pre-processado): o ponto vem do GPS
 do produtor e nao da para pre-processar todos os pontos possiveis. Por isso o
 ponto e processado UMA vez, na primeira consulta (~20-60 s), e o resultado fica
-em cache por CACHE_DIAS; as consultas seguintes nao tocam a rede. Precisa de
-aprovacao da equipe (Ghabriel/Tiago) -- registrado em docs/historico_sumario.md.
+em cache por CACHE_DIAS; as consultas seguintes nao tocam a rede.
 """
 
 from __future__ import annotations

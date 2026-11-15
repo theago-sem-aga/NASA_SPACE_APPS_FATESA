@@ -10,8 +10,7 @@
 //               GET /producao → PainelProducao, GET /previsao → PrevisaoClima | null
 //  - REAL:      GET /acompanhamento → Acompanhamento (fotos do satélite do ponto do GPS)
 //
-// BACKEND: cada função abaixo documenta a rota que o front chama. Os nomes de
-// rota seguem a proposta da convenção §6 (/api/v1, substantivo no plural).
+// As rotas seguem /api/v1, com substantivos no plural.
 import type { Acompanhamento, Analise, AnaliseEntrada, Cultura, ErroApi, Local, OrigemLocal, PainelProducao, PrevisaoClima, RespostaAnalise } from './tipos';
 import { ACOMPANHAMENTOS } from './mock/acompanhamentoMunicipio';
 import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
@@ -132,7 +131,7 @@ function normalizar(texto: string) {
 
 /**
  * GET /api/v1/culturas → Cultura[]
- * BACKEND: lista fixa por enquanto; ordem = ordem de exibição.
+ * lista fixa por enquanto; ordem = ordem de exibição.
  */
 export async function listarCulturas(): Promise<Cultura[]> {
   if (await backendTem('GET', '/culturas')) return requisitar<Cultura[]>(`/culturas?idioma=${idiomaAtual()}`);
@@ -146,19 +145,13 @@ const DISTANCIA_MAXIMA_MOCK_GRAUS = 1;
 /**
  * GET /api/v1/locais?latitude=-20.73&longitude=-48.91 → Local
  * Coordenada do GPS → município (para a tela "Você está perto de …").
- * BACKEND:
- *  - ponto dentro de qual município (malha IBGE, ST_Intersects);
- *  - 404 com codigo 'fora_da_cobertura' se cair fora do Brasil ou no mar;
- *  - não guardar a coordenada além do necessário para a análise.
  */
 export async function buscarLocalPorCoordenada(latitude: number, longitude: number): Promise<Local> {
   if (await backendTem('GET', '/locais')) {
     try {
       return await requisitar<Local>(`/locais?latitude=${latitude.toFixed(5)}&longitude=${longitude.toFixed(5)}`);
     } catch (e) {
-      // Fora da cobertura de município (hoje só o Brasil tem busca por nome/malha):
-      // mostra a própria coordenada, nunca inventa uma cidade. A análise usa o
-      // ponto real de qualquer jeito — EUA e outros países funcionam assim.
+      // Fora da cobertura municipal, mostra a coordenada recebida.
       if (e instanceof FalhaApi && e.codigo === 'fora_da_cobertura') {
         return { codigo_ibge: '', municipio: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`, uf: '', latitude, longitude };
       }
@@ -170,18 +163,13 @@ export async function buscarLocalPorCoordenada(latitude: number, longitude: numb
   const distancia = (m: Local) => Math.hypot(m.latitude - latitude, m.longitude - longitude);
   const maisPerto = MUNICIPIOS_MOCK.reduce((melhor, m) => (distancia(m) < distancia(melhor) ? m : melhor));
   if (USANDO_MOCK || distancia(maisPerto) <= DISTANCIA_MAXIMA_MOCK_GRAUS) return { ...maisPerto, latitude, longitude };
-  // Modo api sem /locais e longe de todo município do mock: mostra o próprio ponto,
-  // em vez de inventar uma cidade. A análise usa a coordenada de qualquer jeito.
+  // Sem município próximo no mock, mostra a coordenada recebida.
   return { codigo_ibge: '', municipio: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`, uf: '', latitude, longitude };
 }
 
 /**
  * GET /api/v1/municipios?busca=olim&limite=8 → Local[]
  * Busca para quem prefere digitar a cidade. Chamado a cada letra (com pausa de 250 ms).
- * BACKEND:
- *  - ignorar acento e maiúscula ("sao jose" acha "São José do Rio Preto");
- *  - começar a responder a partir de 2 letras; ordenar quem começa com o texto primeiro;
- *  - latitude/longitude = centro (centroide) do município.
  */
 export async function buscarMunicipios(busca: string): Promise<Local[]> {
   const termo = normalizar(busca);
@@ -227,13 +215,6 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
 
 /**
  * POST /api/v1/analises  (corpo: AnaliseEntrada) → Analise
- * BACKEND:
- *  - devolver ≥3 estratégias já ordenadas, a prática atual incluída (o front não pontua);
- *  - preencher `talhao` com solo/relevo/riscos dos mapas, respeitando `correcoes`;
- *    as variáveis de GET /analises já trazem a base: areia_pct/argila_pct/silte_pct
- *    (textura), elevacao_*_m (relevo), precipitacao_acumulada_mm e umidade_solo_cm3_cm3 (seca);
- *  - erro 422 com codigo 'dados_insuficientes' quando não houver dado para o ponto;
- *  - se demorar mais de ~10 s, combinar processamento assíncrono (convenção §6).
  *
  * No modo 'api', usa exclusivamente o POST real. Se a rota estiver ausente,
  * informa o erro; os caminhos fictícios só existem no modo 'mock' explícito.
@@ -258,7 +239,7 @@ export const CODIGO_IBGE_EXEMPLO = '3549805';
  * GET /api/v1/producao?codigo_ibge=3549805 → PainelProducao   (REAL)
  * GET /api/v1/producao?latitude=&longitude= → PainelProducao  (REAL, EUA:
  *   Census Bureau Geocoder + USDA NASS QuickStats, qualquer coordenada)
- * BACKEND: web/Backend/app/modelos/painel_producao.py (Brasil, por código IBGE)
+ * web/Backend/app/modelos/painel_producao.py (Brasil, por código IBGE)
  * e painel_producao_eua.py (EUA, por coordenada). 404 'dados_insuficientes'
  * fora das duas coberturas, ou município/condado sem dado pré-processado.
  *
@@ -339,7 +320,7 @@ export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | n
  * GET /api/v1/previsao?codigo_ibge=3530300 → PrevisaoClima | null
  * Previsão oficial dos próximos meses para a região do município (o boletim do INMET
  * fala por região, ex.: noroeste paulista). null = não temos previsão para essa região.
- * BACKEND: previsao_do_municipio() em web/Backend/app/modelos/painel_producao.py.
+ * previsao_do_municipio() em web/Backend/app/modelos/painel_producao.py.
  */
 export async function buscarPrevisao(codigoIbge: string): Promise<PrevisaoClima | null> {
   if (!codigoIbge) return null; // sem região brasileira identificada, sem previsão

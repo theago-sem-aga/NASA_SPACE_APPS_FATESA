@@ -11,7 +11,7 @@ import { tx } from '../i18n/idioma';
  * Só usa o que já vem da análise: o calendário do caminho e a chuva média mensal.
  */
 
-/** Chuva do mês a partir da qual a terra descoberta é destacada. Proposta da equipe, sem fonte (ajustar com agrônomo). */
+/** Chuva do mês a partir da qual a terra descoberta é destacada. Limiar exploratório da equipe, sem validação agronômica. */
 const CHUVA_FORTE_MM = 100;
 const PASSO_MS = 1100;
 

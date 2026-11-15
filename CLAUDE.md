@@ -4,6 +4,9 @@
 
 > Carregado automaticamente em toda sessão (Claude ou Codex) aberta no repositório. Mantenha conciso — detalhe extenso vai em `/docs`.
 
+## Documentação local
+A pasta `/docs/` é local, ignorada pelo Git e preservada no disco. As referências abaixo se aplicam quando esses arquivos estiverem disponíveis; eles não são distribuídos em novos clones. Para os contratos atuais, consultar `/openapi.json`, os schemas e os READMEs versionados. Não adicionar pendências de implementação aos comentários do código. As instruções de leitura e registro em `/docs/` se aplicam somente quando a documentação local estiver disponível.
+
 ## Objetivo
 Transformar 25+ anos de observações da Terra (NASA) + solo local + características de culturas + prioridades do agricultor em **estratégias de rotação de culturas ranqueadas e explicáveis** para uma fazenda específica, resilientes a mudanças de temperatura, chuva e água.
 

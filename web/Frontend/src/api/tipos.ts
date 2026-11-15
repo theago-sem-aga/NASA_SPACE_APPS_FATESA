@@ -3,9 +3,6 @@
 // O contrato vigente é /openapi.json ou /docs, gerado dos schemas Pydantic.
 // EstresseTermico também está integrado; campos opcionais preservam análises antigas.
 //
-// Para o back: tudo o que o front espera e ainda não está na convenção está
-// marcado com "BACKEND:" (busque esse texto em src/). As rotas estão em
-// src/api/cliente.ts; exemplos de resposta completos, em src/api/mock/dadosMock.ts.
 
 /** Situação da cobertura do solo em um mês do calendário de uma estratégia. */
 export type CoberturaSolo =
@@ -32,7 +29,7 @@ export interface Cultura {
   nome: string;
   /**
    * false = a cultura aparece com o selo "Em breve" e não pode ser escolhida.
-   * BACKEND: true só para culturas que o motor de recomendação já sabe tratar.
+   * true habilita a seleção da cultura no fluxo de análise.
    */
   tem_demonstracao: boolean;
 }
@@ -62,8 +59,6 @@ export type OrigemLocal = 'gps' | 'municipio';
 /**
  * Local já identificado. Resposta de GET /locais (coordenada → município) e
  * item de GET /municipios (busca por nome).
- * BACKEND: usar a malha municipal do IBGE no PostGIS (ST_Intersects), sem mandar
- * a coordenada do usuário para serviço de terceiros.
  */
 export interface Local {
   /** Código IBGE do município, 7 dígitos. */
@@ -94,7 +89,7 @@ export interface AnaliseEntrada {
   recursos_disponiveis: Record<RequisitoId, Resposta>;
   /** 1 ou 2 itens. */
   prioridades: PrioridadeId[];
-  /** BACKEND: quando vier preenchido, usar no lugar do valor dos mapas e devolver a fonte como 'informado_produtor'. */
+  /** Valores informados substituem os mapas; fonte: 'informado_produtor'. */
   correcoes: CorrecoesTalhao;
   /** Idioma dos textos da resposta (caminhos, limitações). O cliente preenche com o idioma da tela. */
   idioma?: 'pt' | 'en';
@@ -145,10 +140,9 @@ export interface EtapaRotacao {
 }
 
 /**
- * BACKEND: os campos de texto (resumo, motivos, evidencias, beneficios, riscos, lacunas,
+ * Os campos de texto (resumo, motivos, evidencias, beneficios, riscos, lacunas,
  * explicacao_confianca, pergunta_especialista) aparecem na tela e são lidos em voz alta.
- * Escrever como um técnico falaria com o produtor: frases curtas, sem sigla solta, sem
- * "atributo", "critério" ou "score". Ver os exemplos em mock/dadosMock.ts.
+ * Os textos são apresentados diretamente ao produtor.
  */
 export interface Estrategia {
   estrategia_id: string;
@@ -171,7 +165,7 @@ export interface Estrategia {
   atributos: AtributosEstrategia;
   /** Sequência da rotação, para a faixa visual (ex.: cana → amendoim → cana). */
   etapas_rotacao: EtapaRotacao[];
-  /** Onde conferir. BACKEND: só referências verificadas (título + instituição, idealmente com link). */
+  /** Referências das estratégias (título, instituição e link quando disponível). */
   referencias: string[];
   /** 12 meses, na ordem em que acontecem a partir do início da reforma. */
   calendario: MesCalendario[];
@@ -182,7 +176,7 @@ export type FonteTalhao = 'mapas' | 'informado_produtor';
 
 /**
  * O que os dados dizem sobre o talhão, mostrado para o usuário confirmar ou corrigir.
- * BACKEND: tudo calculado no servidor a partir da coordenada. null = sem dado para o ponto.
+ * Calculado no servidor a partir da coordenada. null = sem dado para o ponto.
  */
 export interface CaracteristicasTalhao {
   textura_solo: TexturaSolo | null;
@@ -418,7 +412,7 @@ export interface RespostaAnalise {
   fontes_indisponiveis: FonteIndisponivel[];
 }
 
-/** Esqueleto de erro sugerido na convenção §6 (pendente de aprovação). */
+/** Contrato de erro retornado pela API. */
 export interface ErroApi {
   erro: {
     codigo: string;
@@ -578,7 +572,7 @@ export interface EstresseTermico {
   meses_com_risco: number[];
   dias_calor_ano: number;
   meses: CalorMensal[];
-  /** Limiar de calor forte, em °C (hoje 35 °C, pendente de fonte por cultura). */
+  /** Limiar de calor forte, em °C (hoje 35 °C, sem validação por cultura). */
   limiar_c: number;
   periodo_inicio: number;
   periodo_fim: number;

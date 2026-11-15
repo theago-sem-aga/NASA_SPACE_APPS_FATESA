@@ -2,7 +2,6 @@
 // para São José do Rio Preto (célula -20,9 / -49,4, a mesma da geada), 1995–2025, e calculados por um script local.
 // O limiar de 35 °C é PROPOSTA, pendente de fonte (como o limiar de 2 °C da geada).
 //
-// BACKEND: o cálculo deveria morar no back (como app/domain/geada.py), em Analise.estresse_termico.
 // Regra usada: dia de calor = máxima ≥ limiar_c; mês de risco = calor em pelo menos metade dos anos;
 // nivel = alto se o pior mês tem ≥ 5 dias de calor por ano em média, medio se há mês de risco, senão baixo.
 import type { EstresseTermico } from '../tipos';

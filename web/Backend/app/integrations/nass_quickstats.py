@@ -4,8 +4,7 @@ Requer chave gratuita (ver NASS_QUICKSTATS_API_KEY em web/.env). A API
 é por condado/estado, não por coordenada -- diferente das demais
 fontes "ao vivo" do projeto. Para a região piloto (Fresno County, CA),
 o condado é fixo; mapear coordenada arbitrária para condado exigiria
-um passo de geocodificação que não existe ainda (ver pendência em
-docs/convencao_programacao.md).
+um passo adicional de geocodificação.
 """
 
 from __future__ import annotations

@@ -4,7 +4,7 @@ import type { ClimaMensal, EstresseTermico, RiscoGeada } from '../../api/tipos';
 import { NOME_MES, NOME_MES_CURTO } from './rotulos';
 import { L, traduzivel, tx } from '../../i18n/idioma';
 
-/** Mês com menos chuva que isto aparece como "pouca chuva". Proposta, a validar com a equipe. */
+/** Mês com menos chuva que isto aparece como "pouca chuva". Limiar exploratório, sem validação agronômica. */
 const POUCA_CHUVA_MM = 50;
 
 type Alerta = 'calor' | 'geada' | 'seca';
@@ -36,8 +36,6 @@ export function fraseMesesAtencao(calor: EstresseTermico | null, geada: RiscoGea
  * "Meses de atenção": junta, mês a mês, o que os outros itens já mostram
  * (calor forte, geada e pouca chuva), para ver num olhar quando a lavoura sofre mais.
  * Não cria regra nova: só reúne os meses de risco que vêm do backend e a chuva média do mês.
- * BACKEND: o desafio pede "estações de maior vulnerabilidade da cultura atual"; quando o back
- * calcular isso por cultura (fases sensíveis), esta tela deve passar a usar esse resultado.
  */
 export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico | null; geada: RiscoGeada | null; clima: ClimaMensal[] }) {
   const alertas = (mes: number): Alerta[] => {

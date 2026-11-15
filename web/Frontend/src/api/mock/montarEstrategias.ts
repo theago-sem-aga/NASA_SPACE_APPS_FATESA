@@ -1,7 +1,6 @@
 // Monta os caminhos a partir da escolha do motor de decisão (backend), sem servidor.
 // A ESCOLHA (quais 3 caminhos, quem ficou de fora e por quê) vem pronta da tabela
 // gerada por web/Backend/app/modelos/motor_decisao.py. Aqui só se monta o texto.
-// BACKEND: quando existir POST /api/v1/analises, ele deve chamar motor_decisao.sugerir.
 import type { AnaliseEntrada, Estrategia, PrioridadeId, RequisitoId } from '../tipos';
 import { CATALOGO_ESTRATEGIAS, CATALOGO_ESTRATEGIAS_EN, CODIGOS_COM_ZARC, SUGESTOES } from './estrategiasMotor';
 import { idiomaAtual, L, traduzivel, tx } from '../../i18n/idioma';
