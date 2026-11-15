@@ -11,10 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.configuracao import configuracao
 from app.integrations import nasa_power, openet, usda_soil_data_access
+from app.modelos import precipitacao_extrema
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
 
-FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace")
+FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace", "precipitacao_extrema")
 CAMPOS = {
     "nasa_power": set(nasa_power._MAPA_PARAMETROS.values()),
     "usda_soil_data_access": {
@@ -32,6 +33,7 @@ CAMPOS = {
     "ecostress": {"temperatura_superficie_media_c"},
     "landsat": {"ndvi_medio"},
     "grace": {"armazenamento_agua_anomalia_cm"},
+    "precipitacao_extrema": {"dias_chuva_extrema_30d", "limiar_chuva_extrema_mm_dia"},
 }
 
 
@@ -75,6 +77,11 @@ def _buscar(fonte, lat, lon):
             return {"disponivel": False, "motivo": "chave_nao_configurada"}
         fim = (hoje.replace(day=1) - dt.timedelta(days=1)).replace(day=1) - dt.timedelta(days=1)
         return openet.buscar_et_ponto(lat, lon, fim.replace(day=1), fim, timeout_s=timeout)
+    if fonte == "precipitacao_extrema":
+        # Derivado do historico da NASA POWER (ingestao_power_historico.py),
+        # nao e uma fonte ingerida por si -- sem o cache dessa celula, indisponivel.
+        historico = buscar_celula("nasa_power", lat, lon)
+        return None if historico is None else precipitacao_extrema.calcular(historico["serie"])
     return buscar_celula(fonte, lat, lon)
 
 
