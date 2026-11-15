@@ -13,6 +13,7 @@ from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.geada import risco_geada
+from app.services.precipitacao_extrema import resumo_precipitacao_extrema
 
 
 def dentro_piloto(lat, lon):
@@ -22,12 +23,15 @@ def dentro_piloto(lat, lon):
 def criar_analise(entrada):
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
         clima_pendente = executor.submit(buscar_clima, entrada.latitude, entrada.longitude)
         geada_pendente = executor.submit(risco_geada, entrada.latitude, entrada.longitude)
+        precipitacao_extrema_pendente = executor.submit(
+            resumo_precipitacao_extrema, entrada.latitude, entrada.longitude
+        )
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -35,6 +39,13 @@ def criar_analise(entrada):
             geada = None
             coleta["fontes_indisponiveis"].append(
                 {"fonte": "nasa_power_geada", "motivo": "falha_fonte"}
+            )
+        try:
+            precipitacao_extrema = precipitacao_extrema_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            precipitacao_extrema = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "nasa_power_precipitacao_extrema", "motivo": "falha_fonte"}
             )
         try:
             clima = clima_pendente.result()
@@ -88,6 +99,13 @@ def criar_analise(entrada):
         )
     else:
         limitacoes.append("Risco de geada sem dado: a série de temperatura mínima não respondeu.")
+    if precipitacao_extrema:
+        limitacoes.append(
+            f"Precipitação extrema: {precipitacao_extrema['metodo']}. Grade regional da NASA POWER, "
+            "não é medição de pluviômetro no talhão; limiar estatístico, não um alerta oficial."
+        )
+    else:
+        limitacoes.append("Precipitação extrema sem dado: a série diária de chuva não respondeu.")
     if entrada.origem_local == "municipio":
         limitacoes.append("Localização aproximada por referência regional, sem precisão de talhão.")
     resultado = Analise(
@@ -101,6 +119,7 @@ def criar_analise(entrada):
         fonte_clima=clima["fonte_clima"],
         clima_mensal=clima["clima_mensal"],
         geada=geada,
+        precipitacao_extrema=precipitacao_extrema,
         estrategias=gerar_cenarios(entrada, clima["clima_mensal"]) if beta else [],
         limitacoes=limitacoes,
         versao_motor=VERSAO,

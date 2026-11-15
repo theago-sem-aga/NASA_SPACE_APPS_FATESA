@@ -139,6 +139,18 @@ class RiscoGeada(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class RiscoPrecipitacaoExtrema(BaseModel):
+    # Regra em app/modelos/precipitacao_extrema.py: percentil 95 da chuva
+    # diaria do mesmo mes, sobre o historico real da NASA POWER.
+    dias_chuva_extrema_30d: int
+    limiar_chuva_extrema_mm_dia: float
+    data_referencia: str
+    metodo: str
+    fonte: str
+    variavel: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -201,6 +213,8 @@ class Analise(BaseModel):
     clima_mensal: list[ClimaMensal]
     # None = sem série de temperatura mínima para o ponto (fonte fora do ar).
     geada: RiscoGeada | None = None
+    # None = sem série de precipitação diária para o ponto (fonte fora do ar).
+    precipitacao_extrema: RiscoPrecipitacaoExtrema | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

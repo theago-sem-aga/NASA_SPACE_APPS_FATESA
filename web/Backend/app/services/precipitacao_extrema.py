@@ -73,6 +73,25 @@ def precipitacao_extrema_do_ponto(latitude: float, longitude: float) -> dict:
     return resultado
 
 
+def resumo_precipitacao_extrema(latitude: float, longitude: float) -> dict | None:
+    """Versao achatada de precipitacao_extrema_do_ponto, pro schema RiscoPrecipitacaoExtrema
+    (app/schemas/analises.py) -- None quando a serie nao tinha medicao nenhuma."""
+    resultado = precipitacao_extrema_do_ponto(latitude, longitude)
+    serie = resultado.get("serie")
+    if not serie:
+        return None
+    linha = serie[0]
+    return {
+        "dias_chuva_extrema_30d": int(linha["dias_chuva_extrema_30d"]),
+        "limiar_chuva_extrema_mm_dia": linha["limiar_chuva_extrema_mm_dia"],
+        "data_referencia": linha["data"],
+        "metodo": resultado["metodo"],
+        "fonte": resultado["fonte"],
+        "variavel": resultado["variavel"],
+        "tipo_acesso": resultado["tipo_acesso"],
+    }
+
+
 if __name__ == "__main__":
     import sys
 
