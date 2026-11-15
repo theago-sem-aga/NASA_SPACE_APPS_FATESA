@@ -41,6 +41,7 @@ export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: E
 
   const chuvaDo = (mes: number) => clima.find(c => c.mes === mes)?.precipitacao_acumulada_mm ?? null;
   const perigosos = meses.filter(m => m.cobertura === 'solo_descoberto' && (chuvaDo(m.mes) ?? 0) >= CHUVA_FORTE_MM);
+  const descobertosSemChuva = meses.some(m => m.cobertura === 'solo_descoberto' && chuvaDo(m.mes) === null);
 
   useEffect(() => {
     if (!tocando) return;
@@ -71,7 +72,9 @@ export function AnoDaTerra({ estrategia: e, clima, fonteClima }: { estrategia: E
     <section className="ano-terra cartao" aria-labelledby="ano-terra-titulo">
       <h2 id="ano-terra-titulo" className="ano-terra-titulo">O ano da sua terra</h2>
       <p className="ano-terra-resumo">
-        {perigosos.length === 0
+        {descobertosSemChuva
+          ? 'Faltam dados de chuva em meses de terra descoberta. Não dá para avaliar todo o calendário.'
+          : perigosos.length === 0
           ? 'Neste caminho, a terra não fica descoberta em nenhum mês de chuva forte.'
           : `Neste caminho, a terra fica descoberta em ${perigosos.length === 1 ? '1 mês' : `${perigosos.length} meses`} de chuva forte (${perigosos.map(m => NOME_MES[m.mes - 1].toLowerCase()).join(', ')}).`}
       </p>

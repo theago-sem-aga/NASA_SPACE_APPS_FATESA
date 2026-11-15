@@ -9,18 +9,20 @@ em arquivo.
 
 from __future__ import annotations
 
+import json
 import os
+import re
 from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
-
 from indice_espacial import (
     RAIZ_DADOS_PROCESSADOS,
     TAMANHO_CELULA_GRAUS,
     caminho_parquet_da_celula,
     celula_id,
     limites_da_celula,
+    registrar_celula,
 )
 
 # Carrega web/.env mesmo quando o script roda isolado (fora do app FastAPI,
@@ -97,9 +99,29 @@ def buscar_por_coordenada_pg(fonte: str, latitude: float, longitude: float) -> d
     }
 
 
+def incorporar_recortes_srtm():
+    """Preserva no manifesto os recortes locais que ainda não estão no bucket.
+
+    O startup pode baixar um manifesto GCS mais antigo. Os Parquets de relevo
+    versionados no Git continuam em disco e precisam continuar indexados.
+    """
+    import pyarrow.parquet as pq
+    for caminho in sorted((RAIZ_DADOS_PROCESSADOS / "srtm_relevo").glob("*.parquet")):
+        if not re.fullmatch(r"-?\d+_-?\d+", caminho.stem):
+            continue
+        metadados = pq.read_metadata(caminho).metadata or {}
+        produto = json.loads(metadados.get(b"fatesa_srtm", b"{}"))
+        if produto.get("produto") != "SRTMGL1.003":
+            raise ValueError("Recorte SRTM sem proveniência reconhecida")
+        lat_idx, lon_idx = map(int, caminho.stem.split("_"))
+        registrar_celula("srtm_relevo", (lat_idx + 0.5) * TAMANHO_CELULA_GRAUS,
+                         (lon_idx + 0.5) * TAMANHO_CELULA_GRAUS)
+
+
 if __name__ == "__main__":
     import pandas as pd
 
+    incorporar_recortes_srtm()
     caminho_manifesto = RAIZ_DADOS_PROCESSADOS / "indice_espacial.parquet"
     if not caminho_manifesto.exists():
         print("indice_espacial.parquet nao existe ainda -- nenhuma celula pre-indexada pra migrar.")

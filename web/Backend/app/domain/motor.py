@@ -66,7 +66,11 @@ def gerar_cenarios(entrada, clima_mensal=None):
                 "A praga não foi identificada. Não há indicação de controle nem escolha de espécie por esse relato."
             )
         if entrada.origem_local == "municipio":
-            lacunas.append("A localização é aproximada e não representa os limites do seu talhão.")
+            lacunas.append(
+                "A localização é aproximada e não representa os limites do seu talhão."
+                if entrada.codigo_ibge
+                else "Coordenada digitada: confirme se o ponto representa o talhão."
+            )
         estrategias.append(
             Estrategia(
                 estrategia_id=identificador,

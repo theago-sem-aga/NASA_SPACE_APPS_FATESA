@@ -165,6 +165,13 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
           acaoRotulo={semDados ? 'Continuar' : 'Tentar de novo'}
           aoAgir={semDados ? aoContinuar : () => void carregar()}
         />
+        {!semDados && (
+          <p>
+            <button type="button" className="botao botao-secundario" onClick={aoContinuar}>
+              Continuar sem o histórico de colheita
+            </button>
+          </p>
+        )}
       </>
     );
   }
