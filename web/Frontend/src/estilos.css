@@ -1104,3 +1104,11 @@ p { margin: 0; }
 
 .selos-fontes { display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .selos-fontes .selo-fonte { margin: 0; }
+
+/* Créditos das fotos (janela do rodapé). */
+.creditos-lista { list-style: none; margin: 0; padding: 4px 18px 8px; display: grid; gap: 12px; }
+.creditos-lista li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: start; padding-bottom: 12px; border-bottom: 1px solid var(--cor-borda); }
+.creditos-miniatura { width: 96px; height: 72px; object-fit: cover; border-radius: var(--raio-pequeno); }
+.creditos-descricao { margin: 0 0 4px; font-weight: 600; line-height: 1.35; }
+.creditos-dados { margin: 0 0 4px; font-size: 0.9rem; color: var(--cor-texto-suave); }
+.creditos-nota { padding-bottom: 18px; }

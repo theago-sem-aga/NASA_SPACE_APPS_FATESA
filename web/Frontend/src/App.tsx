@@ -1,3 +1,4 @@
+import { CreditosDialogo } from './components/CreditosDialogo';
 import { GlossarioDialogo } from './components/GlossarioDialogo';
 import { Icone } from './components/Icone';
 import { ConfirmarInicio } from './components/ConfirmarInicio';
@@ -41,6 +42,7 @@ export function App() {
   const [analise, setAnalise] = useState<SituacaoAnalise>({ situacao: 'ociosa' });
   const [confirmandoInicio, setConfirmandoInicio] = useState(false);
   const [glossarioAberto, setGlossarioAberto] = useState(false);
+  const [creditosAbertos, setCreditosAbertos] = useState(false);
   const narracao = useNarracao();
   const principal = useRef<HTMLElement>(null);
   const primeiraRenderizacao = useRef(true);
@@ -376,6 +378,7 @@ export function App() {
       </main>
       {analisePronta && <ResumoImpressao dados={dados} analise={analisePronta} />}
       <GlossarioDialogo aberto={glossarioAberto} aoFechar={() => setGlossarioAberto(false)} />
+      <CreditosDialogo aberto={creditosAbertos} aoFechar={() => setCreditosAbertos(false)} />
       <ConfirmarInicio
         aberto={confirmandoInicio}
         aoCancelar={() => setConfirmandoInicio(false)}
@@ -391,7 +394,9 @@ export function App() {
           </p>
           <p>
             {USANDO_MOCK && SINALIZAR_MOCK ? 'Dados de exemplo. ' : analisePronta?.eh_mock ? 'Clima: NASA POWER. Caminhos: simulação de teste (sem conferência de agrônomo). ' : 'Clima: NASA POWER. '}
-            <a href={`${import.meta.env.BASE_URL}imagens/CREDITOS.md`}>Créditos das fotos</a>
+            <button type="button" className="link-rodape" onClick={() => setCreditosAbertos(true)}>
+              Créditos das fotos
+            </button>
             {' · '}
             <button type="button" className="link-rodape" onClick={() => setGlossarioAberto(true)}>
               Glossário
