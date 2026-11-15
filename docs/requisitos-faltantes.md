@@ -7,7 +7,7 @@
 - Geada (risco de geada, NASA POWER) — qualquer coordenada do mundo
 - Precipitação extrema (percentil 95 da chuva diária do mês) — qualquer coordenada
 - Tendência hídrica de longo prazo (Mann-Kendall + inclinação de Sen, chuva anual) — qualquer coordenada
-- Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP; Fresno em andamento): a série longa leva de minutos a horas no ORNL
+- Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP e Fresno): a série longa leva de minutos a horas no ORNL
 - GRACE/GRACE-FO (armazenamento de água) — só nos pontos já ingeridos (Fresno, SJRP)
 - Textura do solo (USDA nos EUA, SoilGrids no Brasil) — conectada no relatório
 - SMAP, GPM, SRTM, ECOSTRESS, Landsat — indexados, só nos pontos piloto (Fresno, SJRP)
