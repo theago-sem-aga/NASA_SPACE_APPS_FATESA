@@ -45,6 +45,18 @@ function Item({ pictograma, rotulo, valor, corrigido }: { pictograma: NomePictog
   );
 }
 
+/** Nome curto de cada base para a frase "De onde vem" (o back manda o nome técnico completo). */
+function nomeBase(base: string): string {
+  if (/power/i.test(base)) return 'NASA POWER (clima)';
+  if (/srtm/i.test(base)) return 'NASA SRTM (relevo)';
+  if (/3dep|usgs/i.test(base)) return 'USGS (relevo)';
+  if (/modis/i.test(base)) return 'NASA MODIS (vegetação)';
+  if (/soilgrids/i.test(base)) return 'SoilGrids (solo)';
+  if (/usda/i.test(base)) return 'USDA (solo)';
+  if (/grace/i.test(base)) return 'NASA GRACE (água no subsolo)';
+  return base;
+}
+
 const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
 
 /**
@@ -112,7 +124,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
       </ul>
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <SelosFontes fontes={talhao.bases} />}
-        {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
+        {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {[...new Set(talhao.bases.map(nomeBase))].join(', ')}.</span>}
         {!corrigindo && (
           <button type="button" className="link-discreto" onClick={abrir} aria-expanded={false}>
             Não é bem assim

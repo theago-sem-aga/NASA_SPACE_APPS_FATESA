@@ -7,7 +7,7 @@ import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA, type NomePictograma } from '../../components/Pictograma';
-import { formatarCoordenada } from '../fluxo/estadoFluxo';
+import { formatarCoordenada, parseCoordenada } from '../fluxo/estadoFluxo';
 import { SecaoPrevisao } from '../producao/TelaProducao';
 import { NOME_MES, ROTULO_COBERTURA } from '../fluxo/rotulos';
 import { dataPorExtenso, FRASE_ESTADO } from './frases';
@@ -74,8 +74,12 @@ function CartaoFoto({ foto, destaque }: { foto: FotoSatelite; destaque: boolean 
 
 // ---------- tela ----------
 
-export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, aoVoltar, aoVerResumo }: TelaAcompanhamentoProps) {
+export function TelaAcompanhamento({ local: localDaCidade, origem: origemDaCidade, estrategia, aoMudarRoteiro, aoVoltar, aoVerResumo }: TelaAcompanhamentoProps) {
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
+  /** Ponto exato informado aqui mesmo (GPS ou coordenada digitada), quando o fluxo só tinha a cidade. */
+  const [pontoProprio, setPontoProprio] = useState<{ local: Local; origem: OrigemLocal } | null>(null);
+  const local = pontoProprio?.local ?? localDaCidade;
+  const origem = pontoProprio?.origem ?? origemDaCidade;
   /** Chuva prevista dos próximos meses (da região da cidade). null = não temos para essa região. */
   const [previsao, setPrevisao] = useState<PrevisaoClima | null>(null);
 
@@ -96,13 +100,13 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
   // A previsão é opcional: se a cidade não tiver, a tela segue só com o satélite.
   useEffect(() => {
     let vivo = true;
-    buscarPrevisao(local.codigo_ibge)
+    buscarPrevisao(localDaCidade.codigo_ibge)
       .then(p => vivo && setPrevisao(p))
       .catch(() => vivo && setPrevisao(null));
     return () => {
       vivo = false;
     };
-  }, [local.codigo_ibge]);
+  }, [localDaCidade.codigo_ibge]);
 
   const mesAtual = new Date().getMonth() + 1;
   const plano = planoDoMes(estrategia, mesAtual);
@@ -128,6 +132,20 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
   }
   if (estado.situacao === 'falha') {
     const semDados = estado.codigo === 'dados_insuficientes';
+    // Sem o ponto exato não é erro: explica e deixa a pessoa dar o ponto aqui mesmo.
+    if (semDados && origem !== 'gps') {
+      return (
+        <>
+          <h1 tabIndex={-1}>Acompanhar a área</h1>
+          <PedirPonto local={localDaCidade} aoEscolher={setPontoProprio} />
+          {aoVerResumo && (
+            <button type="button" className="botao botao-secundario botao-largo" onClick={aoVerResumo}>
+              Pular e ver meu resumo <Icone nome="seguir" />
+            </button>
+          )}
+        </>
+      );
+    }
     return (
       <>
         <h1 tabIndex={-1}>Acompanhar a área</h1>
@@ -270,5 +288,80 @@ export function TelaAcompanhamento({ local, origem, estrategia, aoMudarRoteiro, 
         )}
       </div>
     </>
+  );
+}
+
+/** Pede o ponto exato da plantação: GPS do celular ou coordenada digitada. */
+function PedirPonto({ local, aoEscolher }: { local: Local; aoEscolher: (p: { local: Local; origem: OrigemLocal }) => void }) {
+  const [texto, setTexto] = useState('');
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [buscandoGps, setBuscandoGps] = useState(false);
+  const usarGps = () => {
+    if (!('geolocation' in navigator)) {
+      setAviso('Este aparelho não informa a localização. Digite a coordenada.');
+      return;
+    }
+    setBuscandoGps(true);
+    setAviso(null);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setBuscandoGps(false);
+        aoEscolher({ local: { ...local, latitude: pos.coords.latitude, longitude: pos.coords.longitude }, origem: 'gps' });
+      },
+      () => {
+        setBuscandoGps(false);
+        setAviso('Não foi possível pegar a localização. Confira a permissão do navegador ou digite a coordenada.');
+      },
+      { enableHighAccuracy: true, timeout: 20000 }
+    );
+  };
+  const usarCoordenada = () => {
+    const c = parseCoordenada(texto);
+    if (!c) {
+      setAviso('Não entendi a coordenada. Use o formato latitude, longitude. Exemplo: -20.70, -48.96');
+      return;
+    }
+    // Sem código e UF: o cliente trata como coordenada digitada (ponto real, não o centro da cidade).
+    aoEscolher({ local: { codigo_ibge: '', municipio: local.municipio, uf: '', latitude: c.latitude, longitude: c.longitude }, origem: 'municipio' });
+  };
+  return (
+    <section className="cartao pedir-ponto" aria-labelledby="pedir-ponto-titulo">
+      <h2 id="pedir-ponto-titulo" className="titulo-secao">
+        <Icone nome="local" /> Falta o ponto exato da plantação
+      </h2>
+      <p>
+        As fotos do satélite mostram um quadrado pequeno, de poucos metros. Com só a cidade ({local.municipio}), a foto cairia no
+        centro dela, em casas e ruas. Diga onde fica a sua lavoura:
+      </p>
+      <button type="button" className="botao botao-primario" onClick={usarGps} disabled={buscandoGps}>
+        <Icone nome="local" /> {buscandoGps ? 'Pegando a localização…' : 'Usar onde estou agora'}
+      </button>
+      <p className="texto-apoio">Funciona melhor se você estiver na plantação.</p>
+      <label className="pedir-ponto-rotulo" htmlFor="pedir-ponto-coordenada">
+        Ou digite a coordenada da plantação
+      </label>
+      <div className="pedir-ponto-linha">
+        <span className="campo pedir-ponto-campo">
+        <input
+          id="pedir-ponto-coordenada"
+          inputMode="decimal"
+          placeholder="-20.70, -48.96"
+          value={texto}
+          onChange={e => setTexto(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') usarCoordenada();
+          }}
+        />
+        </span>
+        <button type="button" className="botao botao-secundario" onClick={usarCoordenada}>
+          Ver as fotos
+        </button>
+      </div>
+      {aviso && (
+        <p className="texto-apoio pedir-ponto-aviso" role="alert">
+          {aviso}
+        </p>
+      )}
+    </section>
   );
 }

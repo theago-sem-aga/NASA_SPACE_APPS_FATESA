@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { AtributosEstrategia, Estrategia, Nivel, PrioridadeId, ProblemaId } from '../../api/tipos';
 import { FaixaRotacao } from '../../components/FaixaRotacao';
 import { NomeCientificoCaminho } from '../../components/NomeCientifico';
@@ -54,6 +54,21 @@ export function CarrosselEstrategias({ estrategias, prioridades, problemas = [],
   const id = useId();
   const trilho = useRef<HTMLDivElement>(null);
   const [atual, setAtual] = useState(0);
+
+  // O trilho fica com a altura do cartão à vista (os cartões têm alturas diferentes),
+  // e acompanha quando a altura muda (ex.: trocar de aba dentro do cartão).
+  useLayoutEffect(() => {
+    const el = trilho.current;
+    const item = el?.children[atual] as HTMLElement | undefined;
+    if (!el || !item) return;
+    const ajustar = () => {
+      el.style.height = `${item.offsetHeight}px`;
+    };
+    ajustar();
+    const observador = new ResizeObserver(ajustar);
+    observador.observe(item);
+    return () => observador.disconnect();
+  }, [atual, estrategias.length]);
   const total = estrategias.length;
 
   // Qual cartão está à vista, pela posição da rolagem (funciona com dedo, mouse e setas).
@@ -80,7 +95,7 @@ export function CarrosselEstrategias({ estrategias, prioridades, problemas = [],
   if (total === 0) return null;
 
   return (
-    <section className="carrossel" aria-roledescription="carrossel" aria-label={`Caminhos para ${vocab.aPeriodo}`}>
+    <section className="carrossel carrossel-estrategias" aria-roledescription="carrossel" aria-label={`Caminhos para ${vocab.aPeriodo}`}>
       <div className="carrossel-topo">
         <button type="button" className="carrossel-seta" onClick={() => irPara(atual - 1)} aria-disabled={atual === 0 || undefined} aria-label="Caminho anterior">
           <Icone nome="voltar" />

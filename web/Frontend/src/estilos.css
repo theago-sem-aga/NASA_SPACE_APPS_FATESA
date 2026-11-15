@@ -1112,3 +1112,28 @@ p { margin: 0; }
 .creditos-descricao { margin: 0 0 4px; font-weight: 600; line-height: 1.35; }
 .creditos-dados { margin: 0 0 4px; font-size: 0.9rem; color: var(--cor-texto-suave); }
 .creditos-nota { padding-bottom: 18px; }
+
+/* Quadros que abrem ("De onde vêm esses números", "O que a ferramenta não vê"): seta e sem espaço sobrando. */
+details.detalhes.cartao { display: block; }
+details.detalhes.cartao > summary { list-style: none; gap: 8px; }
+details.detalhes.cartao > summary::-webkit-details-marker { display: none; }
+details.detalhes.cartao > summary::before { content: '▸'; font-size: 1.1rem; transition: transform 0.15s; }
+details.detalhes.cartao[open] > summary::before { transform: rotate(90deg); }
+details.detalhes.cartao[open] > summary { margin-bottom: 10px; }
+
+/* Caminhos: o trilho acompanha a altura do cartão à vista (sem buraco antes de "Ver tudo"). */
+.carrossel-estrategias .carrossel-trilho { align-items: flex-start; overflow-y: hidden; transition: height 0.25s ease; }
+.carrossel-estrategias .carrossel-cartao { height: auto; }
+@media (prefers-reduced-motion: reduce) { .carrossel-estrategias .carrossel-trilho { transition: none; } }
+
+/* Faixa da rotação: no resumo cabe numa linha; se não couber, rola de lado em vez de deixar uma etapa sozinha. */
+.resumo-caminho .faixa-rotacao { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+.resumo-caminho .faixa-rotacao-etapa { min-width: 56px; }
+
+/* Acompanhar sem o ponto exato. */
+.pedir-ponto { gap: 12px; }
+.pedir-ponto .titulo-secao { display: flex; align-items: center; gap: 8px; }
+.pedir-ponto-rotulo { font-weight: 700; margin-top: 4px; }
+.pedir-ponto-linha { display: flex; gap: 8px; flex-wrap: wrap; }
+.pedir-ponto-campo { flex: 1 1 180px; }
+.pedir-ponto-aviso { color: var(--cor-erro); margin: 0; }
