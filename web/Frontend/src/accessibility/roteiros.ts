@@ -2,7 +2,7 @@
 // frases curtas, ditas como alguém explicando ao lado, e não a leitura da tela.
 // Regras: nada de sigla solta ("SP" vira o nome da cidade), nada de lista colada
 // com ponto e vírgula, sempre terminar dizendo o que fazer em seguida.
-import { SINALIZAR_MOCK } from '../api/cliente';
+import { SINALIZAR_MOCK, USANDO_MOCK } from '../api/cliente';
 import type { Analise, Estrategia, RequisitoId } from '../api/tipos';
 import type { DadosFluxo, Etapa } from '../features/fluxo/estadoFluxo';
 import {
@@ -84,7 +84,7 @@ function roteiroClima(a: Analise, e: Estrategia): string {
 }
 
 export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise | null, estrategia: Estrategia | null): string {
-  const aviso = analise?.eh_mock && SINALIZAR_MOCK ? 'Lembrete: estes números são uma simulação de teste, ainda sem conferência de um agrônomo. ' : '';
+  const aviso = USANDO_MOCK && SINALIZAR_MOCK ? 'Lembrete: estes dados são de exemplo. ' : analise?.eh_mock ? 'Lembrete: estes caminhos são uma simulação de teste, ainda sem conferência de um agrônomo; o clima é real. ' : '';
   const v = vocabulario(dados.cultura_atual_id, dados.nomeCultura);
   switch (etapa) {
     case 'inicio':
