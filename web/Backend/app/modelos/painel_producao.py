@@ -24,14 +24,20 @@ from pathlib import Path
 
 import pandas as pd
 
+from app.modelos.clima_anual import comparar_ano
+from app.services.ibge_pam import buscar_pam_municipio
+from app.services.locais import buscar_por_codigo
+
 RAIZ = Path(__file__).resolve().parents[4]
 PROCESSADOS = RAIZ / "data" / "processed"
 SAIDA_FRONT = RAIZ / "web" / "Frontend" / "src" / "api" / "mock" / "producaoMunicipio.ts"
 SAIDA_PREVISAO = RAIZ / "web" / "Frontend" / "src" / "api" / "mock" / "previsaoRegiao.ts"
 
-# Celula 0,1 grau do centro de cada municipio com dados (ver pipelines/regioes.py).
+# Município piloto, com nome/UF fixos (cópia local do front, sem depender da
+# base de municípios). Qualquer outro código IBGE busca nome/UF/coordenada
+# em services/locais.py (base real do IBGE, qualquer município do Brasil).
 MUNICIPIOS = {
-    "3549805": {"municipio": "São José do Rio Preto", "uf": "SP", "celula_power": "-209_-494"},
+    "3549805": {"municipio": "São José do Rio Preto", "uf": "SP", "latitude": -20.78, "longitude": -49.36},
 }
 
 # cultura_id do front (src/components/Pictograma.tsx) -> (nome na PAM, nome no modelo, nome curto)
@@ -88,34 +94,18 @@ def previsao_do_municipio(codigo_ibge: str) -> dict | None:
     return None
 
 
-def _clima(anual: pd.DataFrame, ano: int) -> dict:
-    # A normal sai dos anos ANTERIORES ao comparado: incluir o proprio ano puxaria a media para ele.
-    anteriores = anual.loc[anual.index < ano]
-    chuva, chuva_normal = float(anual.at[ano, "chuva"]), float(anteriores["chuva"].mean())
-    tmax, tmax_normal = float(anual.at[ano, "tmax"]), float(anteriores["tmax"].mean())
-    proporcao = chuva / chuva_normal
-    graus = tmax - tmax_normal
-    return {
-        "ano": ano,
-        "chuva_mm": round(chuva),
-        "chuva_normal_mm": round(chuva_normal),
-        # 15% abaixo/acima da media = pouca/muita chuva.
-        "situacao_chuva": "pouca" if proporcao <= 0.85 else "muita" if proporcao >= 1.15 else "normal",
-        # Para o desenho de gotas: de cada 10 de um ano normal, quantas cairam.
-        "gotas_em_10": int(round(proporcao * 10)),
-        "tmax_c": round(tmax, 1),
-        "tmax_normal_c": round(tmax_normal, 1),
-        "situacao_calor": "mais_quente" if graus >= 1 else "mais_frio" if graus <= -1 else "normal",
-        "graus_de_diferenca": int(round(graus)),
-        "periodo_normal": f"{int(anteriores.index.min())}-{int(anteriores.index.max())}",
-    }
-
-
 def montar_painel(codigo_ibge: str) -> dict:
-    if codigo_ibge not in MUNICIPIOS:
-        raise LookupError(f"sem dados pre-processados para o municipio {codigo_ibge}")
-    m = MUNICIPIOS[codigo_ibge]
-    pam = pd.read_parquet(PROCESSADOS / "ibge_pam" / f"municipio_{codigo_ibge}.parquet")
+    if codigo_ibge in MUNICIPIOS:
+        m = MUNICIPIOS[codigo_ibge]
+    else:
+        encontrado = buscar_por_codigo(codigo_ibge)
+        if encontrado is None:
+            raise LookupError(f"código IBGE desconhecido: {codigo_ibge}")
+        m = encontrado
+
+    pam = buscar_pam_municipio(codigo_ibge)
+    if pam.empty:
+        raise LookupError(f"IBGE sem PAM publicada para o município {codigo_ibge}")
     pam = pam.pivot_table(index=["produto", "ano"], columns="variavel", values="valor").reset_index()
 
     culturas = []
@@ -125,34 +115,27 @@ def montar_painel(codigo_ibge: str) -> dict:
             continue
         culturas.append({"cultura_id": cultura_id, "nome": nome, **_situacao(serie)})
 
-    clima = pd.read_parquet(PROCESSADOS / "nasa_power" / f"{m['celula_power']}.parquet")
-    clima["ano"] = clima["data"].str[:4].astype(int)
-    anual = clima.groupby("ano").agg(chuva=("precipitacao_acumulada_mm", "sum"),
-                                     tmax=("temperatura_maxima_c", "mean"),
-                                     dias=("precipitacao_acumulada_mm", "count"))
-    # So anos completos: somar a chuva de um ano pela metade daria "choveu pouco" sem ser verdade.
-    anual = anual[anual["dias"] >= 365]
-    # O tempo mostrado e o do MESMO ano da colheita mostrada, para explicar aquela colheita.
-    ano_colheita = max((c["ano"] for c in culturas), default=int(anual.index.max()))
-    if ano_colheita not in anual.index or anual.index.min() >= ano_colheita:
-        raise LookupError(
-            f"cache da NASA POWER sem o ano {ano_colheita} completo (anos completos ate {int(anual.index.max())}); "
-            "rode pipelines/ingestao_power_historico.py de novo"
-        )
+    # O tempo mostrado é o do MESMO ano da colheita mostrada, pra explicar aquela colheita.
+    ano_colheita = max((c["ano"] for c in culturas), default=None)
+    clima = comparar_ano(m["latitude"], m["longitude"], ano_colheita)
+
+    limitacoes = [
+        "Números da cidade toda, não da sua roça.",
+        "A previsão vale para os próximos 3 meses. Ninguém consegue prever a chuva de um ano inteiro.",
+    ]
+    if clima is None:
+        limitacoes.append("Clima sem dado: a série diária da NASA POWER não respondeu ou está incompleta.")
 
     return {
         "codigo_ibge": codigo_ibge,
         "municipio": m["municipio"],
         "uf": m["uf"],
         "culturas": culturas,
-        "clima": _clima(anual, ano_colheita),
+        "clima": clima,
         "previsao": previsao_do_municipio(codigo_ibge),
         "fontes": ["IBGE – Produção Agrícola Municipal (tabela 5457)", "NASA POWER (MERRA-2)",
                    "INMET, INPE e FUNCEME – prognóstico climático trimestral"],
-        "limitacoes": [
-            "Números da cidade toda, não da sua roça.",
-            "A previsão vale para os próximos 3 meses. Ninguém consegue prever a chuva de um ano inteiro.",
-        ],
+        "limitacoes": limitacoes,
         "tipo_dado": "observacao_historica",
         "gerado_em": dt.date.today().isoformat(),
     }

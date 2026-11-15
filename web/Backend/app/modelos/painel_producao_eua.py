@@ -15,11 +15,9 @@ from __future__ import annotations
 
 import datetime as dt
 
-import pandas as pd
-
 from app.integrations.census_geocoder import buscar_condado_ponto
 from app.integrations.nass_quickstats import buscar_serie_condado
-from app.services.serie_power_diaria import serie_diaria
+from app.modelos.clima_anual import comparar_ano
 
 ANOS_MEDIA = 5
 LIMIAR_SITUACAO_PCT = 5
@@ -57,56 +55,6 @@ def _situacao(serie_por_ano: dict[int, float], unidade: str | None) -> dict:
     }
 
 
-def _clima(latitude: float, longitude: float) -> dict | None:
-    """Mesma conta de painel_producao._clima(), mas com a série multi-regional
-    da NASA POWER (cache local se existir, senão ao vivo). Unidades (mm, °C)
-    são sempre métricas aqui -- sem risco de conversão, diferente da produção."""
-    serie, _ = serie_diaria(
-        latitude,
-        longitude,
-        ("precipitacao_acumulada_mm", "temperatura_maxima_c"),
-        ("PRECTOTCORR", "T2M_MAX"),
-        "painel_producao_eua_clima",
-    )
-    df = pd.DataFrame(serie)
-    if df.empty or "precipitacao_acumulada_mm" not in df or "temperatura_maxima_c" not in df:
-        return None
-    df = df[["data", "precipitacao_acumulada_mm", "temperatura_maxima_c"]].dropna()
-    if df.empty:
-        return None
-    df["data"] = pd.to_datetime(df["data"])
-    df["ano"] = df["data"].dt.year
-    anual = df.groupby("ano").agg(
-        chuva=("precipitacao_acumulada_mm", "sum"),
-        tmax=("temperatura_maxima_c", "mean"),
-        dias=("precipitacao_acumulada_mm", "count"),
-    )
-    anual = anual[anual["dias"] >= 360]  # ano quase completo; a POWER às vezes atrasa 1-2 dias recentes
-    if len(anual) < 2:
-        return None
-    ano_colheita = int(anual.index.max())
-    anteriores = anual.loc[anual.index < ano_colheita]
-    if anteriores.empty:
-        return None
-
-    chuva, chuva_normal = float(anual.at[ano_colheita, "chuva"]), float(anteriores["chuva"].mean())
-    tmax, tmax_normal = float(anual.at[ano_colheita, "tmax"]), float(anteriores["tmax"].mean())
-    proporcao = chuva / chuva_normal if chuva_normal else 1.0
-    graus = tmax - tmax_normal
-    return {
-        "ano": ano_colheita,
-        "chuva_mm": round(chuva),
-        "chuva_normal_mm": round(chuva_normal),
-        "situacao_chuva": "pouca" if proporcao <= 0.85 else "muita" if proporcao >= 1.15 else "normal",
-        "gotas_em_10": int(round(proporcao * 10)),
-        "tmax_c": round(tmax, 1),
-        "tmax_normal_c": round(tmax_normal, 1),
-        "situacao_calor": "mais_quente" if graus >= 1 else "mais_frio" if graus <= -1 else "normal",
-        "graus_de_diferenca": int(round(graus)),
-        "periodo_normal": f"{int(anteriores.index.min())}-{int(anteriores.index.max())}",
-    }
-
-
 def montar_painel(latitude: float, longitude: float) -> dict | None:
     """None quando o ponto cai fora dos EUA (Census Geocoder sem condado)."""
     local = buscar_condado_ponto(latitude, longitude)
@@ -123,7 +71,8 @@ def montar_painel(latitude: float, longitude: float) -> dict | None:
             continue
         culturas.append({"cultura_id": cultura_id, "nome": nome, **_situacao(resultado["serie_por_ano"], resultado["unidade"])})
 
-    clima = _clima(latitude, longitude)
+    ano_colheita = max((c["ano"] for c in culturas), default=None)
+    clima = comparar_ano(latitude, longitude, ano_colheita)
     limitacoes = [
         "Números do condado todo, não da sua propriedade.",
         "Rendimento na unidade nativa da NASS (não convertido pra kg/ha): bushel pesa "
