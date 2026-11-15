@@ -82,7 +82,7 @@ export const ROTULO_ATRIBUTO: Record<keyof AtributosEstrategia, { nome: string; 
   renda_direta: { nome: 'Dá dinheiro até o próximo plantio', maiorEhMelhor: true },
   demanda_agua: { nome: 'Gasta água', maiorEhMelhor: false },
   trabalho_custo: { nome: 'Dá trabalho e gasto', maiorEhMelhor: false },
-  valor_forragem: { nome: 'Dá comida pro gado', maiorEhMelhor: true }
+  valor_forragem: { nome: 'Dá comida para o gado', maiorEhMelhor: true }
 };
 
 /** O que cada ponto quer dizer, em uma frase (legenda de "Todos os pontos"). */

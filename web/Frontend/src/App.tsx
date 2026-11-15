@@ -390,7 +390,7 @@ export function App() {
             Feito pela equipe FATESA no NASA Space Apps Challenge 2026. Ajuda a pensar, mas não substitui o agrônomo.
           </p>
           <p>
-            {(analisePronta?.eh_mock ?? USANDO_MOCK) && SINALIZAR_MOCK ? 'Simulação de teste (sem conferência de agrônomo). ' : 'Clima: NASA POWER. '}
+            {USANDO_MOCK && SINALIZAR_MOCK ? 'Dados de exemplo. ' : analisePronta?.eh_mock ? 'Clima: NASA POWER. Caminhos: simulação de teste (sem conferência de agrônomo). ' : 'Clima: NASA POWER. '}
             <a href={`${import.meta.env.BASE_URL}imagens/CREDITOS.md`}>Créditos das fotos</a>
             {' · '}
             <button type="button" className="link-rodape" onClick={() => setGlossarioAberto(true)}>

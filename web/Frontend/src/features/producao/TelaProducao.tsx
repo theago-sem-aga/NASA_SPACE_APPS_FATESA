@@ -232,7 +232,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
               </div>
             </div>
           ) : (
-            <p className="texto-apoio">Sem dado de clima pra essa região ainda.</p>
+            <p className="texto-apoio">Ainda não há dado de clima para esta região.</p>
           )}
         </section>
       </div>
