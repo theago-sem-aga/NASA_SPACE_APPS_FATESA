@@ -51,7 +51,7 @@ def gerar_cenarios(entrada, clima_mensal=None):
     for indice, (identificador, nome, prioridades, cobertura) in enumerate(definicoes):
         coincidencias = [p for p in entrada.prioridades if p in prioridades]
         lacunas = [
-            "Calendário e níveis de comparação são simulados; as datas reais de plantio e colheita não foram informadas.",
+            "Calendário e níveis de comparação são simulados, já que as datas reais de plantio e colheita não foram informadas.",
             "Não sabemos a espécie, cultivar, análise de solo e histórico de manejo necessários para recomendar esta opção.",
         ]
         riscos = [
@@ -59,11 +59,11 @@ def gerar_cenarios(entrada, clima_mensal=None):
         ]
         if entrada.recursos_disponiveis.irrigacao != "sim":
             riscos.append(
-                "Irrigação não confirmada. O sistema não garante estabelecimento da cobertura com a chuva histórica."
+                "Como a irrigação não foi confirmada, o sistema não garante o estabelecimento da cobertura apenas com a chuva histórica."
             )
         if "nematoides_pragas" in entrada.problemas:
             lacunas.append(
-                "A praga não foi identificada. Não há indicação de controle nem escolha de espécie por esse relato."
+                "Como a praga não foi identificada, não há indicação de controle nem escolha de espécie a partir desse relato."
             )
         if entrada.origem_local == "municipio":
             lacunas.append("A localização é aproximada e não representa os limites do seu talhão.")
@@ -71,27 +71,27 @@ def gerar_cenarios(entrada, clima_mensal=None):
             Estrategia(
                 estrategia_id=identificador,
                 nome=nome,
-                resumo="Cenário simulado para explorar a conversa com um técnico. Não é recomendação validada para o seu talhão.",
+                resumo="É um cenário simulado para explorar a conversa com um técnico, e não uma recomendação validada para o seu talhão.",
                 eh_pratica_atual=indice == 0,
                 objetivo="Comparar hipóteses de manejo entre ciclos da cultura principal.",
                 motivos=[
-                    "Coincide com uma prioridade informada."
+                    "Isto coincide com uma prioridade informada."
                     if coincidencias
-                    else "Referência exploratória para comparação.",
+                    else "É uma referência exploratória para comparação.",
                     "A ordem usa apenas a quantidade de prioridades coincidentes, sem previsão de desempenho.",
                 ],
                 evidencias=[
-                    "A referência consultada discute coberturas em sistemas anuais da Califórnia; não valida este calendário simulado."
+                    "A referência consultada discute coberturas em sistemas anuais da Califórnia, mas não valida este calendário simulado."
                 ],
                 beneficios=[
-                    "Possível aporte de resíduos vegetais; o efeito local depende do manejo."
+                    "Há possível aporte de resíduos vegetais, mas o efeito local depende do manejo."
                 ]
                 if indice
-                else ["Referência de comparação, sem benefício agronômico quantificado."],
+                else ["É uma referência de comparação, sem benefício agronômico quantificado."],
                 riscos=riscos,
                 lacunas=lacunas,
                 confianca="baixa",
-                explicacao_confianca="Hipótese beta sem validação local. Confiança não é probabilidade de sucesso.",
+                explicacao_confianca="É uma hipótese beta sem validação local, e essa confiança não é probabilidade de sucesso.",
                 pergunta_especialista="Esta cobertura cabe entre as minhas safras sem comprometer água e manejo?",
                 prioridades_atendidas=coincidencias,
                 requisitos=[],
@@ -139,7 +139,7 @@ def gerar_cenarios(entrada, clima_mensal=None):
             acumulado = sum(chuva[m] for m in descobertos)
             if total > 0:
                 estrategia.evidencias.append(
-                    f"No calendário SIMULADO, os meses descobertos coincidem com {acumulado / total:.1%} da chuva histórica média anual. "
-                    "É uma comparação de calendário, não uma estimativa de erosão ou previsão de chuva."
+                    f"No calendário SIMULADO, os meses descobertos coincidem com {acumulado / total:.1%} da chuva histórica média anual, "
+                    "mas isso é uma comparação de calendário, não uma estimativa de erosão ou previsão de chuva."
                 )
     return sorted(estrategias, key=lambda e: -len(e.prioridades_atendidas))
