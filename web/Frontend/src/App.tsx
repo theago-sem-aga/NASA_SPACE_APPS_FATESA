@@ -267,7 +267,7 @@ export function App() {
       return (
         <>
           <h1 tabIndex={-1}>{tx('Montando os caminhos', 'Building your options')}</h1>
-          <EstadoCarregando mensagem={tx('Olhando a chuva dos últimos 30 anos e a terra daí…', 'Looking at 30 years of rain and at your land…')} />
+          <EstadoCarregando mensagem={tx('Olhando a chuva dos últimos 30 anos e a terra desse lugar…', 'Looking at 30 years of rain and at your land…')} />
         </>
       );
     }
