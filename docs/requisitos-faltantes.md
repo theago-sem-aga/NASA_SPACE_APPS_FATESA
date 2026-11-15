@@ -7,7 +7,7 @@
 - Geada (risco de geada, NASA POWER) — qualquer coordenada do mundo
 - Precipitação extrema (percentil 95 da chuva diária do mês) — qualquer coordenada
 - Tendência hídrica de longo prazo (Mann-Kendall + inclinação de Sen, chuva anual) — qualquer coordenada
-- Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP e Fresno): a série longa levou de 8 a 20 min por ponto no ORNL (medido em 15/11/2026). Os pontos baixados não tiveram o uso do solo conferido; cortes e limiar escolhidos sem fonte agronômica
+- Estresse vegetal (NDVI do MODIS pela API do ORNL, sem HDF4, vs. o normal da mesma época) — só onde a série já foi baixada (SJRP e Fresno): a série longa levou de 8 a 20 min por ponto no ORNL (medido em 15/11/2026). Os pontos baixados são lavoura (confirmado pelo Thiago). Faixas do NDVI, limiar de 0,2 e causas de queda seguem o artigo da EOSDA sobre NDVI; os cortes 10/25/90% seguem sem fonte agronômica
 - GRACE/GRACE-FO (armazenamento de água) — só nos pontos já ingeridos (Fresno, SJRP)
 - Textura do solo (USDA nos EUA, SoilGrids no Brasil) — conectada no relatório
 - SMAP, GPM, SRTM, ECOSTRESS, Landsat — indexados, só nos pontos piloto (Fresno, SJRP)

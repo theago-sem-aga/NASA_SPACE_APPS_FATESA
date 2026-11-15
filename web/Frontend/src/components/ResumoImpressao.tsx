@@ -43,7 +43,7 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
       {analise.estresse_vegetal && (
         <p>
           <strong>Vigor da vegetação (NDVI):</strong> {fraseEstresse(analise.estresse_vegetal)}{' '}
-          ({linhaTecnicaEstresse(analise.estresse_vegetal)} NDVI baixo também é colheita ou preparo do solo; confirmar no campo.)
+          ({linhaTecnicaEstresse(analise.estresse_vegetal)} Queda do NDVI também é colheita ou senescência; confirmar no campo. Fonte das faixas e causas: {analise.estresse_vegetal.fonte_referencia}.)
         </p>
       )}
 

@@ -165,9 +165,10 @@ def criar_analise(entrada):
     if estresse:
         limitacoes.append(
             f"Estresse vegetal: {estresse['metodo']}, foto de {estresse['data_foto']}, pixel de 250 m "
-            f"a {estresse['distancia_pixel_km']:g} km do ponto. NDVI baixo também é colheita, preparo do solo "
-            "ou troca de cultura, não só estresse: quem conhece o talhão confirma. Os cortes (10%, 25%, 90%) e o "
-            "limiar de 0,20 para \"sem planta\" foram escolhidos sem fonte agronômica: pendentes de revisão."
+            f"a {estresse['distancia_pixel_km']:g} km do ponto. Queda do NDVI pode ser estresse hídrico, pragas, "
+            "doenças ou falta de nutrientes, mas também colheita ou senescência, que não são problema: ler junto "
+            f"com o campo e o clima ({estresse['fonte_referencia']}, de onde vêm também as faixas e o limiar de "
+            "0,20). Os cortes de 10%, 25% e 90% não têm fonte agronômica: pendentes de revisão."
         )
     else:
         limitacoes.append(
@@ -219,6 +220,8 @@ def criar_analise(entrada):
         bases.append(solo["fonte"])
     if usa_declividade_calculada:
         bases.append(declividade["fonte"])
+    if estresse:
+        bases.append("MODIS")
 
     if catalogo_real:
         municipio = buscar_por_codigo(entrada.codigo_ibge) if entrada.codigo_ibge else None

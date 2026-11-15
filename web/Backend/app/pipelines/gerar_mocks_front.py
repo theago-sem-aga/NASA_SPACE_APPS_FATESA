@@ -89,10 +89,9 @@ def gerar_estresse() -> None:
         "EstresseVegetal",
         [
             f"Numeros REAIS do NDVI do MODIS (MOD13Q1, API do ORNL), congelados em {_hoje()}.",
-            "Sao Jose do Rio Preto: pixel (-20.89, -49.36), celula -209_-494. Escolhido por ter NDVI alto",
-            "(0,83 em fev/2025) e ciclo anual; o uso do solo (lavoura, pasto, mata) NAO foi verificado.",
-            "Fresno: pixel (36.65, -119.65), celula 366_-1197. Escolhido sem conferir o uso do solo",
-            "(NAO verificado se e lavoura). Para ver no mock: ?simular=fresno",
+            "Sao Jose do Rio Preto: pixel (-20.89, -49.36), celula -209_-494. Fresno: pixel (36.65, -119.65),",
+            "celula 366_-1197. Os dois sao lavoura (confirmado pelo Thiago em 15/11/2026).",
+            "Para ver Fresno no mock: ?simular=fresno",
         ],
         valores,
         anulavel=True,

@@ -198,7 +198,8 @@ class FotoNdvi(BaseModel):
 class EstresseVegetal(BaseModel):
     # Regra em app/domain/estresse_vegetal.py: NDVI MODIS da foto mais recente
     # vs. os anos anteriores no mesmo período de 16 dias. NDVI baixo também é
-    # colheita ou preparo do solo; cortes e limiar escolhidos sem fonte, pendentes de revisão.
+    # colheita ou senescência. Faixas e limiar 0,20: artigo da EOSDA (fonte_referencia);
+    # cortes 10/25/90% sem fonte, pendentes de revisão.
     situacao: Literal["normal", "abaixo", "muito_abaixo", "acima", "sem_vegetacao"]
     data_foto: str
     ndvi_atual: float
@@ -213,6 +214,10 @@ class EstresseVegetal(BaseModel):
     anos_comparados: int
     ndvi_mediano_geral: float
     limiar_sem_vegetacao: float
+    faixa_ndvi_atual: Literal[
+        "agua_neve_nuvem", "solo_nu", "vegetacao_esparsa_ou_estressada", "vegetacao_densa_saudavel", "entre_faixas"
+    ]
+    fonte_referencia: str
     ultimas_fotos: list[FotoNdvi]
     periodo_inicio: int
     periodo_fim: int

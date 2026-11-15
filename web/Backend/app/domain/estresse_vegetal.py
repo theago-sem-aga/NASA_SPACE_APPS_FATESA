@@ -17,16 +17,29 @@ Método (explicável, sem caixa-preta):
    - acima dos 90% -> "acima" (mais verde que o normal);
    - senão "normal".
 5. Pixel que quase nunca tem planta (mediana do NDVI de todas as fotos abaixo de
-   LIMIAR_SEM_VEGETACAO: cidade, água, rocha) -> "sem_vegetacao", sem nível.
+   LIMIAR_SEM_VEGETACAO) -> "sem_vegetacao", sem nível.
+6. Faixa do NDVI da foto pela tabela de referência da FONTE_REFERENCIA
+   (FAIXAS_NDVI), só onde a fonte dá o intervalo; fora deles, "entre_faixas".
+
+Fonte de referência (FONTE_REFERENCIA): artigo sobre NDVI na agricultura da
+EOSDA (EOS Data Analytics, plataforma EOSDA Crop Monitoring), texto enviado
+pelo Thiago em 15/11/2026; o link não foi registrado. Dele vêm:
+- a tabela de faixas: -1,0 a -0,1 água, neve ou nuvem densa; "0 a 0,?" solo nu,
+  rocha ou deserto (o limite de cima veio cortado no texto recebido; usamos até
+  0,2, onde começa a faixa seguinte); 0,2 a 0,5 vegetação esparsa ou estressada;
+  0,6 a 1,0 vegetação densa e saudável;
+- o LIMIAR_SEM_VEGETACAO de 0,20 (início da faixa de vegetação);
+- as causas de queda do NDVI: estresse hídrico, pragas, doenças ou falta de
+  nutrientes; e as naturais, que não são problema: colheita e senescência;
+- a regra de não ler o NDVI isolado: junto com campo, clima e o histórico.
 
 Limites (devem aparecer na UI):
-- NDVI baixo também é colheita, preparo do solo ou troca de cultura, não só
-  estresse. Quem conhece o talhão confirma.
+- NDVI baixo também é colheita ou senescência (envelhecimento natural das
+  folhas), não só estresse. Quem conhece o talhão confirma.
 - Pixel de 250 m: o talhão pequeno se mistura com o vizinho.
-- Os cortes de 10%/25%/90% e o LIMIAR_SEM_VEGETACAO de 0,20 foram escolhidos
-  no desenvolvimento (Claude), SEM fonte agronômica ou bibliográfica. São
-  posição estatística entre os anos, não limiares agronômicos. Pendentes de
-  revisão por especialista antes de virar regra validada.
+- Os cortes de 10%/25%/90% NÃO estão na fonte: foram escolhidos no
+  desenvolvimento (Claude), como posição estatística entre os anos. Pendentes
+  de revisão por especialista antes de virar regra validada.
 """
 
 from __future__ import annotations
@@ -37,7 +50,17 @@ from collections.abc import Iterable, Mapping
 from statistics import median
 
 CONFIABILIDADE_ACEITA = (0, 1)  # 0 bom, 1 marginal
-LIMIAR_SEM_VEGETACAO = 0.20  # escolha sem fonte; ver Limites acima
+FONTE_REFERENCIA = "Artigo da EOSDA sobre NDVI na agricultura (enviado pelo Thiago em 15/11/2026)"
+# Início da faixa "vegetação esparsa ou estressada" na tabela da FONTE_REFERENCIA.
+LIMIAR_SEM_VEGETACAO = 0.20
+# Tabela de faixas da FONTE_REFERENCIA: (mínimo, máximo, nome). Só os intervalos
+# que a fonte dá; valores fora deles ficam "entre_faixas".
+FAIXAS_NDVI = (
+    (-1.0, -0.1, "agua_neve_nuvem"),
+    (0.0, 0.2, "solo_nu"),  # limite de cima cortado no texto; 0,2 = início da faixa seguinte
+    (0.2, 0.5, "vegetacao_esparsa_ou_estressada"),
+    (0.6, 1.0, "vegetacao_densa_saudavel"),
+)
 MINIMO_ANOS = 8
 DIAS_POR_PERIODO = 16
 PERIODOS_NO_GRAFICO = 23  # um ano de fotos de 16 dias
@@ -86,6 +109,15 @@ def _normal(por_periodo: dict[int, dict[int, float]], data: str) -> list[float]:
     """NDVI dos anos anteriores ao da data, no mesmo período."""
     ano = int(data[0:4])
     return [v for a, v in por_periodo.get(periodo_do_ano(data), {}).items() if a < ano]
+
+
+def faixa_ndvi(valor: float) -> str:
+    """Nome da faixa da tabela de referência; 'entre_faixas' onde a fonte não dá intervalo."""
+    for minimo, maximo, nome in FAIXAS_NDVI:
+        dentro = minimo <= valor < maximo if nome == "solo_nu" else minimo <= valor <= maximo
+        if dentro:
+            return nome
+    return "entre_faixas"
 
 
 def situacao_por_posicao(posicao: float) -> str:
@@ -146,6 +178,8 @@ def calcular_estresse_vegetal(serie: Iterable[Mapping]) -> dict:
         "anos_comparados": len(normal),
         "ndvi_mediano_geral": round(mediana_geral, 3),
         "limiar_sem_vegetacao": LIMIAR_SEM_VEGETACAO,
+        "faixa_ndvi_atual": faixa_ndvi(atual["ndvi"]),
+        "fonte_referencia": FONTE_REFERENCIA,
         "ultimas_fotos": grafico,
         "periodo_inicio": anos[0],
         "periodo_fim": anos[-1],

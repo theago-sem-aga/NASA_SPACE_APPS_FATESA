@@ -77,6 +77,8 @@ ESTRESSE_FIXTURE = {
     "anos_comparados": 26,
     "ndvi_mediano_geral": 0.6,
     "limiar_sem_vegetacao": 0.2,
+    "faixa_ndvi_atual": "vegetacao_esparsa_ou_estressada",
+    "fonte_referencia": "fixture",
     "ultimas_fotos": [
         {"data": "2026-10-16", "ndvi": 0.41, "normal_mediana": 0.62, "normal_p10": 0.48, "normal_p90": 0.72}
     ],
@@ -265,6 +267,7 @@ def test_analise_traz_estresse_vegetal(cliente, monkeypatch, repositorio, entrad
     corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
     assert corpo["estresse_vegetal"]["situacao"] == "muito_abaixo"
     assert corpo["estresse_vegetal"]["anos_comparados"] == 26
+    assert "MODIS" in corpo["talhao"]["bases"]
     assert any("Estresse vegetal" in t and "colheita" in t for t in corpo["limitacoes"])
 
 

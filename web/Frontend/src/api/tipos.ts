@@ -326,6 +326,10 @@ export interface EstresseVegetal {
   anos_comparados: number;
   ndvi_mediano_geral: number;
   limiar_sem_vegetacao: number;
+  /** Faixa do NDVI da foto na tabela de referência (fonte_referencia); 'entre_faixas' onde a fonte não dá intervalo. */
+  faixa_ndvi_atual: 'agua_neve_nuvem' | 'solo_nu' | 'vegetacao_esparsa_ou_estressada' | 'vegetacao_densa_saudavel' | 'entre_faixas';
+  /** De onde vêm a tabela de faixas, o limiar de 0,20 e as causas de queda do NDVI. */
+  fonte_referencia: string;
   /** Último ano de fotos válidas, com o normal de cada época (para o gráfico). */
   ultimas_fotos: FotoNdvi[];
   periodo_inicio: number;
