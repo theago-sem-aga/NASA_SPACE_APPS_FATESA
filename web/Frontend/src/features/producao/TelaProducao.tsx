@@ -1,6 +1,6 @@
 import { NomeCientifico } from '../../components/NomeCientifico';
 import { useCallback, useEffect, useState } from 'react';
-import { buscarPainelProducao, CODIGO_IBGE_EXEMPLO, FalhaApi } from '../../api/cliente';
+import { buscarPainelProducao, FalhaApi } from '../../api/cliente';
 import type { ChuvaDoMes, ColheitaCultura, Local, PainelProducao, PrevisaoClima, SituacaoColheita, Tendencia } from '../../api/tipos';
 import { EstadoCarregando, EstadoFalha } from '../../components/Estados';
 import { Icone } from '../../components/Icone';
@@ -120,19 +120,22 @@ export function SecaoPrevisao({ previsao: pv }: { previsao: PrevisaoClima }) {
 // ---------- tela ----------
 
 export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, aoContinuar }: TelaProducaoProps) {
-  const codigo = local?.codigo_ibge || CODIGO_IBGE_EXEMPLO;
-  const ehExemplo = !local?.codigo_ibge;
+  // "Exemplo" só quando NINGUÉM escolheu local ainda (local === null). Quando um
+  // local real foi escolhido (Brasil, por código IBGE, ou qualquer coordenada
+  // dos EUA, via Census Geocoder + NASS QuickStats no backend), busca de
+  // verdade -- nunca mostra o número de outra cidade no lugar.
+  const ehExemplo = local === null;
   const [estado, setEstado] = useState<Situacao>({ situacao: 'carregando' });
 
   const carregar = useCallback(async () => {
     setEstado({ situacao: 'carregando' });
     try {
-      setEstado({ situacao: 'sucesso', painel: await buscarPainelProducao(codigo) });
+      setEstado({ situacao: 'sucesso', painel: await buscarPainelProducao(local) });
     } catch (e) {
       const f = e instanceof FalhaApi ? e : new FalhaApi('erro_inesperado', 'Algo deu errado.');
       setEstado({ situacao: 'falha', codigo: f.codigo, mensagem: f.message });
     }
-  }, [codigo]);
+  }, [local]);
 
   useEffect(() => {
     void carregar();
@@ -167,12 +170,13 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
   }
 
   const p = estado.painel;
-  const ano = p.culturas[0]?.ano ?? p.clima.ano;
-  const calor = fraseCalor(p.clima);
-  const alerta = p.clima.situacao_chuva === 'pouca' || p.clima.situacao_calor === 'mais_quente';
+  const ano = p.culturas[0]?.ano ?? p.clima?.ano ?? null;
+  const calor = p.clima ? fraseCalor(p.clima) : null;
+  const alerta = p.clima ? (p.clima.situacao_chuva === 'pouca' || p.clima.situacao_calor === 'mais_quente') : false;
   // A lavoura da pessoa em destaque; as outras da cidade numa linha pequena.
   const sua = p.culturas.find(c => c.cultura_id === culturaAtualId) ?? null;
   const outras = p.culturas.filter(c => c !== sua);
+  const nomeLocal = p.municipio ? `${p.municipio} (${p.uf})` : p.condado ? `${p.condado} (${p.estado})` : '';
 
   return (
     <>
@@ -180,7 +184,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
         <h1 tabIndex={-1}>Como foi a colheita</h1>
         <p className="texto-apoio">
           {ehExemplo ? 'Exemplo: ' : ''}
-          {p.municipio} ({p.uf}) · números da cidade toda
+          {nomeLocal} · números da {p.municipio ? 'cidade' : 'região'} toda
         </p>
       </div>
 
@@ -209,23 +213,27 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
         </section>
 
         <section className="producao-bloco" aria-labelledby="t-tempo">
-          <h2 id="t-tempo" className="producao-titulo">O tempo em {p.clima.ano}</h2>
-          <div className={`producao-cartao ${alerta ? 'producao-cartao-alerta' : ''}`}>
-            <div className="producao-cartao-cab">
-              <Pictograma nome="chuva" tamanho={52} />
-              <span>
-                <strong className="producao-nome">{FRASE_CHUVA[p.clima.situacao_chuva]}</strong>
-                <span className="texto-apoio">{fraseChuvaAno(p.clima)}</span>
-              </span>
+          <h2 id="t-tempo" className="producao-titulo">{p.clima ? `O tempo em ${p.clima.ano}` : 'O tempo'}</h2>
+          {p.clima && calor ? (
+            <div className={`producao-cartao ${alerta ? 'producao-cartao-alerta' : ''}`}>
+              <div className="producao-cartao-cab">
+                <Pictograma nome="chuva" tamanho={52} />
+                <span>
+                  <strong className="producao-nome">{FRASE_CHUVA[p.clima.situacao_chuva]}</strong>
+                  <span className="texto-apoio">{fraseChuvaAno(p.clima)}</span>
+                </span>
+              </div>
+              <div className="producao-cartao-cab">
+                <Pictograma nome="calor" tamanho={52} />
+                <span>
+                  <strong className="producao-nome">{calor.titulo}</strong>
+                  <span className="texto-apoio">{calor.detalhe}</span>
+                </span>
+              </div>
             </div>
-            <div className="producao-cartao-cab">
-              <Pictograma nome="calor" tamanho={52} />
-              <span>
-                <strong className="producao-nome">{calor.titulo}</strong>
-                <span className="texto-apoio">{calor.detalhe}</span>
-              </span>
-            </div>
-          </div>
+          ) : (
+            <p className="texto-apoio">Sem dado de clima pra essa região ainda.</p>
+          )}
         </section>
       </div>
 

@@ -5,13 +5,15 @@
 // As referências listadas NÃO foram verificadas: são indicações de onde buscar.
 // EXCEÇÃO: o risco de geada (geadaMock.ts), a precipitação extrema
 // (precipitacaoExtremaMock.ts) e a tendência da chuva (tendenciaHidricaMock.ts)
-// são REAIS (NASA POWER), só congelados.
+// são REAIS (NASA POWER), só congelados; o verdor da planta (estresseVegetalMock.ts)
+// é REAL (NDVI do MODIS), só congelado.
 import type { Analise, CaracteristicasTalhao, CorrecoesTalhao, Cultura, Local, RiscoGeada } from '../tipos';
 import { CALOR_SJRP } from './calorMock';
 import { GEADA_SJRP } from './geadaMock';
 import { ESTRATEGIAS_PADRAO } from './montarEstrategias';
 import { PRECIPITACAO_EXTREMA_SJRP } from './precipitacaoExtremaMock';
 import { TENDENCIA_SJRP } from './tendenciaHidricaMock';
+import { ESTRESSE_SJRP } from './estresseVegetalMock';
 
 export const CULTURAS_MOCK: Cultura[] = [
   { cultura_id: 'cana_de_acucar', nome: 'Cana-de-açúcar', tem_demonstracao: true },
@@ -64,6 +66,7 @@ export const ANALISE_MOCK: Omit<Analise, 'descricao_local' | 'talhao'> = {
   estresse_termico: CALOR_SJRP,
   precipitacao_extrema: PRECIPITACAO_EXTREMA_SJRP,
   tendencia_hidrica: TENDENCIA_SJRP,
+  estresse_vegetal: ESTRESSE_SJRP,
   fonte_clima: {
     fonte_id: 'nasa_power',
     nome: 'NASA POWER',

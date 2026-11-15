@@ -181,6 +181,19 @@ const DEFS: Record<string, Def> = {
     )
   },
 
+  // Verdor da planta (estresse vegetal, NDVI do satélite).
+  planta: {
+    fundo: 'verde',
+    desenho: (
+      <>
+        <path d="M24 41V20" stroke={C.folha} strokeWidth="3" strokeLinecap="round" />
+        <path d="M24 25c-9 0-14-6-14-15 9 0 14 6 14 15z" fill={C.folha} />
+        <path d="M24 31c8 0 13-5 13-13-8 0-13 5-13 13z" fill={C.mata} />
+        <path d="M12 41h24" stroke={C.terraEscura} strokeWidth="3" strokeLinecap="round" />
+      </>
+    )
+  },
+
   // ---------- prioridades / atributos ----------
   segurar_solo: {
     fundo: 'terra',

@@ -63,6 +63,17 @@ def buscar_por_nome(busca: str, limite: int = 8) -> list[dict]:
     return [{"codigo_ibge": r.pop("geocodigo_ibge"), **r} for r in registros]
 
 
+def buscar_por_codigo(codigo_ibge: str) -> dict | None:
+    df = _tabela()
+    if df is None:
+        return None
+    linhas = df[df["geocodigo_ibge"] == codigo_ibge]
+    if linhas.empty:
+        return None
+    linha = linhas.iloc[0]
+    return {"municipio": linha["municipio"], "uf": linha["uf"], "latitude": float(linha["latitude"]), "longitude": float(linha["longitude"])}
+
+
 def localizar_por_coordenada(latitude: float, longitude: float) -> dict | None:
     if not (BRASIL_LAT_MIN <= latitude <= BRASIL_LAT_MAX and BRASIL_LON_MIN <= longitude <= BRASIL_LON_MAX):
         return None

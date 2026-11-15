@@ -13,6 +13,7 @@ from app.configuracao import configuracao
 from app.integrations import nasa_power, openet, usda_soil_data_access
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
+from app.services.grace import grace_do_ponto
 from app.services.precipitacao_extrema import precipitacao_extrema_do_ponto
 from app.services.solo import camada_soilgrids
 
@@ -85,6 +86,11 @@ def _buscar(fonte, lat, lon):
         # Multi-regional: usa o cache local se existir (pontos piloto), senao
         # busca ao vivo na NASA POWER o recorte necessario (ver services/precipitacao_extrema.py).
         return precipitacao_extrema_do_ponto(lat, lon)
+    if fonte == "grace":
+        # Multi-regional: celula local se existir, senao le o pixel mais proximo
+        # direto do arquivo global ja baixado (ver services/grace.py) -- cobre
+        # qualquer coordenada do planeta, sem rede nova.
+        return grace_do_ponto(lat, lon)
     if fonte == "soilgrids":
         # Formato longo (uma linha por variavel x profundidade) -- achata so a
         # camada superficial pros mesmos nomes de campo do usda_soil_data_access.

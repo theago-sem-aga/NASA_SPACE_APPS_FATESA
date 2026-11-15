@@ -186,6 +186,59 @@ class TendenciaHidrica(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class FotoNdvi(BaseModel):
+    data: str
+    ndvi: float
+    # Normal da mesma época nos anos anteriores; None quando há poucos anos.
+    normal_mediana: float | None = None
+    normal_p10: float | None = None
+    normal_p90: float | None = None
+
+
+class EstresseVegetal(BaseModel):
+    # Regra em app/domain/estresse_vegetal.py: NDVI MODIS da foto mais recente
+    # vs. os anos anteriores no mesmo período de 16 dias. NDVI baixo também é
+    # colheita ou preparo do solo; cortes e limiar escolhidos sem fonte, pendentes de revisão.
+    situacao: Literal["normal", "abaixo", "muito_abaixo", "acima", "sem_vegetacao"]
+    data_foto: str
+    ndvi_atual: float
+    normal_mediana: float
+    normal_p10: float
+    normal_p25: float
+    normal_p75: float
+    normal_p90: float
+    anomalia_pct: float
+    posicao: float = Field(ge=0, le=1)
+    anos_mais_verdes: int
+    anos_comparados: int
+    ndvi_mediano_geral: float
+    limiar_sem_vegetacao: float
+    ultimas_fotos: list[FotoNdvi]
+    periodo_inicio: int
+    periodo_fim: int
+    metodo: str
+    latitude_pixel: float
+    longitude_pixel: float
+    distancia_pixel_km: float
+    fonte: str
+    produto: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
+class RiscoSeca(BaseModel):
+    # Regra em app/domain/risco_seca.py: chuva dos últimos 90 dias vs. média
+    # do mesmo período do ano, sobre o histórico real da NASA POWER.
+    nivel: Nivel
+    chuva_recente_mm: float
+    chuva_normal_mm: float
+    proporcao_normal_pct: float | None = None
+    data_referencia: str
+    metodo: str
+    fonte: str
+    variavel: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -252,13 +305,65 @@ class Analise(BaseModel):
     precipitacao_extrema: RiscoPrecipitacaoExtrema | None = None
     # None = série de chuva sem anos completos suficientes ou fonte fora do ar.
     tendencia_hidrica: TendenciaHidrica | None = None
+    # None = sem série de NDVI pré-processada para a célula (ver services/estresse_vegetal.py).
+    estresse_vegetal: EstresseVegetal | None = None
+    # None = série diária de chuva sem medição suficiente para o ponto.
+    risco_seca: RiscoSeca | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.
     versao_motor: str
     criada_em_utc: str
     fontes_indisponiveis: list[FonteIndisponivel]
-    estado_recomendacoes: Literal["simulacao_beta", "dados_insuficientes"]
+    # catalogo_real = estrategias reais, filtradas pelo ZARC (so cana-de-acucar hoje).
+    estado_recomendacoes: Literal["simulacao_beta", "dados_insuficientes", "catalogo_real"]
+
+
+class ColheitaCultura(BaseModel):
+    cultura_id: str
+    nome: str
+    situacao: Literal["acima", "normal", "abaixo", "sem_plantio"]
+    ano: int | None = None
+    area_plantada_ha: float | None = None
+    rendimento_kg_ha: float | None = None
+    rendimento_medio_anterior_kg_ha: float | None = None
+    # Só presentes quando a unidade NÃO é kg/ha (hoje: EUA/NASS). bushel pesa
+    # diferente por cultura -- nunca convertido pra kg/ha sem fonte segura.
+    rendimento_nativo: float | None = None
+    rendimento_unidade: str | None = None
+    rendimento_medio_anterior_nativo: float | None = None
+
+
+class ClimaAno(BaseModel):
+    ano: int
+    chuva_mm: float
+    chuva_normal_mm: float
+    situacao_chuva: Literal["pouca", "normal", "muita"]
+    gotas_em_10: int
+    tmax_c: float
+    tmax_normal_c: float
+    situacao_calor: Literal["mais_quente", "normal", "mais_frio"]
+    graus_de_diferenca: int
+    periodo_normal: str
+
+
+class PainelProducao(BaseModel):
+    # Brasil: codigo_ibge/municipio/uf. EUA: condado/estado. Um dos dois pares.
+    codigo_ibge: str | None = None
+    municipio: str | None = None
+    uf: str | None = None
+    condado: str | None = None
+    estado: str | None = None
+    culturas: list[ColheitaCultura]
+    # None no caminho dos EUA hoje: clima vem por outra via (POWER multi-regional).
+    clima: ClimaAno | None = None
+    # Previsão oficial transcrita (INMET/INPE/FUNCEME); forma ainda não fixada
+    # em schema próprio, só existe pro Brasil.
+    previsao: dict | None = None
+    fontes: list[str]
+    limitacoes: list[str]
+    tipo_dado: Literal["observacao_historica", "previsao", "simulacao"]
+    gerado_em: str
 
 
 class CorpoErro(BaseModel):

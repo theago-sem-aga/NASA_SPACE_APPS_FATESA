@@ -18,56 +18,17 @@ tiveram chuva extrema, nao so a frequencia historica.
 
 from __future__ import annotations
 
-import datetime as dt
-
-from app.configuracao import RAIZ, configuracao
-from app.integrations.nasa_power import buscar_power_ponto
 from app.modelos.precipitacao_extrema import calcular
-from app.pipelines.indice_espacial import celula_id
-from app.services.cache import com_cache
-
-PASTA_LOCAL = RAIZ / "data" / "processed" / "nasa_power"
-
-
-def _serie_local(latitude: float, longitude: float) -> list[dict] | None:
-    caminho = PASTA_LOCAL / f"{celula_id(latitude, longitude)}.parquet"
-    if not caminho.is_file():
-        return None
-    import pandas as pd
-
-    df = pd.read_parquet(caminho, columns=["data", "precipitacao_acumulada_mm"])
-    df = df.astype(object).where(df.notna(), None)
-    return df.to_dict("records")
-
-
-def _serie_ao_vivo(latitude: float, longitude: float, ano_inicio: int) -> list[dict]:
-    resultado = buscar_power_ponto(
-        latitude,
-        longitude,
-        dt.date(ano_inicio, 1, 1),
-        dt.date.today() - dt.timedelta(days=1),
-        parametros=("PRECTOTCORR",),
-        timeout_s=max(60, configuracao()["timeout_s"]),
-    )
-    return resultado["serie"]
+from app.services.serie_power_diaria import serie_diaria
 
 
 def precipitacao_extrema_do_ponto(latitude: float, longitude: float) -> dict:
     """Resultado de app.modelos.precipitacao_extrema.calcular, com a origem do dado."""
-    config = configuracao()
-    serie = _serie_local(latitude, longitude)
-    if serie is not None:
-        resultado = calcular(serie)
-        resultado["tipo_acesso"] = "pre_processado"
-    else:
-        ano_inicio = config["ano_inicio"]
-        serie = com_cache(
-            ("precipitacao_extrema", round(latitude, 4), round(longitude, 4), ano_inicio),
-            config["cache_ttl_s"],
-            lambda: _serie_ao_vivo(latitude, longitude, ano_inicio),
-        )
-        resultado = calcular(serie)
-        resultado["tipo_acesso"] = "ao_vivo"
+    serie, tipo_acesso = serie_diaria(
+        latitude, longitude, ("precipitacao_acumulada_mm",), ("PRECTOTCORR",), "precipitacao_extrema"
+    )
+    resultado = calcular(serie)
+    resultado["tipo_acesso"] = tipo_acesso
     resultado["fonte"] = "nasa_power"
     resultado["variavel"] = "precipitacao_acumulada_mm"
     return resultado

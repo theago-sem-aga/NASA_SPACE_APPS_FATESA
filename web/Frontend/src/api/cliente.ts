@@ -21,6 +21,7 @@ import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 import { GEADA_FRESNO, GEADA_SJRP } from './mock/geadaMock';
 import { TENDENCIA_FRESNO, TENDENCIA_SJRP } from './mock/tendenciaHidricaMock';
+import { ESTRESSE_FRESNO, ESTRESSE_SJRP } from './mock/estresseVegetalMock';
 import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
@@ -150,7 +151,17 @@ const DISTANCIA_MAXIMA_MOCK_GRAUS = 1;
  */
 export async function buscarLocalPorCoordenada(latitude: number, longitude: number): Promise<Local> {
   if (await backendTem('GET', '/locais')) {
-    return requisitar<Local>(`/locais?latitude=${latitude.toFixed(5)}&longitude=${longitude.toFixed(5)}`);
+    try {
+      return await requisitar<Local>(`/locais?latitude=${latitude.toFixed(5)}&longitude=${longitude.toFixed(5)}`);
+    } catch (e) {
+      // Fora da cobertura de município (hoje só o Brasil tem busca por nome/malha):
+      // mostra a própria coordenada, nunca inventa uma cidade. A análise usa o
+      // ponto real de qualquer jeito — EUA e outros países funcionam assim.
+      if (e instanceof FalhaApi && e.codigo === 'fora_da_cobertura') {
+        return { codigo_ibge: '', municipio: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`, uf: '', latitude, longitude };
+      }
+      throw e;
+    }
   }
   if (USANDO_MOCK) await esperar(400);
   // Mock: devolve o município da lista mais próximo do ponto.
@@ -235,6 +246,7 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
     geada,
     precipitacao_extrema: precipitacaoExtrema,
     tendencia_hidrica: emFresno ? TENDENCIA_FRESNO : TENDENCIA_SJRP,
+    estresse_vegetal: emFresno ? ESTRESSE_FRESNO : ESTRESSE_SJRP,
     estrategias,
     limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
   };
@@ -276,22 +288,28 @@ export async function criarAnalise(entrada: AnaliseEntrada, descricaoLocal: stri
 export const CODIGO_IBGE_EXEMPLO = '3549805';
 
 /**
- * GET /api/v1/producao?codigo_ibge=3549805 → PainelProducao   (PROPOSTA, ainda não existe)
- * BACKEND: a resposta já é montada por web/Backend/app/modelos/painel_producao.py
- * (montar_painel); falta só a rota. 404 com codigo 'dados_insuficientes' para
- * município sem dados pré-processados.
+ * GET /api/v1/producao?codigo_ibge=3549805 → PainelProducao   (REAL)
+ * GET /api/v1/producao?latitude=&longitude= → PainelProducao  (REAL, EUA:
+ *   Census Bureau Geocoder + USDA NASS QuickStats, qualquer coordenada)
+ * BACKEND: web/Backend/app/modelos/painel_producao.py (Brasil, por código IBGE)
+ * e painel_producao_eua.py (EUA, por coordenada). 404 'dados_insuficientes'
+ * fora das duas coberturas, ou município/condado sem dado pré-processado.
  *
- * Enquanto a rota não existe, usa a cópia local gerada por esse mesmo script.
- * Os números da cópia são REAIS (IBGE + NASA POWER), só congelados em `gerado_em`.
+ * Sem código IBGE (fora do Brasil) tenta a coordenada; local null (ninguém
+ * escolheu lugar ainda) usa a cópia de exemplo congelada.
  */
-export async function buscarPainelProducao(codigoIbge: string): Promise<PainelProducao> {
+export async function buscarPainelProducao(local: Local | null): Promise<PainelProducao> {
+  const codigoIbge = local?.codigo_ibge || (local === null ? CODIGO_IBGE_EXEMPLO : '');
   if (await backendTem('GET', '/producao')) {
-    return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+    if (codigoIbge) {
+      return requisitar<PainelProducao>(`/producao?codigo_ibge=${encodeURIComponent(codigoIbge)}`);
+    }
+    return requisitar<PainelProducao>(`/producao?latitude=${local!.latitude.toFixed(5)}&longitude=${local!.longitude.toFixed(5)}`);
   }
   const simular = simulacaoPedida();
   if (USANDO_MOCK) await esperar(simular === 'lento' ? 4000 : 400);
   if (simular === 'erro') throw new FalhaApi('erro_inesperado', 'Algo deu errado do nosso lado.');
-  const painel = PAINEIS_PRODUCAO[codigoIbge];
+  const painel = codigoIbge ? PAINEIS_PRODUCAO[codigoIbge] : undefined;
   if (!painel || simular === 'dados_insuficientes') {
     throw new FalhaApi('dados_insuficientes', 'Ainda não temos os números da colheita dessa cidade.');
   }

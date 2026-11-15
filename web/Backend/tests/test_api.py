@@ -62,7 +62,38 @@ TENDENCIA_FIXTURE = {
 }
 
 
+ESTRESSE_FIXTURE = {
+    "situacao": "muito_abaixo",
+    "data_foto": "2026-10-16",
+    "ndvi_atual": 0.41,
+    "normal_mediana": 0.62,
+    "normal_p10": 0.48,
+    "normal_p25": 0.55,
+    "normal_p75": 0.68,
+    "normal_p90": 0.72,
+    "anomalia_pct": -33.9,
+    "posicao": 0.04,
+    "anos_mais_verdes": 25,
+    "anos_comparados": 26,
+    "ndvi_mediano_geral": 0.6,
+    "limiar_sem_vegetacao": 0.2,
+    "ultimas_fotos": [
+        {"data": "2026-10-16", "ndvi": 0.41, "normal_mediana": 0.62, "normal_p10": 0.48, "normal_p90": 0.72}
+    ],
+    "periodo_inicio": 2000,
+    "periodo_fim": 2026,
+    "metodo": "fixture",
+    "latitude_pixel": -20.89,
+    "longitude_pixel": -49.36,
+    "distancia_pixel_km": 1.2,
+    "fonte": "modis_ornl",
+    "produto": "MOD13Q1",
+    "tipo_acesso": "pre_processado",
+}
+
+
 def preparar(monkeypatch, repositorio):
+    monkeypatch.setattr(servico, "estresse_vegetal", lambda *args: ESTRESSE_FIXTURE)
     monkeypatch.setattr(servico, "risco_geada", lambda *args: GEADA_FIXTURE)
     monkeypatch.setattr(servico, "tendencia_hidrica", lambda *args: TENDENCIA_FIXTURE)
     monkeypatch.setattr(servico, "RepositorioAnalises", lambda: repositorio)
@@ -227,3 +258,27 @@ def test_falha_da_tendencia_nao_derruba_a_analise(cliente, monkeypatch, reposito
     corpo = resposta.json()
     assert corpo["tendencia_hidrica"] is None
     assert {"fonte": "nasa_power_tendencia_hidrica", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]
+
+
+def test_analise_traz_estresse_vegetal(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["estresse_vegetal"]["situacao"] == "muito_abaixo"
+    assert corpo["estresse_vegetal"]["anos_comparados"] == 26
+    assert any("Estresse vegetal" in t and "colheita" in t for t in corpo["limitacoes"])
+
+
+def test_sem_historico_de_ndvi_nao_derruba_a_analise(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+
+    def sem_arquivo(*args):
+        raise LookupError("sem série")
+
+    monkeypatch.setattr(servico, "estresse_vegetal", sem_arquivo)
+    resposta = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json"))
+    assert resposta.status_code == 201, resposta.text
+    corpo = resposta.json()
+    assert corpo["estresse_vegetal"] is None
+    assert {"fonte": "modis_ndvi_estresse_vegetal", "motivo": "sem_historico_pre_processado"} in corpo[
+        "fontes_indisponiveis"
+    ]

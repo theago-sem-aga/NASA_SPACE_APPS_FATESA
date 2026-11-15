@@ -3,7 +3,7 @@ import { buscarMunicipios } from '../../api/cliente';
 import type { Local } from '../../api/tipos';
 import { Icone } from '../../components/Icone';
 import { DicaPermissao } from '../../components/DicaPermissao';
-import { type DadosFluxo, descreverLocal, formatarCoordenada } from './estadoFluxo';
+import { type DadosFluxo, descreverLocal, formatarCoordenada, parseCoordenada } from './estadoFluxo';
 import type { SituacaoGps } from './useLocalizacao';
 
 interface TelaLocalProps {
@@ -59,11 +59,12 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
   const [resultados, setResultados] = useState<Local[]>([]);
   const [buscou, setBuscou] = useState(false);
   const [falhou, setFalhou] = useState(false);
+  const coordenadaDigitada = parseCoordenada(texto);
 
   // Busca enquanto digita, com uma pausa curta para não chamar a API a cada letra.
   useEffect(() => {
     let ativo = true;
-    if (texto.trim().length < 2) {
+    if (texto.trim().length < 2 || parseCoordenada(texto)) {
       setResultados([]);
       setBuscou(false);
       return;
@@ -107,8 +108,33 @@ function BuscaMunicipio({ dados, situacaoGps, mostrarDica, aoEscolherMunicipio, 
           aria-controls={`${id}-lista`}
           onChange={e => setTexto(e.target.value)}
         />
-        <span id={`${id}-ajuda`} className="texto-apoio">Não precisa de acento. Toque na cidade quando ela aparecer.</span>
+        <span id={`${id}-ajuda`} className="texto-apoio">
+          Não precisa de acento. Toque na cidade quando ela aparecer, ou digite uma coordenada (ex.: 35.47, -97.52).
+        </span>
       </div>
+
+      {coordenadaDigitada && (
+        <ul className="lista-municipios" aria-label="Coordenada digitada">
+          <li>
+            <button
+              type="button"
+              className="municipio-opcao"
+              onClick={() =>
+                aoEscolherMunicipio({
+                  codigo_ibge: '',
+                  municipio: formatarCoordenada(coordenadaDigitada.latitude, coordenadaDigitada.longitude),
+                  uf: '',
+                  latitude: coordenadaDigitada.latitude,
+                  longitude: coordenadaDigitada.longitude
+                })
+              }
+            >
+              <Icone nome="local" tamanho={22} />
+              <span className="municipio-nome">Usar o ponto {formatarCoordenada(coordenadaDigitada.latitude, coordenadaDigitada.longitude)}</span>
+            </button>
+          </li>
+        </ul>
+      )}
 
       <div aria-live="polite">
         {falhou && <p className="mensagem-erro"><Icone nome="alerta" tamanho={20} /> Não deu para buscar agora. Veja a internet e tente de novo.</p>}
