@@ -5,6 +5,10 @@
 > Nada foi alterado em `web/Backend`. A proposta sobre os problemas marcados (praga/nematoide etc.) está em
 > `docs/proposta-motor-problemas.md`.
 
+> **NDVI resolvido em 15/11/2026:** a busca municipal de SJRP e Olímpia e a
+> coordenada de Olímpia do relatório já têm séries próprias verificadas. Resultados
+> e arquivos estão na última seção. Não houve alteração no ranking.
+
 ## Teste usado
 
 **Atualização da entrega técnica — Ghabriel/Codex, 15/11/2026:** o teste original
@@ -170,11 +174,9 @@ superfície histórica; não substitui levantamento topográfico atual.
 
 - **Validação de calor:** a integração foi concluída com a implementação do Tiago;
   os limiares são os propostos pela equipe, não limites validados por cultura.
-- **SoilGrids/NDVI de Olímpia e GRACE fora dos recortes:** dependem de preparar e
-  distribuir os respectivos dados (Tiago). O novo pacote fecha relevo, não essas fontes.
-  O centroide municipal de SJRP (-20.7972795, -49.3575799) também cai fora da célula
-  NDVI do ponto -20.82, -49.38; buscar pelo nome pode ficar sem NDVI embora o ponto
-  do relatório o tenha. Não foi copiada uma série de outro pixel para esconder a lacuna.
+- **SoilGrids de Olímpia e GRACE fora dos recortes:** dependem de preparar e
+  distribuir os respectivos dados (Tiago). A lacuna de NDVI dos pontos municipais
+  e da coordenada de Olímpia foi resolvida na preparação documentada abaixo.
 - **Erosão:** continua sem regra validada e sem valor fabricado.
 - **Problemas no ranking e fases da cultura:** a proposta da Julya foi preservada;
   pesos, garantias e respostas específicas a pragas não foram adotados automaticamente.
@@ -190,3 +192,37 @@ frontend, build e Ruff dos arquivos alterados aprovados**. Conferidos POST e
 recuperação persistida dos dois pontos brasileiros, leitura dos quatro recortes
 e fluxo no navegador com falha de colheita simulada explicitamente no teste,
 continuidade do questionário e POST real com nome, relevo e calor dos 12 meses.
+
+## NDVI dos pontos municipais — preparação concluída em 15/11/2026
+
+A pedido de Ghabriel, foram preparados apenas os dois casos de NDVI pendentes,
+sem alterar o ranking ou as regras do indicador. Olímpia precisou de duas células
+porque a coordenada do relatório e o ponto da busca por nome são diferentes.
+Os dados vêm do MOD13Q1 pelo ORNL DAAC, não de outro município ou de um mock.
+
+| Ponto solicitado | Arquivo em `data/processed/modis_ndvi/` | NDVI válido mais recente | Mediana histórica da mesma época | Classe existente |
+|---|---|---|---|---|
+| SJRP, busca municipal: -20.79727954007588, -49.35757989475737 | `-208_-494.parquet` | 0,350 | 0,285 | normal |
+| Olímpia, busca municipal: -20.704914410497572, -48.959625634954804 | `-208_-490.parquet` | 0,537 | 0,430 | normal |
+| Olímpia, relatório: -20.70, -48.96 | `-207_-490.parquet` | 0,572 | 0,514 | normal |
+
+Cada série tem 614 datas únicas de 18/02/2000 a 16/10/2026, com NDVI e qualidade
+do pixel preservados. Nos três casos, a observação válida mais recente é de
+16/10/2026 e o indicador compara a mesma época em 26 anos anteriores. "Normal"
+é a classe estatística já implementada, não uma declaração de ausência de problemas
+agronômicos. O uso agrícola desses pontos municipais não foi verificado.
+
+A coleta agora recebe as duas bandas juntas, em blocos de até dez datas, reduzindo
+os pedidos de 124 para 62 por ponto. O pool compartilhado limita as consultas dos
+blocos; a publicação do Parquet é atômica e preserva o arquivo anterior em falha.
+Respostas sem ambas as bandas e arquivos vazios não são publicados.
+
+Validação: faixas numéricas, qualidade, datas sem duplicação e coordenadas dos três
+arquivos conferidas; POST real e recuperação persistida retornaram `estresse_vegetal`
+nos três pontos. Séries incluídas no Git; o bucket ainda não contém esses três
+arquivos, e não foi realizado upload. Não é necessário reiniciar o backend para
+ler os arquivos, mas é necessário refazer a análise: resultados salvos anteriormente
+não são alterados automaticamente.
+
+Para atualizar: `web/Backend/README.md`, seção NDVI. Se o Thiago mudar os pontos
+da localização municipal, conferir as novas células antes de declarar cobertura.

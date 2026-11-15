@@ -12,9 +12,15 @@ Limites do servico (medidos em 2026-11-15):
     e concatena;
   - as vezes responde 502 depois de ~60 s: cada bloco tem novas tentativas.
   - a serie toda (2000 ate hoje, 614 datas) sao 62 blocos por banda. Tempo
-    medido por ponto: 20 min com 4 pedidos em paralelo; 8 e 14 min com 8.
+    medido anteriormente com bandas separadas: 20 min com 4 pedidos em paralelo;
+    8 e 14 min com 8.
     Lenta demais para a requisicao do usuario. Quem usa a serie longa deve guardar em parquet
     (pipelines/ingestao_modis_ndvi.py) e so buscar ao vivo o que falta.
+
+A coleta padrão agora solicita NDVI e qualidade juntos, omitindo `band` conforme
+a documentação oficial: https://modis.ornl.gov/data/modis_webservice.html.
+São 62 pedidos para 614 datas (em vez de 124 com as bandas separadas); as demais
+bandas da resposta são descartadas. Escala, filtros de qualidade e cálculos não mudam.
 
 Valores: NDVI bruto vai de -2000 a 10000 com fator 0,0001; -3000 e ausencia.
 Confiabilidade do pixel (banda pixel_reliability): 0 bom, 1 marginal,
@@ -26,7 +32,7 @@ from __future__ import annotations
 import datetime as dt
 import time
 from collections.abc import Iterable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Executor, ThreadPoolExecutor
 
 from app.integrations.http import requisitar
 
@@ -139,6 +145,33 @@ def _buscar_bloco(
     ]
 
 
+def _buscar_bloco_conjunto(
+    latitude: float, longitude: float, inicio: str, fim: str,
+    timeout_s: float, tentativas: int, espera_s: float,
+) -> list[dict]:
+    # Omitir band solicita as bandas do produto na mesma resposta, conforme
+    # a API ORNL. Filtrar apenas NDVI e confiabilidade; não mudar escala/QA.
+    corpo = _get_json("subset", {
+        "latitude": latitude, "longitude": longitude,
+        "startDate": inicio, "endDate": fim, "kmAboveBelow": 0, "kmLeftRight": 0,
+    }, timeout_s, tentativas, espera_s)
+    linhas = []
+    por_data = {}
+    for item in corpo.get("subset", []):
+        banda = item.get("band")
+        if banda not in _CAMPO:
+            continue
+        valores = item.get("data") or [None]
+        if len(valores) != 1:
+            raise ValueError("ORNL retornou mais de um pixel para o ponto solicitado")
+        data = item["calendar_date"]
+        por_data.setdefault(data, set()).add(banda)
+        linhas.append({"data": data, _CAMPO[banda]: _valor(banda, valores[0])})
+    if not linhas or any(bandas != set(_CAMPO) for bandas in por_data.values()):
+        raise ValueError("Resposta ORNL sem as duas bandas esperadas para cada data")
+    return linhas
+
+
 def buscar_ndvi_ponto(
     latitude: float,
     longitude: float,
@@ -149,6 +182,7 @@ def buscar_ndvi_ponto(
     timeout_s: float = 90,
     tentativas: int = 4,
     espera_s: float = 5,
+    executor: Executor | None = None,
 ) -> dict:
     """Serie de NDVI do MODIS no pixel do ponto, de quantos blocos de 10 datas precisar.
 
@@ -164,13 +198,22 @@ def buscar_ndvi_ponto(
     bandas = tuple(bandas)
     datas = listar_datas(latitude, longitude, data_inicio, data_fim, timeout_s, tentativas, espera_s)
     blocos = blocos_de_datas(datas)
-    pedidos = [(banda, inicio, fim) for banda in bandas for inicio, fim in blocos]
+    conjunto = set(bandas) == set(_CAMPO)
+    pedidos = list(blocos) if conjunto else [(banda, inicio, fim) for banda in bandas for inicio, fim in blocos]
 
     def buscar(pedido):
+        if conjunto:
+            inicio, fim = pedido
+            return _buscar_bloco_conjunto(latitude, longitude, inicio, fim, timeout_s, tentativas, espera_s)
         banda, inicio, fim = pedido
         return _buscar_bloco(latitude, longitude, banda, inicio, fim, timeout_s, tentativas, espera_s)
 
-    with ThreadPoolExecutor(max_workers=max(1, paralelo)) as executor:
+    if executor is None:
+        with ThreadPoolExecutor(max_workers=max(1, paralelo)) as pool:
+            respostas = list(pool.map(buscar, pedidos))
+    else:
+        # A ingestão de vários pontos pode compartilhar um limite global de
+        # requisições, em vez de multiplicar a concorrência por município.
         respostas = list(executor.map(buscar, pedidos))
 
     # Concatena: uma linha por data, com as bandas lado a lado; duplicadas se fundem.
