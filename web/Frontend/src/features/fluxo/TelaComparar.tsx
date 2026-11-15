@@ -45,7 +45,12 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
     : analise.estrategias;
   const melhorNota = criterio ? notaPara(estrategias[0], criterio) : null;
   const ehMelhor = (e: Estrategia) => criterio !== null && notaPara(e, criterio) === melhorNota;
-  const opcoesCriterio: Criterio[] = [...PRINCIPAIS, 'descoberto', ...EXTRAS];
+  const [maisOpcoes, setMaisOpcoes] = useState(false);
+  // De cara, só os pontos principais; os outros aparecem em "+ mais pontos" (ou se um deles estiver escolhido).
+  const opcoesCriterio: Criterio[] =
+    maisOpcoes || (criterio !== null && criterio !== 'descoberto' && EXTRAS.includes(criterio))
+      ? [...PRINCIPAIS, 'descoberto', ...EXTRAS]
+      : [...PRINCIPAIS, 'descoberto'];
   const linhas = verTudo || (criterio !== null && criterio !== 'descoberto' && EXTRAS.includes(criterio)) ? [...PRINCIPAIS, ...EXTRAS] : PRINCIPAIS;
 
   return (
@@ -66,6 +71,11 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
               {nomeCriterio(c)}
             </button>
           ))}
+          {!maisOpcoes && (
+            <button type="button" className="ordenar-chip ordenar-chip-mais" onClick={() => setMaisOpcoes(true)}>
+              + mais pontos
+            </button>
+          )}
         </div>
         <p className="ordenar-por-estado" aria-live="polite">
           {criterio
@@ -136,6 +146,32 @@ export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCom
             )}
           </tbody>
         </table>
+      </div>
+      {/* No celular, a tabela vira uma lista: um ponto por bloco, os caminhos um embaixo do outro. */}
+      <div className="comparacao-lista">
+        {[...linhas, 'descoberto' as const].map(a => (
+          <section key={a} className={`comparacao-item${criterio === a ? ' ativo' : ''}`}>
+            <h3 className="comparacao-item-titulo">
+              <Pictograma nome={a === 'descoberto' ? 'terra_descoberta' : PICTO_ATRIBUTO[a]} tamanho={28} />
+              {a === 'descoberto' ? 'Meses de terra descoberta' : ROTULO_ATRIBUTO[a].nome}
+            </h3>
+            <ul>
+              {estrategias.map(e => (
+                <li key={e.estrategia_id} className={ehMelhor(e) ? 'comparacao-melhor' : undefined}>
+                  <span className="comparacao-item-nome">
+                    {ehMelhor(e) && <span aria-hidden="true">★ </span>}
+                    {nomeCurto(e)}
+                  </span>
+                  {a === 'descoberto' ? (
+                    <strong>{mesesDescobertos(e)} {mesesDescobertos(e) === 1 ? 'mês' : 'meses'}</strong>
+                  ) : (
+                    <Medidor nivel={e.atributos[a]} bom={ROTULO_ATRIBUTO[a].maiorEhMelhor} />
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
       <button type="button" className="link-discreto" aria-expanded={verTudo} onClick={() => setVerTudo(v => !v)}>
         {verTudo ? 'Mostrar menos' : `Ver mais ${EXTRAS.length + 1} pontos`}

@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import { useState } from 'react';
 import type { GeadaMensal, RiscoGeada } from '../../api/tipos';
@@ -131,6 +132,7 @@ export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
       </p>
       <details className="como-ler">
         <summary>Como ler este dado</summary>
+        <p className="termos-relacionados">Palavras deste quadro: <Termo id="geada" /> <Termo id="dado_em_grade" /></p>
         <p className="texto-apoio faixa-geada-legenda">
           A linha Mínima mostra a temperatura do ar mais baixa já medida em cada mês (não é a média); quanto mais frio, mais azul. O floco marca os meses em que geou em pelo menos 1 de cada 10 anos. Toque no mês para ver em quantos anos geou e a faixa provável: com só{' '}
         {geada.anos_analisados} anos de dados, a conta tem folga para mais ou para menos. Noites com o ar a até{' '}

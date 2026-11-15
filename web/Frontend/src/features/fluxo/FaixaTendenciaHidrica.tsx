@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import { useId, useState } from 'react';
 import type { TendenciaHidrica } from '../../api/tipos';
@@ -118,6 +119,7 @@ export function FaixaTendenciaHidrica({ tendencia }: { tendencia: TendenciaHidri
       </figure>
       <details className="como-ler">
         <summary>Como ler este dado</summary>
+        <p className="termos-relacionados">Palavras deste quadro: <Termo id="balanco_hidrico" /> <Termo id="anomalia_umidade" /> <Termo id="grace" /></p>
         <p className="texto-apoio faixa-tendencia-legenda">
           Barras = chuva somada de cada ano (NASA POWER). Linha = tendência. É dado de satélite e modelo em grade, não de
           pluviômetro: antes de uma decisão cara, confira com a estação mais perto. O passado não garante o futuro.

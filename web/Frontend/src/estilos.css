@@ -1064,3 +1064,34 @@ p { margin: 0; }
 .comparacao-linha-ativa th, .comparacao-linha-ativa td { box-shadow: inset 0 2px 0 var(--cor-mata), inset 0 -2px 0 var(--cor-mata); }
 .selo-melhor { display: block; margin-bottom: 4px; font-size: 0.72rem; font-weight: 700; color: var(--cor-mata); }
 .tabela-comparacao th, .tabela-comparacao td { transition: background 0.3s; }
+
+/* ---------- glossário (rodapé) ---------- */
+.link-rodape { background: none; border: 0; padding: 0; font: inherit; color: var(--cor-ceu); text-decoration: underline; cursor: pointer; }
+.termos-relacionados { margin: 0 0 8px; font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.glossario-dialogo {
+  width: min(620px, calc(100vw - 24px)); max-height: min(85vh, 760px); padding: 0; border: none;
+  border-radius: var(--raio); background: var(--cor-superficie); color: var(--cor-texto); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.glossario-dialogo::backdrop { background: rgba(20, 30, 22, 0.55); }
+.glossario-cabeca { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--cor-mata); color: #ffffff; }
+.glossario-cabeca h2 { margin: 0; font-family: var(--fonte-titulo); font-size: 1.4rem; }
+.glossario-fechar { min-width: 44px; min-height: 44px; border: 1.5px solid #ffffff; border-radius: 999px; background: transparent; color: #ffffff; font-size: 1.1rem; }
+.glossario-intro { margin: 14px 18px 4px; color: var(--cor-texto-suave); }
+.glossario-lista { margin: 0; padding: 4px 18px 18px; }
+.glossario-lista > div { padding: 12px 0; border-bottom: 1px solid var(--cor-borda); }
+.glossario-lista dt { font-weight: 700; font-size: 1.1rem; color: var(--cor-mata); }
+.glossario-lista dd { margin: 4px 0 0; line-height: 1.5; }
+
+/* ---------- "Lado a lado": botão de mais pontos e lista no celular ---------- */
+.ordenar-chip-mais { border-style: dashed; color: var(--cor-texto-suave); }
+.comparacao-lista { display: none; }
+@media (max-width: 600px) {
+  .tabela-comparacao-moldura { display: none; }
+  .comparacao-lista { display: grid; gap: 12px; }
+  .comparacao-item { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 12px 14px; }
+  .comparacao-item.ativo { border-color: var(--cor-mata); border-width: 2px; }
+  .comparacao-item-titulo { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 1.05rem; }
+  .comparacao-item ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .comparacao-item li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: var(--raio-pequeno); }
+  .comparacao-item-nome { font-weight: 700; }
+}

@@ -1,3 +1,4 @@
+import { Termo } from '../../components/Termo';
 import { SeloFonte } from '../../components/SeloFonte';
 import type { ClimaMensal, EstresseTermico, RiscoGeada } from '../../api/tipos';
 import { NOME_MES, NOME_MES_CURTO } from './rotulos';
@@ -59,6 +60,7 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
       </ol>
       <details className="como-ler">
         <summary>Como ler este dado</summary>
+        <p className="termos-relacionados">Palavras deste quadro: <Termo id="evapotranspiracao" /> <Termo id="balanco_hidrico" /></p>
         <p className="texto-apoio">
           Calor forte e geada: meses de risco dos itens "Calor" e "Geada". Pouca chuva: mês com menos de {POUCA_CHUVA_MM} mm de chuva
           em média (NASA POWER). É um retrato do clima da área, não da fase da sua lavoura: a fase mais sensível de cada cultura ainda
