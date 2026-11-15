@@ -150,7 +150,17 @@ const DISTANCIA_MAXIMA_MOCK_GRAUS = 1;
  */
 export async function buscarLocalPorCoordenada(latitude: number, longitude: number): Promise<Local> {
   if (await backendTem('GET', '/locais')) {
-    return requisitar<Local>(`/locais?latitude=${latitude.toFixed(5)}&longitude=${longitude.toFixed(5)}`);
+    try {
+      return await requisitar<Local>(`/locais?latitude=${latitude.toFixed(5)}&longitude=${longitude.toFixed(5)}`);
+    } catch (e) {
+      // Fora da cobertura de município (hoje só o Brasil tem busca por nome/malha):
+      // mostra a própria coordenada, nunca inventa uma cidade. A análise usa o
+      // ponto real de qualquer jeito — EUA e outros países funcionam assim.
+      if (e instanceof FalhaApi && e.codigo === 'fora_da_cobertura') {
+        return { codigo_ibge: '', municipio: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`, uf: '', latitude, longitude };
+      }
+      throw e;
+    }
   }
   if (USANDO_MOCK) await esperar(400);
   // Mock: devolve o município da lista mais próximo do ponto.
