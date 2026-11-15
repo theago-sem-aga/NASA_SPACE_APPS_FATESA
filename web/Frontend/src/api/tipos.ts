@@ -208,6 +208,9 @@ export interface GeadaMensal {
   mes: number;
   /** 0–1: fração dos anos com mínima do ar <= `limiar_c` neste mês. */
   probabilidade_geada: number;
+  /** Faixa de incerteza de `probabilidade_geada` (poucos anos de série), com `RiscoGeada.confianca_intervalo`. */
+  probabilidade_geada_min: number;
+  probabilidade_geada_max: number;
   /** 0–1: o mesmo, com mínima <= `limiar_forte_c` (geada forte). */
   probabilidade_geada_forte: number;
   anos_com_geada: number;
@@ -221,11 +224,18 @@ export interface GeadaMensal {
  */
 export interface RiscoGeada {
   nivel: Nivel;
+  /** Nível que a faixa de incerteza permite. nivel_max ≠ nivel → "pode ser {nivel_max}". */
+  nivel_min: Nivel;
+  nivel_max: Nivel;
   mes_mais_arriscado: number | null;
   /** Meses com geada em pelo menos 1 de cada 10 anos. */
   meses_com_risco: number[];
   /** 0–1: fração dos anos com geada em algum mês. */
   probabilidade_ano: number;
+  probabilidade_ano_min: number;
+  probabilidade_ano_max: number;
+  /** Confiança da faixa, ex.: 0.9 = 90%. A faixa mede só o erro de ter poucos anos, não o da grade. */
+  confianca_intervalo: number;
   meses: GeadaMensal[];
   limiar_c: number;
   limiar_forte_c: number;

@@ -15,11 +15,18 @@ def cliente():
 
 GEADA_FIXTURE = {
     "nivel": "medio",
+    "nivel_min": "medio",
+    "nivel_max": "alto",
     "mes_mais_arriscado": 1,
     "meses_com_risco": [1, 12],
     "probabilidade_ano": 0.3,
+    "probabilidade_ano_min": 0.17,
+    "probabilidade_ano_max": 0.48,
+    "confianca_intervalo": 0.9,
     "meses": [
-        {"mes": m, "probabilidade_geada": 0.3 if m in (1, 12) else 0.0, "probabilidade_geada_forte": 0.0,
+        {"mes": m, "probabilidade_geada": 0.3 if m in (1, 12) else 0.0,
+         "probabilidade_geada_min": 0.17 if m in (1, 12) else 0.0,
+         "probabilidade_geada_max": 0.48 if m in (1, 12) else 0.08, "probabilidade_geada_forte": 0.0,
          "anos_com_geada": 3 if m in (1, 12) else 0, "dias_geada_medio": 0.5 if m in (1, 12) else 0.0,
          "menor_minima_c": 1.0}
         for m in range(1, 13)
@@ -148,6 +155,8 @@ def test_analise_traz_risco_de_geada(cliente, monkeypatch, repositorio, entrada)
     preparar(monkeypatch, repositorio)
     corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
     assert corpo["talhao"]["risco_geada"] == "medio"
+    assert (corpo["geada"]["nivel_min"], corpo["geada"]["nivel_max"]) == ("medio", "alto")
+    assert corpo["geada"]["meses"][0]["probabilidade_geada_max"] == 0.48
     assert "NASA POWER" in corpo["talhao"]["bases"]
     assert corpo["geada"]["meses_com_risco"] == [1, 12]
     assert any("geada" in t.lower() for t in corpo["limitacoes"])

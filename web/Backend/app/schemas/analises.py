@@ -117,6 +117,9 @@ class GeadaMensal(BaseModel):
     mes: int = Field(ge=1, le=12)
     # Fração dos anos com pelo menos 1 dia de mínima do ar <= limiar_c naquele mês.
     probabilidade_geada: float = Field(ge=0, le=1)
+    # Faixa de incerteza (Wilson, confianca_intervalo) por ter poucos anos de série.
+    probabilidade_geada_min: float = Field(ge=0, le=1)
+    probabilidade_geada_max: float = Field(ge=0, le=1)
     probabilidade_geada_forte: float = Field(ge=0, le=1)
     anos_com_geada: int
     dias_geada_medio: float
@@ -125,9 +128,15 @@ class GeadaMensal(BaseModel):
 
 class RiscoGeada(BaseModel):
     nivel: Nivel
+    # Nível que a faixa de incerteza permite (ex.: medio, mas pode ser alto).
+    nivel_min: Nivel
+    nivel_max: Nivel
     mes_mais_arriscado: int | None = None
     meses_com_risco: list[int]
     probabilidade_ano: float = Field(ge=0, le=1)
+    probabilidade_ano_min: float = Field(ge=0, le=1)
+    probabilidade_ano_max: float = Field(ge=0, le=1)
+    confianca_intervalo: float = Field(gt=0, lt=1)
     meses: list[GeadaMensal]
     limiar_c: float
     limiar_forte_c: float
