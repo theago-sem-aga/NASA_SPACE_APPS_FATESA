@@ -16,6 +16,7 @@ from app.repositories.banco import RepositorioAnalises
 from app.schemas.analises import Analise
 from app.services.coleta_variaveis import coletar_variaveis
 from app.services.declividade import declividade_do_ponto
+from app.services.estresse_termico import estresse_termico_do_ponto
 from app.services.estresse_vegetal import estresse_vegetal
 from app.services.geada import risco_geada
 from app.services.locais import buscar_por_codigo
@@ -30,9 +31,10 @@ CULTURAS_COM_CATALOGO_REAL = {"cana_de_acucar"}
 
 
 def criar_analise(entrada):
+    fonte_declividade = "srtm_declividade" if entrada.latitude < 0 else "declividade_usgs_3dep"
     repositorio = RepositorioAnalises()
     repositorio.verificar()  # falhar antes de gastar chamadas externas se não persistirá
-    with ThreadPoolExecutor(max_workers=9) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         coleta_pendente = executor.submit(
             coletar_variaveis, entrada.latitude, entrada.longitude, True
         )
@@ -46,6 +48,9 @@ def criar_analise(entrada):
         estresse_pendente = executor.submit(estresse_vegetal, entrada.latitude, entrada.longitude)
         declividade_pendente = executor.submit(declividade_do_ponto, entrada.latitude, entrada.longitude)
         risco_seca_pendente = executor.submit(resumo_risco_seca, entrada.latitude, entrada.longitude)
+        estresse_termico_pendente = executor.submit(
+            estresse_termico_do_ponto, entrada.latitude, entrada.longitude
+        )
         coleta = coleta_pendente.result()
         try:
             geada = geada_pendente.result()
@@ -82,19 +87,34 @@ def criar_analise(entrada):
             )
         try:
             solo = solo_pendente.result()
+            if solo is None:
+                coleta["fontes_indisponiveis"].append(
+                    {"fonte": "textura_solo", "motivo": "sem_textura_inequivoca"}
+                )
         except (requests.RequestException, ValueError, KeyError, OSError):
             solo = None
             coleta["fontes_indisponiveis"].append({"fonte": "textura_solo", "motivo": "falha_fonte"})
         try:
             declividade = declividade_pendente.result()
+            if declividade is None:
+                coleta["fontes_indisponiveis"].append(
+                    {"fonte": fonte_declividade, "motivo": "sem_elevacao_disponivel"}
+                )
         except (requests.RequestException, ValueError, KeyError, OSError):
             declividade = None
-            coleta["fontes_indisponiveis"].append({"fonte": "declividade_usgs_3dep", "motivo": "falha_fonte"})
+            coleta["fontes_indisponiveis"].append({"fonte": fonte_declividade, "motivo": "falha_fonte"})
         try:
             risco_seca = risco_seca_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
             risco_seca = None
             coleta["fontes_indisponiveis"].append({"fonte": "nasa_power_risco_seca", "motivo": "falha_fonte"})
+        try:
+            estresse_termico = estresse_termico_pendente.result()
+        except (requests.RequestException, ValueError, KeyError, OSError):
+            estresse_termico = None
+            coleta["fontes_indisponiveis"].append(
+                {"fonte": "nasa_power_estresse_termico", "motivo": "falha_fonte"}
+            )
         try:
             clima = clima_pendente.result()
         except (requests.RequestException, ValueError, KeyError, OSError):
@@ -234,14 +254,29 @@ def criar_analise(entrada):
             "coverage of USDA Soil Data Access and SoilGrids."))
     if declividade:
         limitacoes.append(t(
-            "Terreno: declividade calculada a partir de 5 pontos de elevação (USGS 3DEP) ao redor "
-            "da coordenada, não um levantamento topográfico do talhão; só cobre os EUA hoje.",
-            "Terrain: slope computed from 5 elevation points (USGS 3DEP) around the coordinate, not a "
-            "topographic survey of the field; it covers only the US today."))
+            f"Terreno: declividade calculada a partir de 5 pontos de elevação ({declividade['fonte']}) "
+            "ao redor da coordenada, não um levantamento topográfico do talhão.",
+            f"Terrain: slope computed from 5 elevation points ({declividade['fonte']}) around the "
+            "coordinate, not a topographic survey of the field."))
+        if "SRTMGL1" in declividade["fonte"]:
+            limitacoes.append(t(
+                "SRTM é um modelo histórico de superfície da missão de 2000, com amostras "
+                "de 1 segundo de arco. O cálculo usa interpolação local e não mede alterações recentes do terreno.",
+                "SRTM is a historical surface model from the 2000 mission, sampled at 1 arc-second. "
+                "The calculation uses local interpolation and does not capture recent changes to the terrain."))
+        if declividade.get("uso_cache"):
+            consulta = dt.datetime.fromtimestamp(declividade["consultado_em"], dt.UTC).isoformat()
+            limitacoes.append(t(
+                f"Terreno reutiliza elevação válida ({declividade['fonte']}) da mesma coordenada, consultada em {consulta}; "
+                f"cache limitado a {configuracao()['cache_ttl_s']} segundos.",
+                f"Terrain reuses a valid elevation ({declividade['fonte']}) for the same coordinate, queried at {consulta}; "
+                f"cache limited to {configuracao()['cache_ttl_s']} seconds."))
     else:
         limitacoes.append(t(
-            "Terreno sem dado: fonte de elevação indisponível ou ponto fora da cobertura do USGS 3DEP (fora dos EUA).",
-            "Terrain without data: elevation source unavailable or point outside USGS 3DEP coverage (outside the US)."))
+            "Terreno sem dado: não foi possível obter as cinco elevações. USGS 3DEP cobre os EUA; "
+            "para pontos brasileiros, é necessário preparar o raster SRTM local e conferir os pixels válidos.",
+            "Terrain without data: the five elevations could not be obtained. USGS 3DEP covers the US; "
+            "for points in Brazil, the local SRTM raster must be prepared and its valid pixels checked."))
     if risco_seca:
         limitacoes.append(t(
             f"Risco de seca: {risco_seca['metodo']}. Grade regional da NASA POWER, não substitui "
@@ -251,9 +286,26 @@ def criar_analise(entrada):
     else:
         limitacoes.append(t("Risco de seca sem dado: a série diária de chuva não respondeu.",
                             "Drought risk without data: the daily rain series did not respond."))
+    if estresse_termico:
+        limitacoes.append(t(
+            f"Estresse térmico: frequência de dias com máxima do ar a 2 m de ao menos "
+            f"{estresse_termico['limiar_c']:g} °C ({estresse_termico['periodo_inicio']}–"
+            f"{estresse_termico['periodo_fim']}, NASA POWER). Grade regional, não estação no "
+            "talhão; limiar e cortes de nível ainda sem referência agronômica validada por cultura.",
+            f"Heat stress: frequency of days with 2 m air maximum of at least "
+            f"{estresse_termico['limiar_c']:g} °C ({estresse_termico['periodo_inicio']}–"
+            f"{estresse_termico['periodo_fim']}, NASA POWER). Regional grid, not a station in the "
+            "field; threshold and level cutoffs have no validated agronomic reference per crop yet."))
+    else:
+        limitacoes.append(t("Estresse térmico sem dado: a série de temperatura máxima não respondeu.",
+                            "Heat stress without data: the maximum temperature series did not respond."))
     if entrada.origem_local == "municipio":
-        limitacoes.append(t("Localização aproximada por referência regional, sem precisão de talhão.",
-                            "Approximate location from a regional reference, without field precision."))
+        if entrada.codigo_ibge:
+            limitacoes.append(t("Localização aproximada por referência regional, sem precisão de talhão.",
+                                "Approximate location from a regional reference, without field precision."))
+        else:
+            limitacoes.append(t("Coordenada informada manualmente; a precisão do ponto não foi verificada no local.",
+                                "Coordinate entered by hand; the precision of the point was not checked on site."))
     talhao_base = caracterizar_talhao(entrada)
     usa_textura_calculada = talhao_base.textura_solo is None and textura_calculada is not None
     usa_declividade_calculada = talhao_base.relevo is None and declividade is not None
@@ -282,10 +334,16 @@ def criar_analise(entrada):
     else:
         estrategias = gerar_cenarios(entrada, clima["clima_mensal"]) if beta else []
 
+    local_identificado = buscar_por_codigo(entrada.codigo_ibge) if entrada.codigo_ibge else None
+    descricao_local = (
+        f"{local_identificado['municipio']} ({local_identificado['uf']})"
+        if local_identificado
+        else texto(entrada.idioma, "Coordenada", "Coordinate") + f" {entrada.latitude:.4f}, {entrada.longitude:.4f}"
+    )
     resultado = Analise(
         analise_id=str(uuid4()),
         eh_mock=beta and not catalogo_real,
-        descricao_local=t("Coordenada", "Coordinate") + f" {entrada.latitude:.4f}, {entrada.longitude:.4f}",
+        descricao_local=descricao_local,
         talhao=talhao_base.model_copy(
             update={
                 "risco_geada": geada["nivel"] if geada else None,
@@ -304,6 +362,7 @@ def criar_analise(entrada):
         tendencia_hidrica=tendencia,
         estresse_vegetal=estresse,
         risco_seca=risco_seca,
+        estresse_termico=estresse_termico,
         estrategias=estrategias,
         limitacoes=limitacoes,
         versao_motor=VERSAO,

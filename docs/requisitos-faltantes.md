@@ -24,12 +24,12 @@
 - Prioridades do agricultor (uso de água, forragem, nitrogênio, erosão, matéria orgânica, mercado)
 - Harmonização de fontes numa grade comum (célula de 0,1°)
 - Avisos de simulação, confiança, lacunas e pergunta ao especialista em toda resposta
+- Estresse térmico (frequência de dias com máxima do ar ≥ 35 °C, NASA POWER) — qualquer coordenada; mesmo método de geada.py, limiar ainda sem fonte agronômica por cultura
 
 ## Faltante
 
 > Ordenado do mais fácil pro mais difícil de implementar (pra quem for pegar tarefa rápida, comece de cima).
 
-- Estresse térmico — a variável já existe, falta só calcular o índice (parecido com o que já foi feito pro risco de seca)
 - Conversão do rendimento dos EUA (NASS, em BU/ACRE, LB/ACRE etc.) pra kg/ha — deixado de lado por variar o peso do bushel por cultura; só é seguro de fazer achando uma tabela oficial (USDA/NIST) de peso padrão do bushel por cultura, senão é inventar dado
 - Vulnerabilidade sazonal da cultura atual — não calculado; precisa decidir a fórmula/janela antes de codar
 - Redução de demanda de água calculada (hoje é rótulo estático) — precisa de uma referência real de consumo de água por cultura de cobertura; risco de inventar número sem fonte

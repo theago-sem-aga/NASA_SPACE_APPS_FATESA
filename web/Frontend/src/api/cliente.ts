@@ -297,19 +297,28 @@ async function backendTemSemFalhar(metodo: 'GET' | 'POST', caminho: string): Pro
 
 /**
  * GET /api/v1/acompanhamento?latitude=&longitude= → Acompanhamento   (REAL: web/Backend/app/api/v1/acompanhamento.py)
- * Fotos do Sentinel-2 do PONTO DO GPS. Primeira consulta de um ponto leva ~30 s
+ * Fotos do Sentinel-2 do GPS ou da coordenada digitada. Primeira consulta leva ~30 s
  * (o backend processa e guarda em cache); as seguintes respondem na hora.
  *
- * Usa a rota sempre que o ponto veio do GPS e o servidor está no ar, MESMO no modo
+ * Usa a rota para ponto explícito quando o servidor está no ar, MESMO no modo
  * mock: é a única tela que precisa do ponto exato (o resto do fluxo usa a cidade).
  * Sem servidor, ou com a cidade escolhida na busca (o centro da cidade mostraria
  * casas), só usa a cópia local no modo mock. No modo api informa a limitação.
  */
 export async function buscarAcompanhamento(local: Local, origem: OrigemLocal | null): Promise<Acompanhamento> {
-  if (!USANDO_MOCK && origem !== 'gps') {
-    throw new FalhaApi('dados_insuficientes', tx('As fotos precisam da coordenada da plantação. Use o GPS no local; o centro da cidade não identifica o seu talhão.', 'The photos need the coordinates of the field. Use GPS on site; the town center does not identify your field.'));
+  // A busca municipal traz código/UF. "Usar o ponto" preserva a coordenada
+  // digitada com ambos vazios; não é um centroide escolhido automaticamente.
+  const coordenadaDigitada = origem === 'municipio' && !local.codigo_ibge && !local.uf;
+  const pontoReal = origem === 'gps' || coordenadaDigitada;
+  if (!USANDO_MOCK && !pontoReal) {
+    throw new FalhaApi(
+      'dados_insuficientes',
+      tx(
+        'As fotos precisam da coordenada da plantação. Use o GPS no local ou digite a coordenada; o centro da cidade não identifica o seu talhão.',
+        'The photos need the coordinates of the field. Use GPS on site or type the coordinate; the town center does not identify your field.'
+      )
+    );
   }
-  const pontoReal = origem === 'gps';
   if (pontoReal && (USANDO_MOCK ? await backendTemSemFalhar('GET', '/acompanhamento') : await backendTem('GET', '/acompanhamento'))) {
     return requisitar<Acompanhamento>(`/acompanhamento?latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`);
   }

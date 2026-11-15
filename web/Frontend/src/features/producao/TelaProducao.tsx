@@ -173,6 +173,13 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
           acaoRotulo={semDados ? tx('Continuar', 'Continue') : tx('Tentar de novo', 'Try again')}
           aoAgir={semDados ? aoContinuar : () => void carregar()}
         />
+        {!semDados && (
+          <p>
+            <button type="button" className="botao botao-secundario" onClick={aoContinuar}>
+              Continuar sem o histórico de colheita
+            </button>
+          </p>
+        )}
       </>
     );
   }
@@ -244,7 +251,7 @@ export function TelaProducao({ local, culturaAtualId, aoMudarRoteiro, aoVoltar, 
               </div>
             </div>
           ) : (
-            <p className="texto-apoio">{tx('Sem dado de clima pra essa região ainda.', 'No climate data for this region yet.')}</p>
+            <p className="texto-apoio">{tx('Ainda não há dado de clima para esta região.', 'No climate data for this region yet.')}</p>
           )}
         </section>
       </div>

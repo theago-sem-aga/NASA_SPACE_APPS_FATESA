@@ -1,5 +1,5 @@
 import { NomeCientificoCaminho } from './NomeCientifico';
-import { SINALIZAR_MOCK } from '../api/cliente';
+import { SINALIZAR_MOCK, USANDO_MOCK } from '../api/cliente';
 import type { Analise } from '../api/tipos';
 import type { DadosFluxo } from '../features/fluxo/estadoFluxo';
 import { fraseGeada, linhaTecnicaGeada } from '../features/fluxo/FaixaGeada';
@@ -17,7 +17,15 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
     <section className="resumo-impressao" aria-hidden="true">
       <h1>{tx('Rotação de culturas: resumo para o agrônomo', 'Crop rotation: summary for the agronomist')}</h1>
       <p>
-        {tx('Gerado em', 'Generated on')} {hoje}. {analise.eh_mock && SINALIZAR_MOCK && tx('ATENÇÃO: dados de exemplo.', 'WARNING: sample data.')}
+        {tx('Gerado em', 'Generated on')} {hoje}.{' '}
+        {USANDO_MOCK && SINALIZAR_MOCK
+          ? tx('ATENÇÃO: dados de exemplo.', 'WARNING: sample data.')
+          : analise.eh_mock
+            ? tx(
+                'ATENÇÃO: caminhos em simulação de teste, ainda sem conferência de um agrônomo; clima e solo são dados reais.',
+                'WARNING: options are a test simulation, not yet checked by an agronomist; climate and soil are real data.'
+              )
+            : null}
       </p>
       <ResumoVisual dados={dados} analise={analise} />
       {analise.geada && (

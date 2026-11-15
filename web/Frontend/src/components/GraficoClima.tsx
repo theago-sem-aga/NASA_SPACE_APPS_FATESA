@@ -34,6 +34,8 @@ const CONFIG: Record<Variavel, { titulo: string; unidade: string; explicacao: st
 export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaque }: GraficoClimaProps) {
   const [variavel, setVariavel] = useState<Variavel>('chuva');
   const idDescricao = useId();
+  // Umidade da terra só aparece se o back mandar o dado (hoje não manda: decidido não implementar no hackathon).
+  const opcoes = (Object.keys(CONFIG) as Variavel[]).filter(v => v === 'chuva' || clima.some(c => CONFIG[v].valor(c) !== null));
   const cfg = CONFIG[variavel];
   const porMes = new Map(clima.map(c => [c.mes, c]));
   const valores = ordemMeses.map(m => {
@@ -44,13 +46,15 @@ export function GraficoClima({ clima, ordemMeses, mesesDestacados, rotuloDestaqu
 
   return (
     <section className="cartao grafico-clima" aria-labelledby={`${idDescricao}-titulo`}>
+      {opcoes.length > 1 && (
       <div className="alternador" role="group" aria-label={tx('Escolha o que mostrar no gráfico', 'Choose what the chart shows')}>
-        {(Object.keys(CONFIG) as Variavel[]).map(v => (
+        {opcoes.map(v => (
           <button key={v} type="button" className="alternador-opcao" aria-pressed={variavel === v} onClick={() => setVariavel(v)}>
             {CONFIG[v].titulo}
           </button>
         ))}
       </div>
+      )}
 
       <div>
         <h2 id={`${idDescricao}-titulo`} className="titulo-secao">

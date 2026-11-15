@@ -8,7 +8,7 @@ import { Icone } from '../../components/Icone';
 import { Medidor } from '../../components/Medidor';
 import { Pictograma, PICTOGRAMA_CULTURA } from '../../components/Pictograma';
 import { PICTO_ATRIBUTO, ROTULO_ATRIBUTO, ROTULO_CONFIANCA } from './rotulos';
-import { tx } from '../../i18n/idioma';
+import { L, traduzivel, tx } from '../../i18n/idioma';
 
 interface TelaCompararProps {
   analise: Analise;
@@ -35,7 +35,13 @@ function notaPara(e: Estrategia, c: Criterio): number {
   const v = VALOR[e.atributos[c]];
   return ROTULO_ATRIBUTO[c].maiorEhMelhor ? v : -v;
 }
-const nomeCriterio = (c: Criterio) => (c === 'descoberto' ? tx('Menos meses de terra descoberta', 'Fewer months of bare soil') : ROTULO_ATRIBUTO[c].nome);
+/** Nome do botão de ordenar: nos pontos em que menos é melhor, diz "menos", para o sentido da ordem ficar claro. */
+const NOME_ORDENAR: Partial<Record<keyof AtributosEstrategia, string>> = traduzivel({
+  trabalho_custo: L('Dá menos trabalho e gasto', 'Less work and cost'),
+  demanda_agua: L('Gasta menos água', 'Uses less water')
+});
+const nomeCriterio = (c: Criterio) =>
+  c === 'descoberto' ? tx('Menos meses de terra descoberta', 'Fewer months of bare soil') : NOME_ORDENAR[c] ?? ROTULO_ATRIBUTO[c].nome;
 
 export function TelaComparar({ analise, aoAbrir, aoVoltar, aoEscolher }: TelaCompararProps) {
   const [verTudo, setVerTudo] = useState(false);

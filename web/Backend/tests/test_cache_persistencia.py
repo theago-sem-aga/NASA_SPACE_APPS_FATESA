@@ -1,4 +1,5 @@
 import json
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
@@ -43,3 +44,23 @@ def test_evidencia_json_sem_nan_e_datas():
         "data": "2020-02-29",
     }
     assert dados["zero"] == 0
+
+
+def test_cache_aninhado_com_hash_igual_nao_trava():
+    class ChaveMesmoHash(tuple):
+        def __hash__(self):
+            return 0
+    externa = ChaveMesmoHash(("externa", object()))
+    interna = ChaveMesmoHash(("interna", object()))
+    fim = threading.Event()
+    resultados = []
+    def consultar():
+        try:
+            resultados.append(com_cache(externa, 60, lambda: com_cache(interna, 60, lambda: 42)))
+        finally:
+            fim.set()
+    tarefa = threading.Thread(target=consultar, daemon=True)
+    tarefa.start()
+    assert fim.wait(2), "Cache aninhado ficou bloqueado por colisão de hash"
+    tarefa.join()
+    assert resultados == [42]

@@ -1,3 +1,4 @@
+import { SelosFontes } from '../../components/SeloFonte';
 import { useId, useState } from 'react';
 import type { ClimaMensal, EstresseTermico, EstresseVegetal, CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TendenciaHidrica, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
@@ -16,7 +17,7 @@ interface PainelTalhaoProps {
   talhao: CaracteristicasTalhao;
   /** Detalhe mês a mês do risco de geada; null = sem dado. */
   geada: RiscoGeada | null;
-  /** Calor forte mês a mês; null/ausente = sem dado (proposta, ver api/tipos.ts). */
+  /** Calor forte histórico mês a mês; null/ausente = sem dado. */
   calor: EstresseTermico | null;
   /** Chuva média de cada mês, para "Meses de atenção". */
   climaMensal: ClimaMensal[];
@@ -111,6 +112,7 @@ export function PainelTalhao({ talhao, geada, calor, climaMensal, precipitacaoEx
         <Item pictograma="planta" rotulo={tx('Vegetação (NDVI)', 'Vegetation (NDVI)')} valor={estresseVegetal ? ROTULO_ESTRESSE[estresseVegetal.situacao] : tx('Sem dado', 'No data')} />
       </ul>
       <div className="painel-talhao-rodape">
+        {talhao.bases.length > 0 && <SelosFontes fontes={talhao.bases} />}
         {talhao.bases.length > 0 && <span className="texto-apoio">{tx('De onde vem:', 'Sources:')} {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (
           <button type="button" className="link-discreto" onClick={abrir} aria-expanded={false}>

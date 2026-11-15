@@ -11,6 +11,27 @@ type Alerta = 'calor' | 'geada' | 'seca';
 
 const ROTULO: Record<Alerta, string> = traduzivel({ calor: L('Calor forte', 'Strong heat'), geada: L('Geada', 'Frost'), seca: L('Pouca chuva', 'Little rain') });
 
+const lista = (meses: number[]) => {
+  const nomes = meses.map(m => tx(NOME_MES[m - 1].toLowerCase(), NOME_MES[m - 1]));
+  return nomes.length <= 1 ? nomes[0] ?? '' : `${nomes.slice(0, -1).join(', ')} ${tx('e', 'and')} ${nomes[nomes.length - 1]}`;
+};
+
+/** Frase para ouvir: quais meses têm calor forte, geada e pouca chuva. */
+export function fraseMesesAtencao(calor: EstresseTermico | null, geada: RiscoGeada | null, clima: ClimaMensal[]): string {
+  const secos = clima
+    .filter(c => c.precipitacao_acumulada_mm !== null && c.precipitacao_acumulada_mm < POUCA_CHUVA_MM)
+    .map(c => c.mes)
+    .sort((a, b) => a - b);
+  const partes: string[] = [];
+  if (calor?.meses_com_risco.length) partes.push(tx(`calor forte em ${lista(calor.meses_com_risco)}`, `strong heat in ${lista(calor.meses_com_risco)}`));
+  if (geada?.meses_com_risco.length) partes.push(tx(`geada em ${lista(geada.meses_com_risco)}`, `frost in ${lista(geada.meses_com_risco)}`));
+  if (secos.length) partes.push(tx(`pouca chuva em ${lista(secos)}`, `little rain in ${lista(secos)}`));
+  if (partes.length === 0)
+    return tx('Meses de atenção: nenhum mês com calor forte, geada ou pouca chuva no histórico.', 'Months to watch: no month with strong heat, frost or little rain in the record.');
+  const juntas = partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join('; ')}; ${tx('e', 'and')} ${partes[partes.length - 1]}`;
+  return `${tx('Meses de atenção:', 'Months to watch:')} ${juntas}.`;
+}
+
 /**
  * "Meses de atenção": junta, mês a mês, o que os outros itens já mostram
  * (calor forte, geada e pouca chuva), para ver num olhar quando a lavoura sofre mais.
@@ -27,11 +48,20 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
     if (chuva !== null && chuva !== undefined && chuva < POUCA_CHUVA_MM) lista.push('seca');
     return lista;
   };
-  const meses = Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, alertas: alertas(i + 1) }));
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    const mes = i + 1;
+    const chuva = clima.find(c => c.mes === mes)?.precipitacao_acumulada_mm;
+    const incompleto = !calor?.meses.some(m => m.mes === mes)
+      || !geada?.meses.some(m => m.mes === mes) || chuva === null || chuva === undefined;
+    return { mes, alertas: alertas(mes), incompleto };
+  });
   const comAlerta = meses.filter(m => m.alertas.length > 0);
+  const dadosIncompletos = meses.some(m => m.incompleto);
   const resumo =
     comAlerta.length === 0
-      ? tx('Nenhum mês com calor forte, geada ou pouca chuva no histórico.', 'No month with strong heat, frost or little rain in the record.')
+      ? dadosIncompletos
+        ? tx('Não há alertas nos dados disponíveis. Faltam dados para avaliar todos os riscos.', 'No alerts in the available data. Data is missing to assess every risk.')
+        : tx('Nenhum mês com calor forte, geada ou pouca chuva no histórico.', 'No month with strong heat, frost or little rain in the record.')
       : tx(
           `${comAlerta.length} meses pedem atenção. Os mais delicados são os que juntam mais de um problema.`,
           `${comAlerta.length} months need attention. The most delicate ones combine more than one problem.`
@@ -40,6 +70,9 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
   return (
     <div className="meses-atencao">
       <p className="faixa-geada-frase">{resumo}</p>
+      {dadosIncompletos && comAlerta.length > 0 && (
+        <p className="texto-apoio">Avaliação parcial: os riscos sem dados não estão incluídos.</p>
+      )}
       <SeloFonte fonte={calor?.fonte ?? geada?.fonte} />
       <ol className="meses-atencao-lista">
         {meses.map(m => (
@@ -50,7 +83,7 @@ export function MesesAtencao({ calor, geada, clima }: { calor: EstresseTermico |
             </span>
             <span className="meses-atencao-alertas">
               {m.alertas.length === 0 ? (
-                <span className="meses-atencao-ok">{tx('sem alerta', 'no alert')}</span>
+                <span className="meses-atencao-ok">{m.incompleto ? tx('dados incompletos', 'incomplete data') : tx('sem alerta', 'no alert')}</span>
               ) : (
                 m.alertas.map(a => (
                   <span key={a} className={`etiqueta meses-atencao-${a}`}>

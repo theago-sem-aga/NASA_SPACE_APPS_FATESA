@@ -1,3 +1,4 @@
+import { CreditosDialogo } from './components/CreditosDialogo';
 import { GlossarioDialogo } from './components/GlossarioDialogo';
 import { Icone } from './components/Icone';
 import { ConfirmarInicio } from './components/ConfirmarInicio';
@@ -44,6 +45,7 @@ export function App() {
   const [glossarioAberto, setGlossarioAberto] = useState(false);
   // Ler o idioma aqui faz a árvore toda redesenhar quando a bandeira muda.
   const idioma = useIdioma();
+  const [creditosAbertos, setCreditosAbertos] = useState(false);
   const narracao = useNarracao();
   const principal = useRef<HTMLElement>(null);
   const primeiraRenderizacao = useRef(true);
@@ -392,6 +394,7 @@ export function App() {
       </main>
       {analisePronta && <ResumoImpressao dados={dados} analise={analisePronta} />}
       <GlossarioDialogo aberto={glossarioAberto} aoFechar={() => setGlossarioAberto(false)} />
+      <CreditosDialogo aberto={creditosAbertos} aoFechar={() => setCreditosAbertos(false)} />
       <ConfirmarInicio
         aberto={confirmandoInicio}
         aoCancelar={() => setConfirmandoInicio(false)}
@@ -409,10 +412,17 @@ export function App() {
             )}
           </p>
           <p>
-            {(analisePronta?.eh_mock ?? USANDO_MOCK) && SINALIZAR_MOCK
-              ? tx('Dados de exemplo (inventados). ', 'Sample data (made up). ')
-              : tx('Clima: NASA POWER. ', 'Climate: NASA POWER. ')}
-            <a href={`${import.meta.env.BASE_URL}imagens/CREDITOS.md`}>{tx('Créditos das fotos', 'Photo credits')}</a>
+            {USANDO_MOCK && SINALIZAR_MOCK
+              ? tx('Dados de exemplo. ', 'Sample data. ')
+              : analisePronta?.eh_mock
+                ? tx(
+                    'Clima: NASA POWER. Caminhos: simulação de teste (sem conferência de agrônomo). ',
+                    'Climate: NASA POWER. Options: test simulation (not checked by an agronomist). '
+                  )
+                : tx('Clima: NASA POWER. ', 'Climate: NASA POWER. ')}
+            <button type="button" className="link-rodape" onClick={() => setCreditosAbertos(true)}>
+              {tx('Créditos das fotos', 'Photo credits')}
+            </button>
             {' · '}
             <button type="button" className="link-rodape" onClick={() => setGlossarioAberto(true)}>
               {tx('Glossário', 'Glossary')}

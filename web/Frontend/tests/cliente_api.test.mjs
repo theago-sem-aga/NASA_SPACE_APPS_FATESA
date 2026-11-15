@@ -51,6 +51,19 @@ test('GPS consulta a rota real de acompanhamento', async () => {
   assert.equal(r.ponto_exemplo, false);
   assert.equal(r.latitude, local.latitude);
 });
+
+test('coordenada digitada consulta fotos reais sem usar centroide municipal', async () => {
+  const urls = [];
+  const c = await cliente(async url => {
+    urls.push(url);
+    return resposta(url.endsWith('openapi.json')
+      ? { paths: { '/api/v1/acompanhamento': { get: {} } } }
+      : { ponto_exemplo: false, fotos: [] });
+  });
+  const r = await c.buscarAcompanhamento({ ...local, codigo_ibge: '', uf: '' }, 'municipio');
+  assert.equal(r.ponto_exemplo, false);
+  assert.ok(urls[1].includes(`latitude=${local.latitude.toFixed(5)}&longitude=${local.longitude.toFixed(5)}`));
+});
 test('servidor desligado resulta em erro e não em mock', async () => {
   const c = await cliente(async () => { throw new TypeError('offline'); });
   await assert.rejects(c.listarCulturas(), e => e.codigo === 'sem_conexao');

@@ -1096,6 +1096,22 @@ p { margin: 0; }
   .comparacao-item-nome { font-weight: 700; }
 }
 
+.glossario-ouvir {
+  margin-left: auto; margin-right: 8px; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px;
+  border: 1.5px solid #ffffff; border-radius: 999px; background: transparent; color: #ffffff; font: inherit; font-weight: 600;
+}
+.glossario-ouvir[aria-pressed='true'] { background: #ffffff; color: var(--cor-mata); }
+
+.selos-fontes { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.selos-fontes .selo-fonte { margin: 0; }
+
+/* Créditos das fotos (janela do rodapé). */
+.creditos-lista { list-style: none; margin: 0; padding: 4px 18px 8px; display: grid; gap: 12px; }
+.creditos-lista li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: start; padding-bottom: 12px; border-bottom: 1px solid var(--cor-borda); }
+.creditos-miniatura { width: 96px; height: 72px; object-fit: cover; border-radius: var(--raio-pequeno); }
+.creditos-descricao { margin: 0 0 4px; font-weight: 600; line-height: 1.35; }
+.creditos-dados { margin: 0 0 4px; font-size: 0.9rem; color: var(--cor-texto-suave); }
+.creditos-nota { padding-bottom: 18px; }
 /* Seletor de idioma (bandeiras EUA/Brasil) no cabeçalho. */
 .seletor-idioma { display: flex; align-items: center; gap: 4px; }
 .botao-bandeira {

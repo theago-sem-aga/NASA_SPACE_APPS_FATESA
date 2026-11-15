@@ -78,8 +78,13 @@ def gerar_cenarios(entrada, clima_mensal=None):
                   "The pest was not identified. This report gives no control advice or species choice.")
             )
         if entrada.origem_local == "municipio":
-            lacunas.append(t("A localização é aproximada e não representa os limites do seu talhão.",
-                             "The location is approximate and does not represent the boundaries of your field."))
+            lacunas.append(
+                t("A localização é aproximada e não representa os limites do seu talhão.",
+                  "The location is approximate and does not represent the boundaries of your field.")
+                if entrada.codigo_ibge
+                else t("Coordenada digitada: confirme se o ponto representa o talhão.",
+                       "Typed coordinate: confirm that the point represents your field.")
+            )
         estrategias.append(
             Estrategia(
                 estrategia_id=identificador,

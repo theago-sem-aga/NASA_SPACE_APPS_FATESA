@@ -9,10 +9,11 @@ const FONTES: { teste: RegExp; nome: string; orgao: string }[] = [
   { teste: /nasa_power|nasa power/i, nome: 'POWER', orgao: 'NASA' },
   { teste: /^gpm$|imerg/i, nome: 'GPM/IMERG', orgao: 'NASA' },
   { teste: /^smap$/i, nome: 'SMAP', orgao: 'NASA' },
-  { teste: /^srtm$/i, nome: 'SRTM', orgao: 'NASA' },
+  { teste: /srtm/i, nome: 'SRTM', orgao: 'NASA' },
   { teste: /ecostress/i, nome: 'ECOSTRESS', orgao: 'NASA' },
   { teste: /landsat/i, nome: 'Landsat', orgao: 'NASA/USGS' },
-  { teste: /modis|viirs/i, nome: 'MODIS/VIIRS', orgao: 'NASA' },
+  { teste: /modis/i, nome: 'MODIS', orgao: 'NASA' },
+  { teste: /viirs/i, nome: 'VIIRS', orgao: 'NASA' },
   { teste: /grace/i, nome: 'GRACE', orgao: 'NASA' },
   { teste: /gldas/i, nome: 'GLDAS', orgao: 'NASA' },
   { teste: /sentinel-?2/i, nome: 'Sentinel-2', orgao: 'ESA/Copernicus' },
@@ -41,6 +42,23 @@ export function SeloFonte({ fonte }: { fonte: string | null | undefined }) {
         <path d="M5 8.2l2 2 4-4.2" fill="none" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       {texto}
+    </span>
+  );
+}
+
+/** Vários selos de uma vez (ex.: as bases do painel da terra), sem repetir a mesma fonte. */
+export function SelosFontes({ fontes }: { fontes: (string | null | undefined)[] }) {
+  const vistas = new Set<string>();
+  const unicas = fontes.filter(f => {
+    const o = origemOficial(f);
+    if (!o || vistas.has(o.nome)) return false;
+    vistas.add(o.nome);
+    return true;
+  });
+  if (unicas.length === 0) return null;
+  return (
+    <span className="selos-fontes">
+      {unicas.map(f => <SeloFonte key={f} fonte={f} />)}
     </span>
   );
 }

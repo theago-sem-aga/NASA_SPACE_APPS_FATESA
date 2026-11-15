@@ -95,6 +95,13 @@ ESTRESSE_FIXTURE = {
 
 
 def preparar(monkeypatch, repositorio):
+    # Estes testes validam orquestração/contrato com dados controlados, sem
+    # depender da rede nem consumir credenciais reais do ambiente.
+    monkeypatch.setattr(servico, "buscar_textura_ponto", lambda *args: None)
+    monkeypatch.setattr(servico, "declividade_do_ponto", lambda *args: None)
+    monkeypatch.setattr(servico, "resumo_risco_seca", lambda *args: None)
+    monkeypatch.setattr(servico, "resumo_precipitacao_extrema", lambda *args: None)
+    monkeypatch.setattr(servico, "estresse_termico_do_ponto", lambda *args: CALOR_FIXTURE)
     monkeypatch.setattr(servico, "estresse_vegetal", lambda *args: ESTRESSE_FIXTURE)
     monkeypatch.setattr(servico, "risco_geada", lambda *args: GEADA_FIXTURE)
     monkeypatch.setattr(servico, "tendencia_hidrica", lambda *args: TENDENCIA_FIXTURE)
@@ -288,3 +295,72 @@ def test_sem_historico_de_ndvi_nao_derruba_a_analise(cliente, monkeypatch, repos
     assert {"fonte": "modis_ndvi_estresse_vegetal", "motivo": "sem_historico_pre_processado"} in corpo[
         "fontes_indisponiveis"
     ]
+
+
+@pytest.mark.parametrize("codigo,nome,uf", [
+    ("3549805", "São José do Rio Preto", "SP"),
+    ("3533908", "Olímpia", "SP"),
+])
+def test_descricao_municipal_e_persistida(cliente, monkeypatch, repositorio, entrada, codigo, nome, uf):
+    preparar(monkeypatch, repositorio)
+    monkeypatch.setattr(servico, "buscar_por_codigo", lambda c: {"municipio": nome, "uf": uf})
+    entrada.codigo_ibge = codigo
+    entrada.origem_local = "municipio"
+    resposta = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json"))
+    assert resposta.status_code == 201
+    analise = resposta.json()
+    assert analise["descricao_local"] == f"{nome} ({uf})"
+    salva = cliente.get(f"/api/v1/analises/{analise['analise_id']}").json()
+    assert salva["descricao_local"] == analise["descricao_local"]
+
+
+def test_codigo_desconhecido_nao_inventa_cidade(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    monkeypatch.setattr(servico, "buscar_por_codigo", lambda c: None)
+    entrada.codigo_ibge = "0000000"
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["descricao_local"] == "Coordenada 36.6000, -119.7000"
+
+
+def test_coordenada_digitada_nao_e_descrita_como_centroide(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    entrada.origem_local = "municipio"
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert any("Coordenada informada manualmente" in texto for texto in corpo["limitacoes"])
+    assert not any("por referência regional" in texto for texto in corpo["limitacoes"])
+
+
+def test_fonte_que_responde_sem_dado_tem_motivo_explicito(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    fontes = corpo["fontes_indisponiveis"]
+    assert {"fonte": "textura_solo", "motivo": "sem_textura_inequivoca"} in fontes
+    assert {"fonte": "declividade_usgs_3dep", "motivo": "sem_elevacao_disponivel"} in fontes
+
+
+CALOR_FIXTURE = {
+    "nivel": "baixo", "mes_mais_arriscado": None, "meses_com_risco": [],
+    "dias_calor_ano": 0.0, "limiar_c": 35.0, "periodo_inicio": 2000,
+    "periodo_fim": 2020, "anos_analisados": 21, "fonte": "fixture",
+    "variavel": "temperatura_maxima_c", "meses": [
+        {"mes": mes, "probabilidade_calor": 0.0, "anos_com_calor": 0,
+         "dias_calor_medio": 0.0, "maior_maxima_c": 30.0, "maxima_media_c": 25.0}
+        for mes in range(1, 13)
+    ],
+}
+
+
+def test_calor_integrado_chega_ao_contrato(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["estresse_termico"] == CALOR_FIXTURE
+
+
+def test_falha_de_calor_nao_derruba_analise(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    def falhar(*args):
+        raise ValueError("série incompleta")
+    monkeypatch.setattr(servico, "estresse_termico_do_ponto", falhar)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["estresse_termico"] is None
+    assert {"fonte": "nasa_power_estresse_termico", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]

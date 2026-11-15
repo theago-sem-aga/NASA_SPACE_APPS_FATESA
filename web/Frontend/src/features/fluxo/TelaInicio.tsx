@@ -42,8 +42,8 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
         {mostrarDica && <DicaPermissao />}
         <p className="texto-apoio entrada-local-apoio">
           {tx(
-            'Se estiver na plantação, melhor ainda: a gente vê a chuva e a terra exatamente daí. A localização só serve para isso.',
-            'If you are in the field, even better: we look at the rain and the soil right there. Your location is used only for that.'
+            'Se estiver na plantação, melhor ainda: assim vemos a chuva e a terra exatamente desse ponto. A localização só serve para isso.',
+            'If you are in the field, even better: we look at the rain and the soil right at that spot. Your location is used only for that.'
           )}
         </p>
         <button type="button" className="link-discreto" onClick={aoDigitarCidade}>

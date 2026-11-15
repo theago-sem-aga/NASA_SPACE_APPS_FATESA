@@ -246,6 +246,32 @@ class RiscoSeca(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class CalorMensal(BaseModel):
+    mes: int = Field(ge=1, le=12)
+    # Fração dos anos com pelo menos 1 dia de máxima do ar >= limiar_c naquele mês.
+    probabilidade_calor: float = Field(ge=0, le=1)
+    anos_com_calor: int
+    dias_calor_medio: float
+    maior_maxima_c: float
+    maxima_media_c: float
+
+
+class EstresseTermico(BaseModel):
+    # Regra em app/domain/estresse_termico.py: mesma estrutura de geada.py,
+    # do lado do calor (máxima do ar, NASA POWER T2M_MAX).
+    nivel: Nivel
+    mes_mais_arriscado: int | None = None
+    meses_com_risco: list[int]
+    dias_calor_ano: float
+    meses: list[CalorMensal]
+    limiar_c: float
+    periodo_inicio: int
+    periodo_fim: int
+    anos_analisados: int
+    fonte: str
+    variavel: str
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -317,6 +343,8 @@ class Analise(BaseModel):
     estresse_vegetal: EstresseVegetal | None = None
     # None = série diária de chuva sem medição suficiente para o ponto.
     risco_seca: RiscoSeca | None = None
+    # None = sem série de temperatura máxima para o ponto (fonte fora do ar).
+    estresse_termico: EstresseTermico | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

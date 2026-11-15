@@ -1,4 +1,4 @@
-import { SINALIZAR_MOCK } from '../api/cliente';
+import { SINALIZAR_MOCK, USANDO_MOCK } from '../api/cliente';
 import { Icone } from './Icone';
 import { tx } from '../i18n/idioma';
 
@@ -9,10 +9,18 @@ export function AvisoDemonstracao({ ehMock }: { ehMock: boolean }) {
     <p className="aviso-demonstracao">
       <Icone nome="info" tamanho={20} />
       <span>
-        <strong>{tx('Exemplo de teste:', 'Test example:')}</strong>{' '}
-        {tx(
-          'os números e textos desta tela são inventados, só para mostrar como a ferramenta vai funcionar. Não use para decidir.',
-          'the numbers and texts on this screen are made up, only to show how the tool will work. Do not use them to decide.'
+        {USANDO_MOCK ? (
+          <>
+            <strong>{tx('Demonstração:', 'Demo:')}</strong> {tx('os dados desta tela são de exemplo.', 'the data on this screen is sample data.')}
+          </>
+        ) : (
+          <>
+            <strong>{tx('Simulação:', 'Simulation:')}</strong>{' '}
+            {tx(
+              'os caminhos desta tela são uma hipótese de teste, ainda sem conferência de um agrônomo. Clima e solo são dados reais. Converse com um agrônomo antes de decidir.',
+              'the options on this screen are a test hypothesis, not yet checked by an agronomist. Climate and soil are real data. Talk to an agronomist before deciding.'
+            )}
+          </>
         )}
       </span>
     </p>

@@ -109,8 +109,14 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
         <span className="confianca-medidor" aria-hidden="true">
           {NIVEIS_CONFIANCA.map((n, i) => <span key={n} className={i <= nivelConfianca ? 'cheio' : ''} />)}
         </span>
-        <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
-        <Termo id="confianca">{tx('O que isso quer dizer', 'What this means')}</Termo>
+        {e.confianca === 'baixa' ? (
+          <strong>{tx('Baixo volume de dados para referência, averiguar com consultor agrônomo', 'Little reference data; check with an agronomist')}</strong>
+        ) : (
+          <>
+            <strong>{ROTULO_CONFIANCA[e.confianca]}</strong>
+            <Termo id="confianca">{tx('O que isso quer dizer', 'What this means')}</Termo>
+          </>
+        )}
       </p>
 
       <div className="sanfonas">
@@ -140,11 +146,11 @@ export function TelaEstrategia({ estrategia: e, ehMock, recursos, clima, fonteCl
             ))}
           </ul>
         </Sanfona>
-        <Sanfona icone="dados" titulo={tx('Por que a gente diz isso', 'Why we say this')} contagem={e.evidencias.length}>
+        <Sanfona icone="dados" titulo={tx('Por que dizemos isso', 'Why we say this')} contagem={e.evidencias.length}>
           <Lista itens={e.evidencias} />
           <p className="texto-apoio">{e.explicacao_confianca}</p>
         </Sanfona>
-        <Sanfona icone="info" titulo={tx('O que a gente ainda não sabe', 'What we do not know yet')} contagem={e.lacunas.length}>
+        <Sanfona icone="info" titulo={tx('O que ainda não sabemos', 'What we do not know yet')} contagem={e.lacunas.length}>
           <Lista itens={e.lacunas} />
         </Sanfona>
         {e.referencias.length > 0 && (

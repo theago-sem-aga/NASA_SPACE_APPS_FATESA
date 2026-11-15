@@ -40,3 +40,21 @@ def test_chave_openet_ausente_nao_e_cobertura(monkeypatch):
     monkeypatch.delenv("OPENET_API_KEY", raising=False)
     r = coleta._buscar("openet", 36.6, -119.7)
     assert r["motivo"] == "chave_nao_configurada"
+
+
+def test_openet_no_brasil_nao_faz_chamada_externa(monkeypatch):
+    def nao_consultar(*args, **kwargs):
+        raise AssertionError("Não deve consultar OpenET fora desta cobertura")
+    monkeypatch.setattr(coleta.openet, "buscar_et_ponto", nao_consultar)
+    r = coleta._buscar("openet", -20.70, -48.96)
+    assert r == {"disponivel": False, "motivo": "fora_da_cobertura"}
+
+
+def test_srtm_local_de_ponto_nao_e_emitido_como_media_da_celula(monkeypatch):
+    monkeypatch.setattr(coleta, "buscar_celula", lambda *args: None)
+    monkeypatch.setattr(coleta, "buscar_elevacao_local", lambda *args: 505.0)
+    monkeypatch.setattr(coleta, "com_cache", lambda chave, ttl, func: func())
+    valores, ausencia, _ = coleta._coletar_fonte("srtm", -20.82, -49.38)
+    assert ausencia is None
+    assert valores == [{"nome": "elevacao_ponto_m", "valor": 505.0, "data": None,
+                        "fonte": "srtm", "tipo_acesso": "pre_processado"}]

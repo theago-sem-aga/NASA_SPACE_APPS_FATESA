@@ -1,3 +1,4 @@
+import { SeloFonte } from '../../components/SeloFonte';
 import { Termo } from '../../components/Termo';
 import { useId, useState } from 'react';
 import type { EstresseVegetal } from '../../api/tipos';
@@ -146,6 +147,7 @@ export function FaixaEstresseVegetal({ estresse }: { estresse: EstresseVegetal }
   return (
     <div className="faixa-tendencia">
       <p className="faixa-tendencia-frase">{fraseEstresse(estresse)}</p>
+      <SeloFonte fonte={estresse.fonte} />
       {!semPlanta && fotos.length > 1 && (
         <figure className="grafico-chuva-anos">
           <figcaption id={`${id}-titulo`} className="grafico-chuva-anos-titulo">
