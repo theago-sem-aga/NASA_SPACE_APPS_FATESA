@@ -237,6 +237,24 @@ export interface RiscoGeada {
   tipo_acesso: TipoAcesso;
 }
 
+/**
+ * Precipitação extrema do ponto (REAL, calculado no backend em
+ * app/modelos/precipitacao_extrema.py). O front só exibe; não refaz conta.
+ */
+export interface RiscoPrecipitacaoExtrema {
+  /** Quantos dos últimos 30 dias com dado publicado tiveram chuva acima do limiar. */
+  dias_chuva_extrema_30d: number;
+  /** Chuva do dia (mm) acima da qual o dia conta como extremo, no mês de `data_referencia`. */
+  limiar_chuva_extrema_mm_dia: number;
+  /** YYYY-MM-DD do dia mais recente com dado. */
+  data_referencia: string;
+  /** Frase curta explicando o método (percentil, período do histórico). */
+  metodo: string;
+  fonte: string;
+  variavel: string;
+  tipo_acesso: TipoAcesso;
+}
+
 export interface Analise {
   analise_id: string;
   /** true = dados fictícios de demonstração. A UI deve deixar isso visível. */
@@ -248,6 +266,8 @@ export interface Analise {
   clima_mensal: ClimaMensal[];
   /** null = a série de temperatura mínima não respondeu para o ponto. */
   geada: RiscoGeada | null;
+  /** null = a série de precipitação diária não respondeu para o ponto. */
+  precipitacao_extrema: RiscoPrecipitacaoExtrema | null;
   /** Já ordenadas pelo backend. O front não reordena nem pontua. */
   estrategias: Estrategia[];
   limitacoes: string[];

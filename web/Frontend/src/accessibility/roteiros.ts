@@ -9,6 +9,7 @@ import {
   NOME_MES, ROTULO_PRIORIDADE, ROTULO_PROBLEMA, ROTULO_RELEVO, ROTULO_REQUISITO, ROTULO_RISCO, ROTULO_TEXTURA
 } from '../features/fluxo/rotulos';
 import { fraseGeada } from '../features/fluxo/FaixaGeada';
+import { fraseChuvaExtrema } from '../features/fluxo/FaixaPrecipitacaoExtrema';
 
 const ORDINAL = ['O primeiro', 'O segundo', 'O terceiro', 'O quarto', 'O quinto'];
 
@@ -34,6 +35,7 @@ function roteiroTalhao(a: Analise): string {
   if (t.risco_seca) partes.push(`O risco de seca é ${minuscula(ROTULO_RISCO[t.risco_seca])}.`);
   if (t.risco_geada) partes.push(`O risco de geada é ${minuscula(ROTULO_RISCO[t.risco_geada])}.`);
   if (a.geada) partes.push(fraseGeada(a.geada));
+  if (a.precipitacao_extrema) partes.push(fraseChuvaExtrema(a.precipitacao_extrema));
   if (partes.length) partes.push('Se não for bem assim, toque em: não é bem assim.');
   return partes.join(' ');
 }

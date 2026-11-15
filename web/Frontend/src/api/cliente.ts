@@ -20,6 +20,7 @@ import { PREVISOES_POR_REGIAO } from './mock/previsaoRegiao';
 import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 import { GEADA_FRESNO, GEADA_SJRP } from './mock/geadaMock';
+import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
 const FONTE_DADOS = import.meta.env.VITE_FONTE_DADOS ?? 'mock';
@@ -220,13 +221,17 @@ function limitacoesDaColeta(coleta: RespostaAnalise): string[] {
 function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
   // Os caminhos mudam com as prioridades e os recursos: escolha do motor de decisão (backend).
   const { estrategias, limitacoes } = montarEstrategias(entrada, descricaoLocal.replace(/ \(.*\)$/, '') || 'sua cidade');
-  // Geada REAL da NASA POWER (congelada). ?simular=geada mostra Fresno, onde geia todo inverno.
-  const geada = simulacaoPedida() === 'geada' ? GEADA_FRESNO : GEADA_SJRP;
+  // Geada e chuva extrema REAIS da NASA POWER (congeladas). ?simular=geada mostra
+  // Fresno, onde geia todo inverno e chove mais fora do padrão em novembro.
+  const emFresno = simulacaoPedida() === 'geada';
+  const geada = emFresno ? GEADA_FRESNO : GEADA_SJRP;
+  const precipitacaoExtrema = emFresno ? PRECIPITACAO_EXTREMA_FRESNO : PRECIPITACAO_EXTREMA_SJRP;
   return {
     ...ANALISE_MOCK,
     descricao_local: descricaoLocal,
     talhao: montarTalhaoMock(entrada.correcoes, geada),
     geada,
+    precipitacao_extrema: precipitacaoExtrema,
     estrategias,
     limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
   };

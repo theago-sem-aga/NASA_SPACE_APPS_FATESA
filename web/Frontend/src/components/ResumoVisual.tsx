@@ -59,6 +59,17 @@ export function ResumoVisual({ dados, analise, compacto = false }: { dados: Dado
           {analise.talhao.risco_geada && (
             <Ficha pictograma="geada" rotulo="Risco de geada" valor={ROTULO_RISCO[analise.talhao.risco_geada]} />
           )}
+          {analise.precipitacao_extrema && (
+            <Ficha
+              pictograma="chuva"
+              rotulo="Chuva extrema (30 dias)"
+              valor={
+                analise.precipitacao_extrema.dias_chuva_extrema_30d === 0
+                  ? 'Normal'
+                  : `${analise.precipitacao_extrema.dias_chuva_extrema_30d} ${analise.precipitacao_extrema.dias_chuva_extrema_30d === 1 ? 'dia' : 'dias'}`
+              }
+            />
+          )}
           {!compacto && (Object.keys(ROTULO_REQUISITO) as RequisitoId[]).map(r => {
             const resp = dados.recursos_disponiveis[r];
             return resp && <Ficha key={r} pictograma={PICTO_REQUISITO[r]} rotulo={ROTULO_REQUISITO[r].nome} valor={ROTULO_RESPOSTA[resp]} />;

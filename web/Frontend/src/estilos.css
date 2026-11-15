@@ -720,3 +720,13 @@ p { margin: 0; }
   .faixa-geada-icone .pictograma { width: 20px; height: 20px; }
   .faixa-geada-nome { font-size: 0.65rem; }
 }
+
+/* Precipitação extrema: dias dos últimos 30 acima do percentil 95 histórico do mês. */
+.faixa-chuva-extrema {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+  border-radius: var(--raio-pequeno); background: var(--cor-superficie); border: 1px solid var(--cor-borda);
+}
+.faixa-chuva-extrema.com-risco { background: var(--cor-ceu-clara); border-color: var(--cor-ceu); }
+.faixa-chuva-extrema-icone { flex-shrink: 0; }
+.faixa-chuva-extrema-frase { margin: 0; font-weight: 600; }
+.faixa-chuva-extrema-legenda { margin: 2px 0 0; font-size: 0.8rem; }

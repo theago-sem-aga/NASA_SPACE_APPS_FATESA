@@ -1,14 +1,17 @@
 import { useId, useState } from 'react';
-import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, TexturaSolo } from '../../api/tipos';
+import type { CaracteristicasTalhao, CorrecoesTalhao, Nivel, Relevo, RiscoGeada, RiscoPrecipitacaoExtrema, TexturaSolo } from '../../api/tipos';
 import { CartaoEscolha } from '../../components/CartaoEscolha';
 import { Pictograma, type NomePictograma } from '../../components/Pictograma';
 import { FaixaGeada } from './FaixaGeada';
+import { FaixaPrecipitacaoExtrema } from './FaixaPrecipitacaoExtrema';
 import { PICTO_RELEVO, PICTO_TEXTURA, ROTULO_RELEVO, ROTULO_RISCO, ROTULO_TEXTURA } from './rotulos';
 
 interface PainelTalhaoProps {
   talhao: CaracteristicasTalhao;
   /** Detalhe mês a mês do risco de geada; null = sem dado. */
   geada: RiscoGeada | null;
+  /** Dias de chuva extrema nos últimos 30; null = sem dado. */
+  precipitacaoExtrema: RiscoPrecipitacaoExtrema | null;
   aoCorrigir: (correcoes: CorrecoesTalhao) => void;
 }
 
@@ -34,7 +37,7 @@ const risco = (n: Nivel | null) => (n ? ROTULO_RISCO[n] : 'Sem dado');
  * O que os dados acharam sobre o talhão (solo, terreno, riscos), em vez de perguntar.
  * A pessoa pode discordar: "Não é bem assim" reenvia a análise com a correção.
  */
-export function PainelTalhao({ talhao, geada, aoCorrigir }: PainelTalhaoProps) {
+export function PainelTalhao({ talhao, geada, precipitacaoExtrema, aoCorrigir }: PainelTalhaoProps) {
   const id = useId();
   const [corrigindo, setCorrigindo] = useState(false);
 
@@ -63,6 +66,7 @@ export function PainelTalhao({ talhao, geada, aoCorrigir }: PainelTalhaoProps) {
         <Item pictograma="geada" rotulo="Risco de geada" valor={risco(talhao.risco_geada)} />
       </ul>
       {geada && <FaixaGeada geada={geada} />}
+      {precipitacaoExtrema && <FaixaPrecipitacaoExtrema precipitacaoExtrema={precipitacaoExtrema} />}
       <div className="painel-talhao-rodape">
         {talhao.bases.length > 0 && <span className="texto-apoio">De onde vem: {talhao.bases.join(', ')}.</span>}
         {!corrigindo && (

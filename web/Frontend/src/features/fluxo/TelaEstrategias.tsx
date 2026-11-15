@@ -27,7 +27,12 @@ export function TelaEstrategias({ analise, prioridades, aoAbrir, aoCorrigir, aoV
       <h1 tabIndex={-1}>{analise.estrategias.length} caminhos para a reforma</h1>
       {analise.eh_mock && SINALIZAR_MOCK && <p className="texto-apoio">Nesta demonstração a ordem é sempre a mesma.</p>}
 
-      <PainelTalhao talhao={analise.talhao} geada={analise.geada} aoCorrigir={aoCorrigir} />
+      <PainelTalhao
+        talhao={analise.talhao}
+        geada={analise.geada}
+        precipitacaoExtrema={analise.precipitacao_extrema}
+        aoCorrigir={aoCorrigir}
+      />
 
       <ol className="lista-estrategias">
         {analise.estrategias.map(e => {
