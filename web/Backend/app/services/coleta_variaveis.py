@@ -14,7 +14,7 @@ from app.integrations import nasa_power, openet, usda_soil_data_access
 from app.repositories.espacial import buscar_celula
 from app.services.cache import com_cache
 
-FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat")
+FONTES_INDEXADAS = ("gpm", "smap", "srtm", "ecostress", "landsat", "grace")
 CAMPOS = {
     "nasa_power": set(nasa_power._MAPA_PARAMETROS.values()),
     "usda_soil_data_access": {
@@ -31,6 +31,7 @@ CAMPOS = {
     "srtm": {"elevacao_media_m", "elevacao_min_m", "elevacao_max_m"},
     "ecostress": {"temperatura_superficie_media_c"},
     "landsat": {"ndvi_medio"},
+    "grace": {"armazenamento_agua_anomalia_cm"},
 }
 
 
