@@ -31,7 +31,7 @@ export function TelaInicio({ situacaoGps, mostrarDica, aoUsarLocalizacao, aoDigi
         </button>
         {mostrarDica && <DicaPermissao />}
         <p className="texto-apoio entrada-local-apoio">
-          Se estiver na plantação, melhor ainda: a gente vê a chuva e a terra exatamente daí. A localização só serve para isso.
+          Se estiver na plantação, melhor ainda: assim vemos a chuva e a terra exatamente desse ponto. A localização só serve para isso.
         </p>
         <button type="button" className="link-discreto" onClick={aoDigitarCidade}>
           Prefiro escrever a cidade

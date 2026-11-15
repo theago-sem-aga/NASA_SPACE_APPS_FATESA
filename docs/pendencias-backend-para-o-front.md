@@ -31,6 +31,8 @@
 4. **Cobertura fora dos pontos preparados** (Tiago): em Olímpia, a ~45 km de S. J. do Rio Preto, faltam textura (SoilGrids), NDVI (MODIS) e GRACE (`fora_da_regiao_pre_processada` / `sem_historico_pre_processado`). Para a demonstração, vale pré-processar as cidades que vamos mostrar ou buscar ao vivo.
 5. **`risco_erosao`**: continua null por falta de regra validada (o back avisa). Como erosão é problema-alvo do desafio, uma regra explicável marcada como estimativa (declividade × textura × chuva forte) ajudaria. Decisão de vocês.
 
+6. **Textos do back na norma padrão** (Tiago): mensagens que aparecem na tela devem evitar "pra"/"pro". Exemplo em `web/Backend/app/services/analises.py`: "só existe catálogo real pra cana-de-açúcar" → "para cana-de-açúcar". O front já foi revisado ("Dá comida para o gado", sem "a gente").
+
 ## O que o front faz enquanto isso
 
 - Campo null aparece como **"Sem dado"**; tipo de terra e relevo sem dado usam ícone cinza, não "?".

@@ -54,7 +54,7 @@ function roteiroEstrategia(e: Estrategia): string {
     e.objetivo ? `A ideia é: ${minuscula(e.objetivo)}` : '',
     e.beneficios.length ? `O que você ganha. ${e.beneficios.join(' ')}` : '',
     e.riscos.length ? `Agora, os cuidados. ${e.riscos.join(' ')}` : '',
-    e.lacunas.length ? `O que a gente ainda não sabe. ${e.lacunas.join(' ')}` : '',
+    e.lacunas.length ? `O que ainda não sabemos. ${e.lacunas.join(' ')}` : '',
     `Uma boa pergunta para levar ao agrônomo: ${e.pergunta_especialista}`,
     'Para ver a chuva do lugar, toque no botão lá embaixo.'
   ]
@@ -88,7 +88,7 @@ export function roteiroDaTela(etapa: Etapa, dados: DadosFluxo, analise: Analise 
   const v = vocabulario(dados.cultura_atual_id, dados.nomeCultura);
   switch (etapa) {
     case 'inicio':
-      return 'Olá. Vai trocar ou renovar a lavoura? A gente mostra o que dá para fazer com a terra até o próximo plantio. Para começar, toque no botão verde grande: usar onde estou agora. O celular vai perguntar se pode usar a localização. É só tocar em permitir. Se preferir, toque em: prefiro escrever a cidade.';
+      return 'Olá. Vai trocar ou renovar a lavoura? Mostramos o que dá para fazer com a terra até o próximo plantio. Para começar, toque no botão verde grande: usar onde estou agora. O celular vai perguntar se pode usar a localização. É só tocar em permitir. Se preferir, toque em: prefiro escrever a cidade.';
     case 'local':
       return dados.modoLocal === 'confirmar' && dados.local
         ? `Pelo celular, você está perto de ${dados.local.municipio}. É aí que fica a plantação? Se for, toque em: sim, é aqui. Se não for, toque em: não, é em outro lugar.`
