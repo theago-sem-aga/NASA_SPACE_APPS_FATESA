@@ -209,6 +209,12 @@ def criar_analise(entrada):
             "Terreno: declividade calculada a partir de 5 pontos de elevação (USGS 3DEP) ao redor "
             "da coordenada, não um levantamento topográfico do talhão; só cobre os EUA hoje."
         )
+        if declividade.get("uso_cache"):
+            consulta = dt.datetime.fromtimestamp(declividade["consultado_em"], dt.UTC).isoformat()
+            limitacoes.append(
+                f"Terreno reutiliza consulta USGS válida da mesma coordenada, feita em {consulta}; "
+                f"cache limitado a {configuracao()['cache_ttl_s']} segundos."
+            )
     else:
         limitacoes.append("Terreno sem dado: fonte de elevação indisponível ou ponto fora da cobertura do USGS 3DEP (fora dos EUA).")
     if risco_seca:
