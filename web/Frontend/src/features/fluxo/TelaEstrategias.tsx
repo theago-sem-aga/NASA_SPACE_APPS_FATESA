@@ -43,6 +43,7 @@ export function TelaEstrategias({ analise, prioridades, problemas, marcouPraga, 
         climaMensal={analise.clima_mensal}
         precipitacaoExtrema={analise.precipitacao_extrema}
         tendenciaHidrica={analise.tendencia_hidrica}
+        estresseVegetal={analise.estresse_vegetal ?? null}
         aoCorrigir={aoCorrigir}
       />
 

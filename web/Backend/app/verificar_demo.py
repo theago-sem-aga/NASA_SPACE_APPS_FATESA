@@ -52,6 +52,7 @@ def verificar():
             "clima_mensal",
             "geada",
             "tendencia_hidrica",
+            "estresse_vegetal",
             "estrategias",
             "limitacoes",
         )

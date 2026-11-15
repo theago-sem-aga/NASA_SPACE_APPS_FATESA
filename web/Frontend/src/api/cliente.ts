@@ -21,6 +21,7 @@ import { PAINEIS_PRODUCAO } from './mock/producaoMunicipio';
 import { ANALISE_MOCK, CULTURAS_MOCK, MUNICIPIOS_MOCK, montarTalhaoMock } from './mock/dadosMock';
 import { GEADA_FRESNO, GEADA_SJRP } from './mock/geadaMock';
 import { TENDENCIA_FRESNO, TENDENCIA_SJRP } from './mock/tendenciaHidricaMock';
+import { ESTRESSE_FRESNO, ESTRESSE_SJRP } from './mock/estresseVegetalMock';
 import { PRECIPITACAO_EXTREMA_FRESNO, PRECIPITACAO_EXTREMA_SJRP } from './mock/precipitacaoExtremaMock';
 import { montarEstrategias } from './mock/montarEstrategias';
 
@@ -245,6 +246,7 @@ function analiseMock(entrada: AnaliseEntrada, descricaoLocal: string): Analise {
     geada,
     precipitacao_extrema: precipitacaoExtrema,
     tendencia_hidrica: emFresno ? TENDENCIA_FRESNO : TENDENCIA_SJRP,
+    estresse_vegetal: emFresno ? ESTRESSE_FRESNO : ESTRESSE_SJRP,
     estrategias,
     limitacoes: [...limitacoes, ...ANALISE_MOCK.limitacoes]
   };

@@ -811,6 +811,13 @@ p { margin: 0; }
 .grafico-chuva-anos-detalhe { margin: 0; min-height: 1.4em; font-size: 0.9rem; }
 .faixa-tendencia-legenda { margin: 0; font-size: 0.8rem; }
 @media print { .grafico-chuva-anos-detalhe { display: none; } }
+.grafico-ndvi-faixa { fill: var(--cor-folha); opacity: 0.16; }
+.grafico-ndvi-normal { fill: none; stroke: var(--cor-folha); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.8; }
+.grafico-ndvi-linha { fill: none; stroke: var(--cor-mata); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafico-ndvi-ponto { fill: var(--cor-mata); stroke: var(--cor-superficie); stroke-width: 2; }
+.grafico-ndvi-legenda { margin: 0; font-size: 0.8rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.grafico-ndvi-amostra-linha { display: inline-block; width: 18px; height: 2px; background: var(--cor-mata); border-radius: 2px; }
+.grafico-ndvi-amostra-faixa { display: inline-block; width: 18px; height: 10px; background: var(--cor-folha); opacity: 0.25; border-radius: 3px; margin-left: 8px; }
 
 /* ---------- carrossel do clima da área (geada, chuva forte, chuva ao longo dos anos) ---------- */
 .carrossel-clima { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--cor-borda); }

@@ -186,6 +186,45 @@ class TendenciaHidrica(BaseModel):
     tipo_acesso: Literal["ao_vivo", "pre_processado"]
 
 
+class FotoNdvi(BaseModel):
+    data: str
+    ndvi: float
+    # Normal da mesma época nos anos anteriores; None quando há poucos anos.
+    normal_mediana: float | None = None
+    normal_p10: float | None = None
+    normal_p90: float | None = None
+
+
+class EstresseVegetal(BaseModel):
+    # Regra em app/domain/estresse_vegetal.py: NDVI MODIS da foto mais recente
+    # vs. os anos anteriores no mesmo período de 16 dias. NDVI baixo também é
+    # colheita ou preparo do solo; cortes estatísticos pendentes de revisão.
+    situacao: Literal["normal", "abaixo", "muito_abaixo", "acima", "sem_vegetacao"]
+    data_foto: str
+    ndvi_atual: float
+    normal_mediana: float
+    normal_p10: float
+    normal_p25: float
+    normal_p75: float
+    normal_p90: float
+    anomalia_pct: float
+    posicao: float = Field(ge=0, le=1)
+    anos_mais_verdes: int
+    anos_comparados: int
+    ndvi_mediano_geral: float
+    limiar_sem_vegetacao: float
+    ultimas_fotos: list[FotoNdvi]
+    periodo_inicio: int
+    periodo_fim: int
+    metodo: str
+    latitude_pixel: float
+    longitude_pixel: float
+    distancia_pixel_km: float
+    fonte: str
+    produto: str
+    tipo_acesso: Literal["ao_vivo", "pre_processado"]
+
+
 class FonteClima(BaseModel):
     fonte_id: str
     nome: str
@@ -252,6 +291,8 @@ class Analise(BaseModel):
     precipitacao_extrema: RiscoPrecipitacaoExtrema | None = None
     # None = série de chuva sem anos completos suficientes ou fonte fora do ar.
     tendencia_hidrica: TendenciaHidrica | None = None
+    # None = sem série de NDVI pré-processada para a célula (ver services/estresse_vegetal.py).
+    estresse_vegetal: EstresseVegetal | None = None
     estrategias: list[Estrategia]
     limitacoes: list[str]
     # Metadados adicionais não alteram as propriedades consumidas pelo frontend.

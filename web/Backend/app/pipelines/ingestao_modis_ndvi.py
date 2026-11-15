@@ -6,7 +6,7 @@ usuario. Este script guarda uma copia por celula e, nas proximas vezes, so
 pede as datas que ainda nao estao no arquivo (incremental).
 
 Saida: data/processed/modis_ndvi/<celula_id>.parquet
-       colunas: data, ndvi, confiabilidade_pixel, fonte, tipo_acesso, data_coleta_utc
+       colunas: data, ndvi, confiabilidade_pixel, latitude, longitude (do pixel), fonte, ...
 Uso:   python ingestao_modis_ndvi.py <lat> <lon>          (um ponto)
        REGIAO_PILOTO=sjrp python ingestao_modis_ndvi.py   (todas as celulas da regiao)
 """
@@ -27,7 +27,10 @@ from indice_espacial import caminho_parquet_da_celula, celula_id  # noqa: E402
 from regioes import centros_das_celulas, regiao_atual  # noqa: E402
 
 FONTE = "modis_ndvi"
-COLUNAS = ["data", "ndvi", "confiabilidade_pixel", "fonte", "tipo_acesso", "data_coleta_utc"]
+COLUNAS = [
+    "data", "ndvi", "confiabilidade_pixel", "latitude", "longitude", "fonte", "tipo_acesso", "data_coleta_utc",
+]
+PARALELO = 8
 
 
 def juntar(antigo: pd.DataFrame | None, novo: pd.DataFrame) -> pd.DataFrame:
@@ -45,11 +48,17 @@ def atualizar_ponto(latitude: float, longitude: float) -> tuple[str, int, int]:
     celula = celula_id(latitude, longitude)
     caminho = caminho_parquet_da_celula(FONTE, celula)
     antigo = pd.read_parquet(caminho) if caminho.is_file() else None
+    if antigo is not None and not (
+        {"latitude", "longitude"} <= set(antigo.columns)
+        and (antigo["latitude"].iloc[0], antigo["longitude"].iloc[0]) == (latitude, longitude)
+    ):
+        antigo = None  # outro pixel na mesma celula: comeca do zero, sem misturar pontos
     inicio = None
     if antigo is not None and not antigo.empty:
         inicio = dt.date.fromisoformat(antigo["data"].max()) + dt.timedelta(days=1)
-    resultado = buscar_ndvi_ponto(latitude, longitude, data_inicio=inicio)
+    resultado = buscar_ndvi_ponto(latitude, longitude, data_inicio=inicio, paralelo=PARALELO)
     novo = pd.DataFrame(resultado["serie"], columns=["data", "ndvi", "confiabilidade_pixel"])
+    novo["latitude"], novo["longitude"] = latitude, longitude
     novo["fonte"] = "modis_ornl"
     novo["tipo_acesso"] = "pre_processado"
     novo["data_coleta_utc"] = resultado["data_coleta_utc"]

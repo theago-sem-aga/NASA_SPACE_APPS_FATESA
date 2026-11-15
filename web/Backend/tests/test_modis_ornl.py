@@ -125,7 +125,7 @@ def test_coordenada_invalida():
 
 
 def test_juntar_cache_incremental_sem_duplicar():
-    base = {"fonte": "modis_ornl", "tipo_acesso": "pre_processado", "data_coleta_utc": "x"}
+    base = {"latitude": -20.89, "longitude": -49.36, "fonte": "modis_ornl", "tipo_acesso": "pre_processado", "data_coleta_utc": "x"}
     antigo = pd.DataFrame([{"data": "2025-01-01", "ndvi": 0.5, "confiabilidade_pixel": 0, **base},
                            {"data": "2025-01-17", "ndvi": 0.6, "confiabilidade_pixel": 1, **base}])
     novo = pd.DataFrame([{"data": "2025-01-17", "ndvi": 0.61, "confiabilidade_pixel": 0, **base},
