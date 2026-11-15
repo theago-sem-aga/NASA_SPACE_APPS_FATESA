@@ -4,14 +4,14 @@ import { useState } from 'react';
 import type { GeadaMensal, RiscoGeada } from '../../api/tipos';
 import { Pictograma } from '../../components/Pictograma';
 import { NOME_MES, NOME_MES_CURTO, ROTULO_RISCO } from './rotulos';
-import { localeAtual, tx } from '../../i18n/idioma';
+import { temperatura, tx } from '../../i18n/idioma';
 
 // Tudo aqui só ARREDONDA e escreve o que a API mandou (app/domain/geada.py).
 // A faixa (min/max) também vem pronta do backend; o front não refaz conta.
 
 /** "em quantos de cada 10 anos". */
 const emCada10 = (p: number) => Math.round(p * 10);
-const grau = (c: number) => `${c.toLocaleString(localeAtual(), { maximumFractionDigits: 1 })} °C`;
+const grau = temperatura;
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 
 /** "1 de cada 12 anos", para chance pequena que "em cada 10" arredondaria para zero. */
@@ -135,7 +135,7 @@ export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
         <span className="tabela-temperatura-rotulo" aria-hidden="true">{tx('Mínima', 'Low')}</span>
         {geada.meses.map(m => (
           <span key={m.mes} className={`tabela-temperatura-valor ${tomFrio(m.menor_minima_c)}`} aria-hidden="true">
-            {m.menor_minima_c === null ? '–' : `${Math.round(m.menor_minima_c)}°`}
+            {m.menor_minima_c === null ? '–' : temperatura(m.menor_minima_c, 0)}
           </span>
         ))}
       </div>
@@ -148,10 +148,10 @@ export function FaixaGeada({ geada }: { geada: RiscoGeada }) {
           )}
         </span>
         <span className="escala-temperatura escala-fria" aria-hidden="true">
-          <span className="temp-neutra">{tx('acima de 10°', 'above 10°')}</span>
-          <span className="temp-frio-1">{tx('até 10°', 'up to 10°')}</span>
-          <span className="temp-frio-2">{tx('até 5°', 'up to 5°')}</span>
-          <span className="temp-frio-3">{tx('até 2°', 'up to 2°')}</span>
+          <span className="temp-neutra">{tx('acima de 10°', `above ${temperatura(10, 0)}`)}</span>
+          <span className="temp-frio-1">{tx('até 10°', `up to ${temperatura(10, 0)}`)}</span>
+          <span className="temp-frio-2">{tx('até 5°', `up to ${temperatura(5, 0)}`)}</span>
+          <span className="temp-frio-3">{tx('até 2°', `up to ${temperatura(2, 0)}`)}</span>
         </span>
       </p>
       <p className="faixa-geada-detalhe" aria-live="polite">

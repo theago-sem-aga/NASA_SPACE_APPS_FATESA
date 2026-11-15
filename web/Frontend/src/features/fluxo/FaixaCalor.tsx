@@ -4,11 +4,11 @@ import { useState } from 'react';
 import type { CalorMensal, EstresseTermico } from '../../api/tipos';
 import { Pictograma } from '../../components/Pictograma';
 import { NOME_MES, NOME_MES_CURTO } from './rotulos';
-import { localeAtual, tx } from '../../i18n/idioma';
+import { temperatura, tx } from '../../i18n/idioma';
 
 /** Cor do mês pela maior máxima registrada: quanto mais quente, mais forte. */
 const tomCalor = (c: number, limiar: number) => (c >= limiar + 6 ? 'temp-quente-3' : c >= limiar + 3 ? 'temp-quente-2' : c >= limiar ? 'temp-quente-1' : 'temp-neutra');
-const grau = (c: number) => `${c.toLocaleString(localeAtual(), { maximumFractionDigits: 1 })} °C`;
+const grau = temperatura;
 const dias = (d: number) => {
   const n = Math.round(d);
   return n === 1 ? tx('1 dia', '1 day') : tx(`${n} dias`, `${n} days`);
@@ -85,7 +85,7 @@ export function FaixaCalor({ calor, minimas }: { calor: EstresseTermico; minimas
         <span className="tabela-temperatura-rotulo" aria-hidden="true">{tx('Máxima', 'High')}</span>
         {calor.meses.map(m => (
           <span key={m.mes} className={`tabela-temperatura-valor ${tomCalor(m.maior_maxima_c, calor.limiar_c)}`} aria-hidden="true">
-            {Math.round(m.maior_maxima_c)}°
+            {temperatura(m.maior_maxima_c, 0)}
           </span>
         ))}
         {temMinima && (
@@ -95,7 +95,7 @@ export function FaixaCalor({ calor, minimas }: { calor: EstresseTermico; minimas
               const v = minimaDo(m.mes);
               return (
                 <span key={m.mes} className={`tabela-temperatura-valor ${tomFrio(v)}`} aria-hidden="true">
-                  {v === null ? '–' : `${Math.round(v)}°`}
+                  {v === null ? '–' : temperatura(v, 0)}
                 </span>
               );
             })}
@@ -111,10 +111,10 @@ export function FaixaCalor({ calor, minimas }: { calor: EstresseTermico; minimas
           )}
         </span>
         <span className="escala-temperatura escala-quente" aria-hidden="true">
-          <span className="temp-neutra">{tx('até', 'up to')} {Math.round(calor.limiar_c - 1)}°</span>
-          <span className="temp-quente-1">{Math.round(calor.limiar_c)}°+</span>
-          <span className="temp-quente-2">{Math.round(calor.limiar_c + 3)}°+</span>
-          <span className="temp-quente-3">{Math.round(calor.limiar_c + 6)}°+</span>
+          <span className="temp-neutra">{tx('até', 'up to')} {temperatura(calor.limiar_c - 1, 0)}</span>
+          <span className="temp-quente-1">{temperatura(calor.limiar_c, 0)}+</span>
+          <span className="temp-quente-2">{temperatura(calor.limiar_c + 3, 0)}+</span>
+          <span className="temp-quente-3">{temperatura(calor.limiar_c + 6, 0)}+</span>
         </span>
       </p>
       <p className="faixa-geada-detalhe" aria-live="polite">

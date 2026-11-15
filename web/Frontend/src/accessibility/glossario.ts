@@ -106,7 +106,7 @@ export const GLOSSARIO = traduzivel({
     termo: L('Geada', 'Frost'),
     texto: L(
       'Gelo que se forma sobre as folhas em noites frias, de céu limpo e sem vento. A folha esfria mais que o ar: com o termômetro a uns 2 °C, a planta já pode gear. Por isso usamos 2 °C como sinal de risco.',
-      'Ice that forms on leaves on cold, clear, windless nights. Leaves get colder than the air: with the thermometer at about 2 °C, the plant can already get frost. That is why we use 2 °C as the risk signal.'
+      'Ice that forms on leaves on cold, clear, windless nights. Leaves get colder than the air: with the thermometer at about 35.6 °F, the plant can already get frost. That is why we use 35.6 °F as the risk signal.'
     )
   },
   chuva_extrema: {

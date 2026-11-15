@@ -1,6 +1,6 @@
 // Textos curtos da tela de colheita. O front não decide nada: só traduz o que a API mandou.
 import type { ChuvaDoMes, ClimaAno, SituacaoColheita, Tendencia } from '../../api/tipos';
-import { L, localeAtual, traduzivel, tx } from '../../i18n/idioma';
+import { diferencaTemperatura, temperatura, L, localeAtual, traduzivel, tx } from '../../i18n/idioma';
 
 export const FRASE_COLHEITA: Record<SituacaoColheita, string> = traduzivel({
   acima: L('Colheu mais que o normal', 'Harvested more than normal'),
@@ -34,11 +34,11 @@ export function fraseChuvaAno(c: ClimaAno): string {
   return tx(`${base} Ficou perto do normal (${pct}% de diferença).`, `${base} Close to normal (${pct}% difference).`);
 }
 
-const grauC = (n: number) => `${n.toLocaleString(localeAtual(), { maximumFractionDigits: 1 })} °C`;
+const grauC = temperatura;
 
 export function fraseCalor(c: ClimaAno): { titulo: string; detalhe: string } {
   const g = Math.abs(c.graus_de_diferenca);
-  const graus = g === 1 ? tx('1 grau', '1 degree') : tx(`${g} graus`, `${g} degrees`);
+  const graus = diferencaTemperatura(g);
   const medidas = tx(
     `A máxima média do dia foi ${grauC(c.tmax_c)}; o normal é ${grauC(c.tmax_normal_c)}`,
     `The average daily high was ${grauC(c.tmax_c)}; normal is ${grauC(c.tmax_normal_c)}`

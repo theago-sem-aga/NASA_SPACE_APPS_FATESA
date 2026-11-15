@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import type { Local } from '../api/tipos';
 
 // Idioma da interface. Inglês é o principal (os dados de referência da apresentação são
 // em boa parte dos EUA); português é opcional, escolhido pela bandeira no cabeçalho.
@@ -59,6 +60,27 @@ export const tx = (pt: string, en: string): string => (atual === 'pt' ? pt : en)
 
 /** Locale para números e datas. */
 export const localeAtual = (): string => (atual === 'pt' ? 'pt-BR' : 'en-US');
+
+/** Os contratos científicos permanecem em Celsius; a conversão é de apresentação. */
+export function temperatura(celsius: number, casas = 1): string {
+  const valor = atual === 'en' ? celsius * 9 / 5 + 32 : celsius;
+  return `${valor.toLocaleString(localeAtual(), { maximumFractionDigits: casas })} ${atual === 'en' ? '°F' : '°C'}`;
+}
+
+/** Diferenças de temperatura não recebem o deslocamento de 32 graus. */
+export function diferencaTemperatura(celsius: number): string {
+  const valor = atual === 'en' ? celsius * 9 / 5 : celsius;
+  return `${valor.toLocaleString(localeAtual(), { maximumFractionDigits: 1 })} ${atual === 'en' ? '°F' : '°C'}`;
+}
+
+const ESTADOS_EUA = new Set('AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR'.split(' '));
+
+/** Só troca ao escolher ou confirmar um local identificado, permitindo troca manual depois. */
+export function aplicarIdiomaDoLocal(local: Local | null) {
+  if (!local) return;
+  if (/^\d{7}$/.test(local.codigo_ibge)) mudarIdioma('pt');
+  else if (!local.codigo_ibge && ESTADOS_EUA.has(local.uf)) mudarIdioma('en');
+}
 
 /** Voz da narração. */
 export const vozAtual = (): string => (atual === 'pt' ? 'pt-BR' : 'en-US');

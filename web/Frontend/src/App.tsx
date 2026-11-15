@@ -30,7 +30,7 @@ import { vocabulario } from './features/fluxo/vocabularioCultura';
 import { TelaProducao } from './features/producao/TelaProducao';
 import { TelaAcompanhamento } from './features/acompanhamento/TelaAcompanhamento';
 import { TelaDecisao } from './features/fluxo/TelaDecisao';
-import { tx, useIdioma } from './i18n/idioma';
+import { aplicarIdiomaDoLocal, tx, useIdioma } from './i18n/idioma';
 
 /** Pausa curta depois de um toque, para a pessoa ver o ✓ antes de trocar de tela. */
 const PAUSA_TOQUE_MS = 250;
@@ -220,8 +220,12 @@ export function App() {
             dados={dados}
             situacaoGps={gps.situacao}
             mostrarDica={gps.mostrarDica}
-            aoConfirmar={() => ir('cultura')}
+            aoConfirmar={() => {
+              aplicarIdiomaDoLocal(dados.local);
+              ir('cultura');
+            }}
             aoEscolherMunicipio={local => {
+              aplicarIdiomaDoLocal(local);
               mudar({ local, origem_local: 'municipio', motivoBusca: null });
               ir('cultura');
             }}

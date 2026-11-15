@@ -8,7 +8,7 @@ import { NOME_MES } from '../features/fluxo/rotulos';
 import { ResumoVisual } from './ResumoVisual';
 import { fraseTendencia, linhaTecnicaTendencia } from '../features/fluxo/FaixaTendenciaHidrica';
 import { fraseEstresse, linhaTecnicaEstresse } from '../features/fluxo/FaixaEstresseVegetal';
-import { localeAtual, tx } from '../i18n/idioma';
+import { temperatura, localeAtual, tx } from '../i18n/idioma';
 
 /** Folha para levar ao agrônomo. Escondida na tela; só aparece na impressão / PDF. */
 export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise: Analise }) {
@@ -38,8 +38,8 @@ export function ResumoImpressao({ dados, analise }: { dados: DadosFluxo; analise
             )}
           {linhaTecnicaGeada(analise.geada)}{' '}
           {tx(
-            `(NASA POWER, mínima do ar a 2 m de até ${analise.geada.limiar_c} °C, ${analise.geada.periodo_inicio}–${analise.geada.periodo_fim}; faixa = intervalo de Wilson pelo número de anos; não inclui o erro da grade nem o ar vs. folha.)`,
-            `(NASA POWER, 2 m air minimum at or below ${analise.geada.limiar_c} °C, ${analise.geada.periodo_inicio}–${analise.geada.periodo_fim}; range = Wilson interval over the number of years; it does not include grid error or air vs. leaf.)`
+            `(NASA POWER, mínima do ar a 2 m de até ${temperatura(analise.geada.limiar_c)}, ${analise.geada.periodo_inicio}–${analise.geada.periodo_fim}; faixa = intervalo de Wilson pelo número de anos; não inclui o erro da grade nem o ar vs. folha.)`,
+            `(NASA POWER, 2 m air minimum at or below ${temperatura(analise.geada.limiar_c)}, ${analise.geada.periodo_inicio}–${analise.geada.periodo_fim}; range = Wilson interval over the number of years; it does not include grid error or air vs. leaf.)`
           )}
         </p>
       )}
