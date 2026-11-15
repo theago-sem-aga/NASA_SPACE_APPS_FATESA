@@ -145,6 +145,7 @@ Tiago/Thiago. Não aprova pesos, limiares ou regras agronômicas novas.
 |---|---|
 | Nome da cidade | Resolvido para código IBGE conhecido: `descricao_local` mostra nome e UF e é preservada na recuperação. Código desconhecido mantém coordenada, sem inventar nome. |
 | Relevo no Brasil | Implementada leitura de grade SRTMGL1 v003, preservada em Parquet por célula. Cinco elevações locais alimentam o cálculo de declividade já existente. Não utiliza média/min/max de uma célula como inclinação. |
+| Calor | Integrada a implementação de Tiago (`589c29a`), com schema Pydantic e os nomes já esperados pelo frontend. O campo chega no POST e falha isoladamente quando a fonte não responde. Limiares continuam sujeitos à validação, sem alteração da regra nesta integração. |
 | Pontos de SJRP e Olímpia | Preparados quatro recortes, também cobrindo os centroides da busca municipal; manifesto e PostGIS com 135 entradas neste ambiente. Rasters originais e metadados de aquisição ficam em `data/raw/srtm/`; apenas os recortes pequenos são versionados. |
 | Dataset preparado mas ainda fora do bucket | O importador do índice reincorpora os recortes locais SRTM reconhecidos. Um manifesto antigo baixado do GCS não faz esses recortes desaparecerem do índice. Não foi feito upload ao bucket nesta entrega. |
 | Falha de produção bloqueia questionário | A tela continua oferecendo tentar novamente, mas permite continuar explicitamente sem o histórico. Nenhum mock substitui o dado indisponível. |
@@ -167,8 +168,8 @@ superfície histórica; não substitui levantamento topográfico atual.
 
 ### O que permanece separado
 
-- **Calor:** integração ainda depende do indicador/implementação de Tiago; não há
-  limiar agronômico novo nesta entrega. A ausência agora é tratada corretamente.
+- **Validação de calor:** a integração foi concluída com a implementação do Tiago;
+  os limiares são os propostos pela equipe, não limites validados por cultura.
 - **SoilGrids/NDVI de Olímpia e GRACE fora dos recortes:** dependem de preparar e
   distribuir os respectivos dados (Tiago). O novo pacote fecha relevo, não essas fontes.
   O centroide municipal de SJRP (-20.7972795, -49.3575799) também cai fora da célula
@@ -183,3 +184,9 @@ superfície histórica; não substitui levantamento topográfico atual.
 Para repetir a preparação do relevo em outros pontos, ver `web/Backend/README.md`.
 Os computadores que atualizarem estes recortes pelo Git só precisam do startup
 normal para importar o índice; não precisam baixar os HGT na requisição.
+
+Validação final após integrar o calor do Tiago: **148 testes backend, 12 testes
+frontend, build e Ruff dos arquivos alterados aprovados**. Conferidos POST e
+recuperação persistida dos dois pontos brasileiros, leitura dos quatro recortes
+e fluxo no navegador com falha de colheita simulada explicitamente no teste,
+continuidade do questionário e POST real com nome, relevo e calor dos 12 meses.

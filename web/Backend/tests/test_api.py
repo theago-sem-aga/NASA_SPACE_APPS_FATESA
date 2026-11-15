@@ -101,6 +101,7 @@ def preparar(monkeypatch, repositorio):
     monkeypatch.setattr(servico, "declividade_do_ponto", lambda *args: None)
     monkeypatch.setattr(servico, "resumo_risco_seca", lambda *args: None)
     monkeypatch.setattr(servico, "resumo_precipitacao_extrema", lambda *args: None)
+    monkeypatch.setattr(servico, "estresse_termico_do_ponto", lambda *args: CALOR_FIXTURE)
     monkeypatch.setattr(servico, "estresse_vegetal", lambda *args: ESTRESSE_FIXTURE)
     monkeypatch.setattr(servico, "risco_geada", lambda *args: GEADA_FIXTURE)
     monkeypatch.setattr(servico, "tendencia_hidrica", lambda *args: TENDENCIA_FIXTURE)
@@ -332,3 +333,31 @@ def test_fonte_que_responde_sem_dado_tem_motivo_explicito(cliente, monkeypatch, 
     fontes = corpo["fontes_indisponiveis"]
     assert {"fonte": "textura_solo", "motivo": "sem_textura_inequivoca"} in fontes
     assert {"fonte": "declividade_usgs_3dep", "motivo": "sem_elevacao_disponivel"} in fontes
+
+
+CALOR_FIXTURE = {
+    "nivel": "baixo", "mes_mais_arriscado": None, "meses_com_risco": [],
+    "dias_calor_ano": 0.0, "limiar_c": 35.0, "periodo_inicio": 2000,
+    "periodo_fim": 2020, "anos_analisados": 21, "fonte": "fixture",
+    "variavel": "temperatura_maxima_c", "meses": [
+        {"mes": mes, "probabilidade_calor": 0.0, "anos_com_calor": 0,
+         "dias_calor_medio": 0.0, "maior_maxima_c": 30.0, "maxima_media_c": 25.0}
+        for mes in range(1, 13)
+    ],
+}
+
+
+def test_calor_integrado_chega_ao_contrato(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["estresse_termico"] == CALOR_FIXTURE
+
+
+def test_falha_de_calor_nao_derruba_analise(cliente, monkeypatch, repositorio, entrada):
+    preparar(monkeypatch, repositorio)
+    def falhar(*args):
+        raise ValueError("série incompleta")
+    monkeypatch.setattr(servico, "estresse_termico_do_ponto", falhar)
+    corpo = cliente.post("/api/v1/analises", json=entrada.model_dump(mode="json")).json()
+    assert corpo["estresse_termico"] is None
+    assert {"fonte": "nasa_power_estresse_termico", "motivo": "falha_fonte"} in corpo["fontes_indisponiveis"]

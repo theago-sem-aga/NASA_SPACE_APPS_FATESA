@@ -15,7 +15,7 @@ interface PainelTalhaoProps {
   talhao: CaracteristicasTalhao;
   /** Detalhe mês a mês do risco de geada; null = sem dado. */
   geada: RiscoGeada | null;
-  /** Calor forte mês a mês; null/ausente = sem dado (proposta, ver api/tipos.ts). */
+  /** Calor forte histórico mês a mês; null/ausente = sem dado. */
   calor: EstresseTermico | null;
   /** Chuva média de cada mês, para "Meses de atenção". */
   climaMensal: ClimaMensal[];

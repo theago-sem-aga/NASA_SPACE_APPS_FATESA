@@ -1,7 +1,7 @@
 // DTOs do contrato front <-> API.
 // Catálogos, locais, análises, produção, previsão e acompanhamento já têm rotas.
 // O contrato vigente é /openapi.json ou /docs, gerado dos schemas Pydantic.
-// EstresseTermico continua uma proposta de integração, explicitamente marcada.
+// EstresseTermico também está integrado; campos opcionais preservam análises antigas.
 //
 // Para o back: tudo o que o front espera e ainda não está na convenção está
 // marcado com "BACKEND:" (busque esse texto em src/). As rotas estão em
@@ -352,7 +352,7 @@ export interface Analise {
   clima_mensal: ClimaMensal[];
   /** null = a série de temperatura mínima não respondeu para o ponto. */
   geada: RiscoGeada | null;
-  /** PROPOSTA (o back ainda não manda): calor forte mês a mês. Ausente/null = não mostra. */
+  /** REAL: frequência histórica de calor forte. Ausente em análises antigas; null = sem dado. */
   estresse_termico?: EstresseTermico | null;
   /** null = a série de precipitação diária não respondeu para o ponto. */
   precipitacao_extrema: RiscoPrecipitacaoExtrema | null;
@@ -553,9 +553,9 @@ export interface Acompanhamento {
   gerado_em: string;
 }
 
-// --- Estresse térmico (PROPOSTA de contrato; o back ainda não calcula) ------------
-// BACKEND: calcular como o risco de geada (app/domain/geada.py), a partir de
-// temperatura_maxima_c diária da NASA POWER, e devolver em Analise.estresse_termico.
+// --- Estresse térmico (REAL, integrado pelo backend) ---------------------------
+// Frequência histórica de temperatura_maxima_c diária da NASA POWER,
+// calculada em app/domain/estresse_termico.py e entregue em Analise.estresse_termico.
 // O front exibe e usa os mesmos nomes. Exemplo real em api/mock/calorMock.ts.
 
 export interface CalorMensal {
