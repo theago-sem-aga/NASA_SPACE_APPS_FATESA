@@ -1,0 +1,183 @@
+# Contrato de API — Field Shift
+
+## Extensão beta — 14/11/2026 (Ghabriel/Codex)
+
+Piloto Califórnia confirmado por Ghabriel nesta sessão; Brasil fica para depois.
+Preservar GET /analises. Implementar GET /culturas (Cultura[]), GET /locais
+(Local do recorte piloto), GET /municipios (busca limitada ao piloto, sem malha
+brasileira), POST /analises (AnaliseEntrada → Analise) e GET /analises/{analise_id}.
+Tipos públicos mantêm as chaves de web/Frontend/src/api/tipos.ts.
+
+No piloto, Local.codigo_ibge="", Local.uf="CA", municipio="Região piloto de Fresno".
+O ponto da busca é a referência do piloto (36.6,-119.7), não centroide oficial.
+O recorte é [36.4,36.8) × [-119.9,-119.5), não o limite administrativo do condado.
+POST permite codigo_ibge=null. Não guardar código brasileiro para um ponto nos EUA.
+
+POST valida coordenadas finitas, 1–2 prioridades distintas, enums e campos extras.
+Culturas do protótipo permanecem identificadores de demonstração. Cenários beta são
+opcionais (HABILITAR_CENARIOS_BETA=true), simulados e explicitamente eh_mock=true;
+não são prescrições agronômicas. Sem eles, estratégias ficam vazias e o estado é
+dados_insuficientes. Não gerar números climáticos para preencher lacunas.
+
+Analise acrescenta versao_motor, criada_em_utc, fontes_indisponiveis e
+estado_recomendacoes (simulacao_beta|dados_insuficientes). Resultado persistido
+antes de responder, com UUID opaco; GET por UUID recupera a mesma versão.
+Persistência indisponível: 503 banco_indisponivel; fora do recorte: 422
+fora_da_cobertura; cultura desconhecida: 422 cultura_nao_suportada; UUID
+inexistente: 404 analise_nao_encontrada. Erros usam o envelope erro.
+GET /prontidao verifica banco e esquema (503 quando indisponíveis).
+Erros de sintaxe JSON: 400; validação: 422; inesperados: 500 sem detalhes internos.
+
+Cada fonte falha isoladamente. motivos adicionais: chave_nao_configurada,
+falha_autenticacao, limite_requisicoes, timeout, falha_fonte,
+banco_indisponivel, arquivo_indisponivel, sem_medicoes e dado_invalido.
+Quando há múltiplos componentes de solo sem agregação aprovada, o motivo é
+componentes_solo_ambiguos; os componentes originais ficam preservados no snapshot.
+Fontes não precisam ter a mesma data; uma lista conjunta não autoriza correlação.
+Sem autenticação, implantação deve ficar restrita à demonstração; UUID não substitui
+autorização. Não persistir segredos. Não incluir entrada completa nos logs.
+
+> Primeira versão real, implementada (não é só proposta). Ver `docs/convencao_programacao.md` seção 6 para as regras gerais e seção 10 para o registro da decisão de quem implementou o quê.
+
+## GET /api/v1/health
+
+Verificação simples de que a API está no ar.
+
+**Response 200:**
+```json
+{"status": "ok"}
+```
+
+## GET /api/v1/analises
+
+Recebe uma coordenada e devolve todas as variáveis disponíveis (ao vivo + pré-indexadas), **abstraídas num formato único** — o chamador não precisa saber de qual fonte cada variável vem para correlacionar entre elas (ex.: cruzar `precipitacao_acumulada_mm` com `umidade_solo_cm3_cm3`).
+
+**Request (query params):**
+| Campo | Tipo | Obrigatório | Faixa |
+|---|---|---|---|
+| `latitude` | float | sim | -90 a 90 |
+| `longitude` | float | sim | -180 a 180 |
+
+**Response 200:**
+```json
+{
+  "latitude": 36.6,
+  "longitude": -119.7,
+  "variaveis": [
+    {
+      "nome": "temperatura_media_c",
+      "fonte": "nasa_power",
+      "tipo_acesso": "ao_vivo",
+      "data": "2026-11-07",
+      "valor": 18.4
+    },
+    {
+      "nome": "precipitacao_acumulada_mm",
+      "fonte": "gpm",
+      "tipo_acesso": "pre_processado",
+      "data": "2023-01-01",
+      "valor": 7.245
+    }
+  ],
+  "fontes_indisponiveis": [
+    {"fonte": "smap", "motivo": "fora_da_regiao_pre_processada"}
+  ]
+}
+```
+
+- `variaveis[].valor` pode ser `null` quando a fonte não tem a medição naquele dia (ex.: preenchimento ausente da NASA POWER) — **nunca** é convertido pra zero.
+- `variaveis[].tipo_acesso` é `"ao_vivo"` (NASA POWER, USDA Soil Data Access) ou `"pre_processado"` (GPM, SMAP, SRTM, ECOSTRESS).
+- `fontes_indisponiveis[].motivo` é `"fora_da_regiao_pre_processada"` (coordenada fora da célula indexada) ou `"fora_da_cobertura"` (fora da área que a fonte ao vivo cobre, ex. fora dos EUA pro Soil Data Access).
+
+**Response 422 (coordenada inválida):**
+```json
+{
+  "erro": {
+    "codigo": "coordenada_invalida",
+    "mensagem": "latitude deve estar entre -90 e 90, longitude entre -180 e 180.",
+    "detalhes": [],
+    "requisicao_id": null
+  }
+}
+```
+
+## GET /api/v1/producao  (PROPOSTA — rota ainda não existe)
+
+Painel "Como foi a colheita" para produtores com pouca leitura. **A resposta já é montada** por `montar_painel(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`; falta só expor a rota. Enquanto isso, o front usa a cópia gerada pelo mesmo script (`web/Frontend/src/api/mock/producaoMunicipio.ts`, números reais congelados em `gerado_em`).
+
+- **Query:** `codigo_ibge` (obrigatório). Hoje só `3549805` (São José do Rio Preto) tem dados.
+- **Sucesso 200:** `PainelProducao` (tipos em `web/Frontend/src/api/tipos.ts`): `culturas[]` com `situacao` (`acima`/`normal`/`abaixo`/`sem_plantio`, último ano vs média dos 5 anteriores, limiar 5%), `clima` (mesmo ano da colheita vs média dos anos anteriores desde 1995, com `situacao_chuva`, `gotas_em_10`, `situacao_calor`, `graus_de_diferenca`), `previsao` (prognóstico oficial INMET/INPE/FUNCEME dos próximos ~3 meses, transcrito em `data/processed/inmet/prognostico_<regiao>.json`, vale para os municípios da região do boletim (`codigos_ibge`, hoje a Região Intermediária 3507 do IBGE = noroeste paulista): `chuva` e `temperatura` em `acima`/`normal`/`abaixo`, `meses[]` com `chuva` `irregular`/`melhora`/`normal`/`excesso`, `dicas[]` com `figura` e `frase`, `fonte`, `url_fonte`, `publicado_em`, `tipo_dado: "previsao"`; `null` se não houver), `fontes`, `limitacoes`, `tipo_dado`, `gerado_em`.
+- **Erro 404:** `{"erro": {"codigo": "dados_insuficientes", ...}}` para município sem dados pré-processados.
+- Toda regra (situação, classificação do clima) fica no backend; o front só desenha. A previsão é transcrita do boletim mensal do INMET e precisa ser atualizada a cada mês.
+
+## GET /api/v1/acompanhamento  (REAL — `web/Backend/app/api/v1/acompanhamento.py`)
+
+Fotos do Sentinel-2 do **ponto do GPS** do produtor (mesma latitude/longitude pega na tela inicial). Lógica em `pipelines/acompanhamento_sentinel2.py` (catálogo público Earth Search, sem login).
+
+- **Query:** `latitude`, `longitude`.
+- **Sucesso 200:** `Acompanhamento` (tipos em `web/Frontend/src/api/tipos.ts`): `latitude`/`longitude` (arredondadas a 4 casas, ~11 m), `ponto_exemplo: false`, `fotos[]` (mais nova primeiro, só sem nuvem sobre o talhão: `data`, `ndvi`, `estado` = `terra_descoberta` < 0,25 ≤ `pouca_planta` < 0,50 ≤ `planta_verde`, `imagem` = URL absoluta da foto), `confere_por_cobertura` (para cada `CoberturaSolo`, se a última foto combina; `null` sem foto), `lado_talhao_m`, `fonte`, `atribuicao` (obrigatória: "Contém dados Copernicus Sentinel-2 modificados"), `tipo_dado`, `gerado_em`.
+- **GET /api/v1/acompanhamento/fotos/{nome}:** devolve a foto PNG (nome validado por regex; nada fora da pasta de cache).
+- **Erros:** `422 coordenada_invalida`; `503 satelite_indisponivel` se o catálogo/AWS não responder.
+- **Tempo:** primeira consulta de um ponto ~30 s (processa e grava cache em `data/processed/sentinel2/cache/`, fora do Git); seguintes ~20 ms, por 3 dias.
+- **Exceção à convenção §7** (satélite só pré-processado): o ponto vem do GPS e não dá para pré-processar todos. Processa uma vez por ponto e guarda em cache. **Precisa de aprovação da equipe.**
+- **Front:** usa a rota quando o ponto veio do GPS e o servidor está no ar, mesmo no modo mock. Sem servidor, mostra o talhão de exemplo da cidade (`ponto_exemplo: true`, cópia gerada pelo CLI do pipeline) ou avisa que o servidor precisa estar ligado.
+
+## GET /api/v1/previsao  (PROPOSTA — rota ainda não existe)
+
+Previsão oficial dos próximos meses para a **região** do município (o boletim do INMET fala por região). Usada no acompanhamento, logo depois da escolha do caminho.
+
+- **Query:** `codigo_ibge`.
+- **Sucesso 200:** `PrevisaoClima` (mesmo formato de `PainelProducao.previsao`, com `abrangencia`) ou `null` se não houver previsão transcrita para a região.
+- **Backend pronto:** `previsao_do_municipio(codigo_ibge)` em `web/Backend/app/modelos/painel_producao.py`. Front usa a cópia `src/api/mock/previsaoRegiao.ts` enquanto a rota não existe.
+
+## Motor de decisão (pronto no backend, aguardando POST /api/v1/analises)
+
+`web/Backend/app/modelos/motor_decisao.py` → `sugerir(prioridades, recursos_disponiveis, codigo_ibge)` escolhe os **3 caminhos** de `data/processed/estrategias/catalogo_reforma_cana.json` (7 opções: pousio, amendoim, soja, crotalária, milheto, sorgo forrageiro, mucuna):
+
+1. A prática atual (pousio) entra sempre.
+2. Sai quem exige o que o produtor disse **não** ter (`nao_sei` não exclui).
+3. Sai quem o ZARC do município não indica para plantio sequeiro de outubro a dezembro (adubo verde não é zoneado).
+4. Pontos por prioridade = nível do atributo ligado a ela (0–3, "aguentar a seca" invertido) + 1 se o catálogo marca a estratégia como indicada; entram as 2 com mais pontos.
+5. Devolve `sugeridas` (com `prioridades_que_contam` e `zarc_risco_pct`) e `fora` (`sem_maquina`, `sem_comprador`, `sem_irrigacao`, `fora_zarc`).
+
+Novo atributo em `AtributosEstrategia`: `valor_forragem` ("Dá comida pro gado"). **POST /api/v1/analises deve chamar `sugerir`** para preencher `estrategias`. Enquanto isso, `python motor_decisao.py` gera a escolha para todas as 352 combinações em `web/Frontend/src/api/mock/estrategiasMotor.ts`, e o front só consulta (`src/api/mock/montarEstrategias.ts`). Testes: `web/Backend/tests/test_motor_decisao.py`.
+
+## Rotas acrescentadas na entrega beta
+
+Schemas completos, campos obrigatórios, enums e respostas estão no
+[OpenAPI exportado](openapi.json), gerado da aplicação. `/openapi.json` continua
+sendo o contrato executável. Não há conversão camelCase.
+
+| Método e caminho | Entrada | Resposta |
+|---|---|---|
+| GET `/api/v1/culturas` | nenhuma | 200, array de Cultura, ordem de exibição |
+| GET `/api/v1/locais` | latitude/longitude finitas, obrigatórias, WGS84 | 200 Local; 404 fora_da_cobertura |
+| GET `/api/v1/municipios` | busca string até 120 caracteres; limite inteiro 1–20, padrão 8 | 200 Local[]; menos de 2 caracteres retorna [] |
+| POST `/api/v1/analises` | AnaliseEntrada; exemplo no README do backend | 201 Analise persistida; 422 entrada/cobertura/cultura; 503 armazenamento |
+| GET `/api/v1/analises/{analise_id}` | UUID | 200 Analise salva; 404 analise_nao_encontrada; 422 UUID inválido |
+| GET `/api/v1/prontidao` | nenhuma | 200 {status:ok,banco:disponivel}; 503 se indisponível |
+
+Busca é normalizada sem acentos e caixa. Por enquanto só existe o item do piloto:
+
+```json
+{
+  "codigo_ibge": "",
+  "municipio": "Região piloto de Fresno",
+  "uf": "CA",
+  "latitude": 36.6,
+  "longitude": -119.7
+}
+```
+
+GET /locais conserva as coordenadas recebidas; GET /municipios devolve a referência
+piloto. Nenhum dos dois afirma usar malha administrativa oficial.
+AnaliseEntrada usa os enums do frontend. No beta, somente cultura_atual_id=milho;
+isso habilita teste de integração, não atesta aptidão agrícola. Não aceitar código
+IBGE na Califórnia. Correções são opcionais e têm fonte informado_produtor.
+
+POST persiste entrada/coleta/resposta antes do 201. Recuperação não recalcula nem
+consulta NASA. CORS local admite GET/POST e Content-Type, inclusive erros tratados;
+X-Request-ID aparece no header e requisicao_id no erro.
+
+Pendente: motor agronômico validado (o atual é simulação opt-in), autenticação,
+CORS de produção, rate limit e eventual contrato de processamento assíncrono.

@@ -6,7 +6,7 @@
 // na tela (convenção §0.3). Assim, quando o backend implementar uma rota, o front
 // passa a usá-la sem mudar nada aqui.
 //
-// Situação hoje (ver /openapi.json ou /docs do backend):
+// Situação hoje (ver docs/contrato_api.md):
 //  - REAL:      GET /analises?latitude&longitude → RespostaAnalise (variáveis por fonte)
 //  - PROPOSTA:  GET /culturas, GET /locais, GET /municipios, POST /analises → Analise,
 //               GET /producao → PainelProducao, GET /previsao → PrevisaoClima | null

@@ -1,7 +1,7 @@
 // DTOs do contrato front <-> API.
 // Duas partes:
 //  - REAL (fim do arquivo): Variavel / RespostaAnalise, já implementados no backend
-//    e descritos em /openapi.json ou /docs (gerados a partir dos schemas reais).
+//    e descritos em docs/contrato_api.md e docs/dicionario_dados.md.
 //  - PROPOSTA (o resto): o que o front precisa para as telas e o backend ainda não
 //    tem (culturas, locais, municípios, POST /analises com estratégias). Nomes seguem
 //    a convenção (snake_case, sem acento, unidade no nome) e precisam ser aprovados
@@ -216,14 +216,14 @@ export interface Analise {
 
 // ---------------------------------------------------------------------------
 // Contrato REAL, já implementado: GET /api/v1/analises?latitude=&longitude=
-// Copiado do /openapi.json da API (contrato real, sempre atualizado).
+// Copiado do /openapi.json da API e de docs/contrato_api.md + docs/dicionario_dados.md.
 // Não renomear: estes nomes são os do backend.
 // ---------------------------------------------------------------------------
 
 /** 'ao_vivo' = consultada na hora (NASA POWER, USDA, OpenET); 'pre_processado' = índice PostGIS + Parquet. */
 export type TipoAcesso = 'ao_vivo' | 'pre_processado';
 
-/** Uma medição de uma fonte. `nome` segue o /openapi.json (ex.: 'precipitacao_acumulada_mm'). */
+/** Uma medição de uma fonte. `nome` segue docs/dicionario_dados.md (ex.: 'precipitacao_acumulada_mm'). */
 export interface Variavel {
   nome: string;
   /** 'nasa_power' | 'usda_soil_data_access' | 'openet' | 'gpm' | 'smap' | 'srtm' | 'ecostress' | 'landsat' */
@@ -261,7 +261,7 @@ export interface ErroApi {
 // ---------------------------------------------------------------------------
 // PROPOSTA: painel "Sua colheita" (GET /api/v1/producao?codigo_ibge=...).
 // Montado em web/Backend/app/modelos/painel_producao.py: TODA regra (situação,
-// cenários) fica no backend; o front só desenha. Ver /openapi.json ou /docs.
+// cenários) fica no backend; o front só desenha. Ver docs/contrato_api.md.
 
 /** acima/abaixo = rendimento do último ano passou 5% da média dos 5 anteriores. */
 export type SituacaoColheita = 'acima' | 'normal' | 'abaixo' | 'sem_plantio';

@@ -124,6 +124,8 @@ Sem login/autorização, manter a API restrita à demonstração local.
 `integrations`: consultas externas; `pipelines`: ingestão existente;
 `migrations`: evolução das tabelas do produto; `tests`: verificações automatizadas.
 
+Pendências detalhadas: [docs/pendencias_backend.md](../../docs/pendencias_backend.md).
+
 ## Verificação executada nesta entrega
 
 - 26 testes automatizados aprovados; Ruff passou no escopo da entrega (API, domínio,
@@ -142,5 +144,5 @@ Sem login/autorização, manter a API restrita à demonstração local.
 
 ## Acompanhamento por satélite e dados de São José do Rio Preto (Matheus)
 
-- `GET /api/v1/acompanhamento?latitude=&longitude=` — fotos Sentinel-2 do ponto do GPS (não precisa de banco nem de chave; primeira consulta de um ponto ~30 s, depois cache por 3 dias). Ver `/openapi.json` ou `/docs`.
+- `GET /api/v1/acompanhamento?latitude=&longitude=` — fotos Sentinel-2 do ponto do GPS (não precisa de banco nem de chave; primeira consulta de um ponto ~30 s, depois cache por 3 dias). Ver `docs/contrato_api.md`.
 - Pipelines e modelos de São José do Rio Preto (`REGIAO_PILOTO=sjrp`), motor de decisão com ZARC e modelo produtividade x clima: `app/pipelines/`, `app/modelos/`, testes em `tests/test_motor_decisao.py` e `tests/test_produtividade_clima.py`.

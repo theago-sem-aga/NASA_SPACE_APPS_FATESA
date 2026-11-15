@@ -1,6 +1,6 @@
-"""DTOs da resposta de /api/v1/analises. Nomes e formato aqui sao o contrato
-real consumido pelo frontend (snake_case, sem traducao automatica) -- ver
-/openapi.json ou /docs, gerados a partir destes schemas."""
+"""DTOs da resposta de /api/v1/analises. Ver docs/contrato_api.md e
+docs/dicionario_dados.md -- nomes e formato aqui sao o contrato real
+consumido pelo frontend (snake_case, sem traducao automatica)."""
 
 from __future__ import annotations
 
